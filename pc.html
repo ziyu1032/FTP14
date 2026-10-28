@@ -559,17 +559,22 @@
     .brand small{display:none}
   }
 
+  /* ===== 版本提示条：电脑版/手机版共用样式 ===== */
+  #vHint{display:none;align-items:center;justify-content:center;gap:8px;
+    font-size:13px;font-weight:700;padding:10px 14px;position:sticky;top:0;z-index:999;
+    text-align:center;flex-wrap:wrap;line-height:1.5}
+  #vHint.info{background:#0E7490;color:#fff}
+  #vHint.warn{background:#FEF3C7;color:#92400E;box-shadow:inset 0 -1px 0 #FDE68A}
+  #vHint a{color:inherit;text-decoration:underline;font-weight:800}
+  #vHint button{font-size:14px;color:inherit;opacity:.8;padding:0 4px;margin-left:2px}
+  #vHint .hx{font-size:15px}
+
   /* ===== 电脑版专属：手机上误开时给一条提示（电脑上不显示） ===== */
-  #pcHint{display:none;align-items:center;justify-content:center;gap:8px;
-    background:#0E7490;color:#fff;font-size:13px;font-weight:700;padding:10px 14px;
-    position:sticky;top:0;z-index:999;text-align:center;flex-wrap:wrap}
-  #pcHint a{color:#FFE7D3;text-decoration:underline}
-  #pcHint button{font-size:14px;color:#fff;opacity:.85;padding:0 6px}
 </style>
 </head>
 <body>
-<div id="pcHint">You are viewing the computer version. 手机请用手机版 → <a href="m.html">Mobile version</a><button onclick="document.getElementById('pcHint').style.display='none'">✕</button></div>
-<script>if(/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)){document.getElementById('pcHint').style.display='flex';}</script>
+<div id="vHint" class="info">🖥️ 这是电脑版页面。手机请用 <a href="m.html">手机版</a>（在手机浏览器中打开）<button onclick="document.getElementById('vHint').style.display='none'">✕</button></div>
+<script>if(/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)){var h=document.getElementById('vHint');h.style.display='flex';}</script>
 <div class="wrap">
   <div class="topbar">
     <div class="brand">
