@@ -162,11 +162,14 @@
   .blank.done{background:#EAF7EE;border-bottom-color:var(--leaf);color:#166534;font-weight:600}
   @keyframes blink{0%,100%{box-shadow:0 0 0 0 rgba(249,115,22,.22)}50%{box-shadow:0 0 0 5px rgba(249,115,22,0)}}
 
-  .bankbox{margin-top:auto;padding-top:12px;border-top:1px dashed #F0E4D9}
+  .bankbox{margin-top:auto;padding:12px 13px 4px;border-top:1px dashed #F0E4D9;background:#F7FCFE;
+    border-radius:14px}
   .banklabel{display:block;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-soft);margin-bottom:9px}
   .wordchips{display:flex;flex-wrap:wrap;gap:9px}
-  .wchip{padding:10px 15px;border-radius:12px;background:#FFFBF7;border:2px solid #F2E6DB;font-size:14.5px;transition:.15s;line-height:1.3}
-  .wchip:hover{border-color:var(--orange);background:#FFF4EA;transform:translateY(-2px)}
+  .wchip{padding:10px 15px;border-radius:12px;background:#E1F3F8;border:2px solid #9ED6E4;color:#0B4E5E;
+    font-weight:700;font-size:14.5px;transition:.15s;line-height:1.3;box-shadow:0 3px 0 rgba(14,116,144,.16);cursor:pointer}
+  .wchip:hover{background:#CDEBF3;border-color:var(--teal);color:#083E4B;transform:translateY(-2px);
+    box-shadow:0 5px 0 rgba(14,116,144,.22)}
   .wchip.bad{animation:shake .42s;border-color:#F87171;background:#FEF2F2;color:#B91C1C}
   .wchip.ok{border-color:var(--leaf);background:#F0FDF4;color:#166534}
   @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
@@ -871,11 +874,39 @@ function band(score){
   if (score >= 50) return ['Almost there.', 'The main idea came through, but some key words were missed.'];
   return ['Let’s try again.', 'Listen to the model answer once, then say it in your own words.'];
 }
-function speak(text){
+/* prefer a natural American (en-US) voice: neural voices first, then the usual OS ones */
+let US_VOICE = null;
+function pickUSVoice(){
   if (!('speechSynthesis' in window)) return;
+  const all = speechSynthesis.getVoices() || [];
+  if (!all.length) return;
+  const us = all.filter(v => /^en[-_]?US/i.test(v.lang));
+  const order = [
+    /natural|neural/i,                       /* Edge: Microsoft Aria/Jenny/Guy Online (Natural) */
+    /google us english/i,                    /* Chrome */
+    /aria|jenny|guy|michelle|andrew|emma/i,  /* Windows neural / online */
+    /samantha|alex|allison|ava|tom|zoe/i,    /* macOS / iOS */
+    /en[-_]?us/i
+  ];
+  for (const re of order){
+    const hit = us.find(v => re.test(v.name) || re.test(v.voiceURI || ''));
+    if (hit){ US_VOICE = hit; break; }
+  }
+  if (!US_VOICE) US_VOICE = us[0] || all.find(v => /^en/i.test(v.lang)) || null;
+}
+if ('speechSynthesis' in window){
+  pickUSVoice();
+  speechSynthesis.onvoiceschanged = pickUSVoice;
+  [200, 600, 1500, 3000].forEach(t => setTimeout(pickUSVoice, t));
+}
+
+function speak(text){
+  if (!('speechSynthesis' in window) || !text) return;
   speechSynthesis.cancel();
+  pickUSVoice();
   const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'en-US'; u.rate = .92;
+  u.lang = 'en-US'; u.rate = .9; u.pitch = 1;
+  if (US_VOICE) u.voice = US_VOICE;
   speechSynthesis.speak(u);
 }
 
@@ -916,6 +947,11 @@ class VoiceCheck {
     this.lbl.textContent = 'Tap to speak';
     this.state.textContent = cfg.hint || 'Press the microphone and say your sentence.';
     this.maxMs = cfg.maxMs || 22000;
+    if (cfg.model && !cfg.hideModel) this.renderPreListen();
+  }
+  renderPreListen(){
+    this.act.innerHTML = `<button class="minibtn listen" data-a="listen">🔊 Listen first · American voice</button>`;
+    this.act.querySelector('[data-a="listen"]').onclick = () => speak(this.cfg.model);
   }
   async start(){
     if (!this.cfg) return;
@@ -1011,13 +1047,27 @@ class VoiceCheck {
     const missing = r.chips.filter(c => !c.ok).map(c => c.label);
     const shortNote = r.words < (cfg.minWords || 12) * 0.6
       ? ' Your answer was quite short — aim for one full sentence with a subject and a verb.' : '';
+    const tips = [];
+    r.chips.filter(c => !c.ok).forEach(c => {
+      const t = (cfg.targets || []).find(x => x.label === c.label);
+      tips.push(t && t.tip ? t.tip : `Add this point: ${c.label}.`);
+    });
+    if (r.words < (cfg.minWords || 12) * 0.65)
+      tips.push(`Your recording was short (${r.words} words). Say every sentence at a steady pace.`);
+    if (r.score < 70 && cfg.model)
+      tips.push('Listen to the model once, then record again and copy its rhythm.');
+    if (!tips.length)
+      tips.push('Nothing to fix — clear and complete. Try once more for a smoother delivery.');
+
     this.res.innerHTML = `
       <div class="scoreline">
         <span class="score ${cls}">${r.score}<small>/100</small></span>
         <div class="verdict"><b>${head}</b>${tail}${missing.length ? ' Missing: ' + esc(missing.join(', ')) + '.' : ''}${shortNote}</div>
       </div>
-      <div class="kchips">${r.chips.map(c => `<span class="kchip ${c.ok ? 'ok' : 'no'}">${c.ok ? '✓' : '○'} ${esc(c.label)}</span>`).join('')}</div>`;
-    this.state.textContent = 'Check the chips: green = the recogniser heard that part.';
+      <div class="kchips">${r.chips.map(c => `<span class="kchip ${c.ok ? 'ok' : 'no'}">${c.ok ? '✓' : '○'} ${esc(c.label)}</span>`).join('')}</div>
+      <div class="fbsub">How to improve</div>
+      <ul class="fbtips">${tips.slice(0, 5).map(t => `<li>${esc(t)}</li>`).join('')}</ul>`;
+    this.state.textContent = 'Your score and suggestions are below.';
     this.renderPlay();
     if (cfg.onScore) cfg.onScore(r.score, text);
   }
@@ -1032,11 +1082,13 @@ class VoiceCheck {
       if (a === 'play' && this.audioURL) new Audio(this.audioURL).play();
       if (a === 'again'){ this.arm(this.cfg); this.start(); }
       if (a === 'model'){
-        if (window.speechSynthesis){ speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(this.cfg.model); u.lang='en-US'; u.rate=.9; speechSynthesis.speak(u); }
-        const box = document.createElement('div');
-        box.className = 'modelbox';
-        box.innerHTML = `<b>Model:</b> ${esc(this.cfg.model)}`;
-        this.res.appendChild(box);
+        speak(this.cfg.model);
+        if (!this.res.querySelector('.modelbox')){
+          const box = document.createElement('div');
+          box.className = 'modelbox';
+          box.innerHTML = `<b>Model:</b> ${esc(this.cfg.model)}`;
+          this.res.appendChild(box);
+        }
       }
     });
   }
@@ -1122,7 +1174,7 @@ function startGame(id){
   $('descReadBox').style.display = 'none';
   $('descBankBox').style.display = 'block';
   $('descTitle').textContent = 'Describe your product';
-  $('descFrame').textContent = 'Click the correct word for each blank. You can only move on when it is right.';
+  $('descFrame').textContent = 'Choose one word for each blank. You move on only when it is right.';
   updateHud();
   pushMsg('Welcome to the live room! Introduce the product first.', 'hi');
   show('screen-desc');
@@ -1180,7 +1232,7 @@ function renderDesc(){
 
   if (S.descDone) return;
   const b = S.blanks[S.bi];
-  $('bankLabel').textContent = `Choose the word for blank ${S.bi + 1}`;
+  $('bankLabel').textContent = 'Pick the word that fits';
   $('descBank').innerHTML = b.options.map(o => `<button class="wchip" data-v="${esc(o)}">${esc(o)}</button>`).join('');
   $('descBank').querySelectorAll('.wchip').forEach(el => {
     el.onclick = () => pickWord(el, el.dataset.v);
@@ -1209,7 +1261,10 @@ function pickWord(el, val){
     setTimeout(() => el.classList.remove('bad'), 500);
     S.viewers = Math.max(60, S.viewers - 6);
     updateHud();
-    $('descFeedback').innerHTML = `<span class="no">✘ Not this one.</span> ${FIELD_HINT[b.field]} (Look at the product card on the left.)`;
+    b.tries = (b.tries || 0) + 1;
+    $('descFeedback').innerHTML = b.tries === 1
+      ? `<span class="no">✘ Not this one.</span> Try another word.`
+      : `<span class="no">✘ Not this one.</span> ${FIELD_HINT[b.field]} Check the product card on the left.`;
     pushMsg(rnd(DOUBT), 'low');
   }
 }
@@ -1227,19 +1282,26 @@ function completeDesc(){
 
   const p = S.p;
   const targets = [
-    { label:'product name', keys:keysOf(p.name) },
-    { label:'place of origin', keys:[norm(p.origin)] },
-    { label:'what it is famous for', keys:keysOf(p.famous) },
-    { label:'how people use it', keys:keysOf(p.useAs) },
-    { label:'how each order is prepared', keys:keysOf(p.care) },
-    { label:'a quality word', keys:[p.adj] },
-    { label:'“go global”', keys:['global'] }
+    { label:'product name', keys:keysOf(p.name),
+      tip:`Say the name clearly: “This is ${p.name}.”` },
+    { label:'place of origin', keys:[norm(p.origin)],
+      tip:`Add the place of origin: “a specialty from ${p.origin}.”` },
+    { label:'what it is famous for', keys:keysOf(p.famous),
+      tip:`Say what it is famous for: “It is famous for ${p.famous}.”` },
+    { label:'how people use it', keys:keysOf(p.useAs),
+      tip:`Say how people use it: “People usually use it as ${p.useAs}.”` },
+    { label:'how each order is prepared', keys:keysOf(p.care),
+      tip:`Say how it is prepared: “Every order is ${p.care}.”` },
+    { label:'a quality word', keys:[p.adj],
+      tip:`Add a quality word: “Customers love it because it is ${p.adj}.”` },
+    { label:'“go global”', keys:['global'],
+      tip:`Finish with the goal: “We can help ${p.name} go global.”` }
   ];
   const full = descriptionText(p);
   const minWords = Math.max(18, Math.round(full.split(/\s+/).length * 0.55));
   vcDesc.arm({
     targets, minWords, model: full,
-    hint:`Read the six sentences above. About ${minWords} words — take your time.`,
+    hint:`Listen to the model first if you like, then press the microphone and read the six sentences above (about ${minWords} words).`,
     onScore: (score) => {
       S.readScore = score;
       S.viewers += Math.round(score * 1.2);
