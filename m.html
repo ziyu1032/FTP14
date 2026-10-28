@@ -559,6 +559,16 @@
     .brand small{display:none}
   }
 
+  /* ===== 版本提示条：电脑版/手机版共用样式 ===== */
+  #vHint{display:none;align-items:center;justify-content:center;gap:8px;
+    font-size:13px;font-weight:700;padding:10px 14px;position:sticky;top:0;z-index:999;
+    text-align:center;flex-wrap:wrap;line-height:1.5}
+  #vHint.info{background:#0E7490;color:#fff}
+  #vHint.warn{background:#FEF3C7;color:#92400E;box-shadow:inset 0 -1px 0 #FDE68A}
+  #vHint a{color:inherit;text-decoration:underline;font-weight:800}
+  #vHint button{font-size:14px;color:inherit;opacity:.8;padding:0 4px;margin-left:2px}
+  #vHint .hx{font-size:15px}
+
   /* ===== 手机版专属：恒为单列手机版式；在电脑上打开时居中成一条手机宽度 ===== */
   html{background:#EFE4D8}
   body{max-width:430px;margin:0 auto;
@@ -567,6 +577,32 @@
 </style>
 </head>
 <body>
+<div id="vHint"></div>
+<script>
+(function(){
+  var el=document.getElementById('vHint'); if(!el) return;
+  var ua=navigator.userAgent;
+  var mob=/Android|iPhone|iPad|iPod|Mobile/i.test(ua);
+  var wx=/MicroMessenger/i.test(ua)||/QQ\//i.test(ua);
+  var msg='',cls='';
+  if(wx){
+    cls='warn';
+    msg='⚠️ 请点右上角 <b class="hx">⋯</b> →「在浏览器打开」：微信 / QQ 里录音和 AI 评分用不了';
+  }else if(!mob){
+    cls='info';
+    msg='📱 这是手机版页面，请在<b>手机浏览器</b>中打开（电脑上课请用 <a href="pc.html">电脑版</a>）';
+  }else{
+    return; // 已在手机浏览器里，正常可用，不打扰
+  }
+  el.className=cls;
+  el.innerHTML=msg;
+  var b=document.createElement('button');
+  b.type='button'; b.textContent='✕';
+  b.onclick=function(){ el.style.display='none'; };
+  el.appendChild(b);
+  el.style.display='flex';
+})();
+</script>
 <div class="wrap">
   <div class="topbar">
     <div class="brand">
