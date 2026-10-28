@@ -303,19 +303,245 @@
   .secTitle{font-size:11px;letter-spacing:1.1px;text-transform:uppercase;color:var(--teal);margin:16px 0 4px}
   .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}
 
+  /* ================= responsive ================= */
+
+  /* ---- big screens: larger type, easier to read from the back of a classroom ---- */
+  @media (min-width:1181px){
+    .wrap{max-width:1360px}
+    .brand small{font-size:12px}
+    .pill{font-size:14px;padding:8px 15px}
+    .lede{font-size:18px}
+    .steps-mini span{font-size:14px}
+    .btn{font-size:17px}
+    .btn.small{font-size:15.5px;padding:12px 20px}
+    .navbtn{font-size:14px;padding:9px 15px}
+    .hintbar{font-size:14.5px}
+    .section-head h2{font-size:30px}
+    .section-head p{font-size:15px}
+    .prod h3{font-size:18px}
+    .prod .meta{font-size:14px}
+    .prod .tag{font-size:11.5px}
+    .prod .emoji{font-size:42px}
+
+    .room{grid-template-columns:290px minmax(0,1fr) 330px}
+    .talk{grid-template-columns:268px minmax(0,1fr) 390px}
+    .stage .caption strong{font-size:17px}
+    .stage .caption span{font-size:13px}
+    .ticker{font-size:13px}
+    .factsheet{font-size:13px;line-height:1.65}
+    .factsheet .fh{font-size:10.5px}
+
+    .chip{font-size:12.5px}
+    .panel h3.ttl{font-size:22px}
+    .frame{font-size:14px}
+    .desc-lines{font-size:21px}
+    .blank{font-size:19px;min-width:96px}
+    .banklabel{font-size:12px}
+    .wchip{font-size:16px;padding:11px 17px}
+    .feedback{font-size:14.5px}
+
+    .mstate{font-size:14px}
+    .mcap{font-size:15.5px}
+    .score{font-size:36px}
+    .verdict{font-size:14.5px}
+    .verdict b{font-size:15px}
+    .kchip{font-size:12.5px;padding:5px 11px}
+    .minibtn{font-size:13.5px;padding:8px 14px}
+    .modelbox{font-size:14.5px}
+    .typebox input{font-size:16px;padding:11px 13px}
+
+    .chat header{font-size:13.5px}
+    .msg{font-size:14px;padding:8px 11px}
+
+    .qtext{font-size:24px}
+    .qhint{font-size:13.5px}
+    .hintbtn{font-size:13.5px;padding:8px 14px}
+    .hintbox h5{font-size:11.5px}
+    .hintstep{font-size:14px}
+    .mode{font-size:14.5px;padding:9px 16px}
+    .modehint{font-size:13px}
+    .draft{font-size:16px;min-height:78px;padding:11px 13px}
+    .langwarn{font-size:13.5px}
+    .fb{padding:16px}
+    .fbsub{font-size:12px}
+    .fbtips li{font-size:14.5px}
+
+    .sidecard h4{font-size:12px}
+    .pat{font-size:14px}
+    .pat td{padding:7px 4px}
+    .bankgroup .gh{font-size:11.5px}
+    .bchip{font-size:13.5px;padding:7px 11px}
+
+    .scorecard h2{font-size:26px}
+    .scorecard .sub{font-size:14px}
+    .stars{font-size:26px}
+    .stat b{font-size:24px}
+    .stat span{font-size:11.5px}
+    .brow{font-size:13px}
+    .script h3{font-size:23px}
+    .script .tip{font-size:14px}
+    .line{font-size:16px}
+    .line .said{font-size:14px}
+    .secTitle{font-size:12px}
+  }
+
+  /* ---- laptop / tablet landscape: one column, keep everything reachable ---- */
   @media (max-width:1180px){
+    .room{grid-template-columns:1fr}
     .talk{grid-template-columns:1fr}
     .side{flex-direction:row;flex-wrap:wrap}
     .sidecard{flex:1 1 300px}
-  }
-  @media (max-width:1050px){
-    .room{grid-template-columns:1fr}
     .report{grid-template-columns:1fr}
     .hero{grid-template-columns:1fr;padding:28px}
     .hero-art{display:none}
-    h1{font-size:36px}
+    h1{font-size:38px}
     .chat{max-height:220px}
     .panel{min-height:auto}
+  }
+
+  /* ---- tablet portrait ---- */
+  @media (max-width:1050px){
+    .wrap{padding:16px 16px 28px}
+    .qtext{font-size:20px}
+    .desc-lines{font-size:19px}
+    .grid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+  }
+
+  /* ---- phones: single column, thumb-sized controls ---- */
+  @media (max-width:700px){
+    html{-webkit-text-size-adjust:100%}
+    body{overflow-x:hidden}
+    .wrap{padding:12px 12px 28px;max-width:100%}
+
+    .topbar{gap:8px;margin-bottom:10px}
+    .brand{font-size:15px;gap:8px;flex:1 1 auto}
+    .brand .dot{width:30px;height:30px;font-size:16px;border-radius:10px}
+    .brand small{font-size:10px;letter-spacing:.2px;line-height:1.3}
+    .pill{font-size:12px;padding:5px 10px;gap:5px}
+
+    .navbar{gap:6px;margin-bottom:10px}
+    .navbtn{flex:1 1 30%;justify-content:center;padding:11px 6px;font-size:12.5px;border-radius:10px}
+
+    .hero{padding:20px 17px 22px;border-radius:22px}
+    .kicker{font-size:10.5px;padding:6px 10px;letter-spacing:1px}
+    h1{font-size:27px;margin:12px 0 10px;line-height:1.12}
+    .lede{font-size:15.5px;line-height:1.6}
+    .steps-mini{gap:7px;margin:15px 0 18px}
+    .steps-mini span{font-size:12.5px;padding:7px 10px}
+    #btnStart,#btnHowTo{display:flex;width:100%;justify-content:center;margin:9px 0 0 !important;
+      font-size:16px;padding:15px 16px;min-height:52px}
+    .hintbar{font-size:13px}
+
+    .section-head h2{font-size:22px}
+    .section-head p{font-size:13.5px}
+    .grid{grid-template-columns:1fr;gap:11px}
+    .prod{padding:16px;border-radius:18px}
+    .prod .emoji{font-size:34px}
+    .prod h3{font-size:17px;margin:8px 0 3px}
+    .prod .meta{font-size:13.5px}
+    .prod .tag{font-size:10.5px}
+
+    /* the stage becomes a compact strip so the task stays near the top */
+    .stage{display:grid;grid-template-columns:auto 1fr;
+      grid-template-areas:"top top" "show cap" "tick tick" "fact fact";
+      gap:8px 12px;padding:12px;border-radius:18px}
+    .stage .top{grid-area:top}
+    .stage .showcase{grid-area:show;height:auto !important;margin:0}
+    .stage .showcase .big{font-size:40px;animation:none;filter:none}
+    .stage .caption{grid-area:cap;text-align:left;margin:0;align-self:center}
+    .stage .caption strong{font-size:15.5px}
+    .stage .caption span{font-size:12.5px}
+    .stage .ticker{grid-area:tick;margin:0;font-size:12px;padding:6px 10px}
+    .stage .factsheet{grid-area:fact;margin:0;font-size:12.5px;line-height:1.55;padding:8px 10px}
+    .factsheet .fh{font-size:9.5px;margin-bottom:2px}
+
+    .panel{padding:15px 14px;border-radius:20px;min-height:0}
+    .panel .row{flex-wrap:wrap;gap:8px}
+    .panel h3.ttl{font-size:19px}
+    .chip{font-size:11px}
+    .frame{font-size:13.5px}
+    .desc-lines{font-size:18px;line-height:1.95}
+    .blank{font-size:17px;min-width:72px;padding:2px 8px;border-bottom-width:2px}
+    .banklabel{font-size:11px}
+    .wordchips{gap:8px}
+    .wchip{font-size:15.5px;padding:12px 16px;min-height:46px}
+    .feedback{font-size:13.5px;min-height:auto}
+
+    .mic{gap:12px;padding:12px}
+    .micbtn{width:74px;height:74px}
+    .micbtn .ico{font-size:24px}
+    .micbtn .lbl{font-size:9.5px}
+    .mstate{font-size:13px}
+    .mcap{font-size:14px;padding:7px 9px}
+
+    .chat{max-height:154px;border-radius:18px}
+    .chat header{font-size:12.5px;padding:10px 12px}
+    .feed{max-height:112px;padding:9px 11px;max-height:112px}
+    .msg{font-size:12.5px}
+
+    /* Q&A: question first, product card second, reference panels last */
+    #screen-talk .talk{display:flex;flex-direction:column;gap:12px}
+    #screen-talk .panel{order:1}
+    #screen-talk .stage{order:2}
+    #screen-talk .side{order:3;flex-direction:column;gap:12px}
+    .qtext{font-size:20px}
+    .qhint{font-size:13px}
+    .hintbtn{font-size:13.5px;padding:11px 14px;min-height:44px}
+    .hintbox{padding:12px}
+    .hintstep{font-size:13.5px;gap:8px}
+    .modes{gap:6px;margin:2px 0 10px}
+    .mode{flex:1 1 40%;justify-content:center;min-height:46px;font-size:14px;display:inline-flex;align-items:center}
+    .modehint{flex:1 1 100%;margin:4px 0 0;font-size:12.5px}
+    .draft{font-size:16px;min-height:100px}
+    .typebox input{font-size:16px;padding:12px 13px}
+    #btnSubmit,#btnNextQ,#btnToTalk{display:flex;width:100%;justify-content:center;min-height:50px;
+      font-size:16px;padding:14px 16px;margin-top:2px}
+    .panel .row .hintbar{flex:1 1 100%}
+    .sidecard{padding:13px;border-radius:16px}
+    .sidecard h4{font-size:11px}
+    .pat{font-size:13.5px}
+    .pat td{padding:7px 4px}
+    .bchip{font-size:13.5px;padding:9px 12px}
+
+    .fb{padding:12px;border-radius:15px}
+    .fbhead{gap:10px}
+    .score{font-size:30px}
+    .verdict{font-size:13.5px}
+    .verdict b{font-size:14px}
+    .kchip{font-size:11.5px}
+    .fbsub{font-size:10.5px}
+    .fbtips li{font-size:13.5px;padding-left:20px}
+    .modelbox{font-size:13.5px}
+    .minibtn{font-size:12.5px;padding:9px 12px;min-height:42px}
+
+    .report{gap:12px}
+    .scorecard{padding:18px;border-radius:22px}
+    .scorecard h2{font-size:22px}
+    .scorecard .sub{font-size:13px}
+    .stars{font-size:24px;letter-spacing:2px}
+    .stats{gap:8px}
+    .stat b{font-size:21px}
+    .stat span{font-size:10.5px}
+    .brow{font-size:12.5px}
+    .script{padding:16px;border-radius:22px}
+    .script h3{font-size:20px}
+    .script .tip{font-size:13px}
+    .line{font-size:15px;gap:9px;padding:11px 0}
+    .line .said{font-size:13px}
+    .line .sc{font-size:14px}
+    .actions{gap:9px;margin-top:14px}
+    .actions .btn{width:100%;justify-content:center;min-height:50px}
+  }
+
+  /* ---- very small phones ---- */
+  @media (max-width:400px){
+    h1{font-size:24px}
+    .lede{font-size:14.5px}
+    .qtext{font-size:18.5px}
+    .desc-lines{font-size:16.5px}
+    .blank{font-size:16px;min-width:62px}
+    .navbtn{font-size:11.5px;padding:10px 4px}
+    .brand small{display:none}
   }
 </style>
 </head>
