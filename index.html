@@ -398,7 +398,10 @@
     .sidecard{flex:1 1 300px}
     .report{grid-template-columns:1fr}
     .hero{grid-template-columns:1fr;padding:28px}
-    .hero-art{display:none}
+    .hero-art{min-height:0;margin:4px 0 0}
+    .phone-mini{width:150px;height:252px;border-radius:26px;transform:rotate(2deg)}
+    .phone-mini .mini-emoji{font-size:60px}
+    .phone-mini .mini-live{top:15px;left:15px;font-size:9px;padding:3px 7px}
     h1{font-size:38px}
     .chat{max-height:220px}
     .panel{min-height:auto}
@@ -428,6 +431,12 @@
     .navbtn{flex:1 1 30%;justify-content:center;padding:11px 6px;font-size:12.5px;border-radius:10px}
 
     .hero{padding:20px 17px 22px;border-radius:22px}
+    .hero-art{justify-items:center;margin:16px 0 2px}
+    .phone-mini{width:136px;height:226px;border-radius:24px;transform:rotate(-3deg);
+      box-shadow:0 16px 30px rgba(11,31,39,.28)}
+    .phone-mini::after{inset:7px;border-radius:19px}
+    .phone-mini .mini-emoji{font-size:54px}
+    .phone-mini .mini-live{top:13px;left:13px;font-size:9px;padding:3px 7px;letter-spacing:.8px}
     .kicker{font-size:10.5px;padding:6px 10px;letter-spacing:1px}
     h1{font-size:27px;margin:12px 0 10px;line-height:1.12}
     .lede{font-size:15.5px;line-height:1.6}
@@ -1122,7 +1131,7 @@ class VoiceCheck {
     this.recording = true;
     this.btn.classList.add('rec');
     this.lbl.textContent = 'Listening…';
-    this.state.textContent = 'Listening… speak naturally, then tap again to stop.';
+    this.state.textContent = 'Listening… just speak — I stop by myself when you finish.';
 
     try{
       this.stream = await navigator.mediaDevices.getUserMedia({ audio:true });
@@ -1157,6 +1166,7 @@ class VoiceCheck {
           if (fin) this.transcript += fin;
           this.interim = itr;
           this.cap.textContent = (this.transcript + itr).trim();
+          this.heardAt = Date.now();
         };
         r.onerror = ev => { this.err = ev.error; };
         r.onend = () => { if (this.recording) this.stop(); };
@@ -1168,17 +1178,33 @@ class VoiceCheck {
     }
     clearTimeout(this.timer);
     this.timer = setTimeout(() => this.stop(), this.maxMs);
+
+    /* finish as soon as the learner stops talking — no button press needed */
+    this.heardAt = 0;
+    const quietMs = this.cfg.silence || 2000;
+    clearInterval(this.watch);
+    this.watch = setInterval(() => {
+      if (!this.recording) return;
+      const said = (this.transcript + this.interim).trim();
+      if (said.split(/\s+/).filter(Boolean).length < 2) return;
+      if (!this.heardAt) this.heardAt = Date.now();
+      if (Date.now() - this.heardAt > quietMs){
+        this.state.textContent = 'Got it — scoring now…';
+        this.stop();
+      }
+    }, 250);
   }
   stop(){
     if (!this.recording) return;
     this.recording = false;
     clearTimeout(this.timer);
+    clearInterval(this.watch);
     this.btn.classList.remove('rec');
     this.lbl.textContent = 'Tap to speak';
     try{ if (this.recog) this.recog.stop(); }catch(e){}
     try{ if (this.mr && this.mr.state !== 'inactive') this.mr.stop(); }catch(e){}
     try{ if (this.stream) this.stream.getTracks().forEach(t => t.stop()); }catch(e){}
-    setTimeout(() => this.finish(), 500);
+    setTimeout(() => this.finish(), 420);
   }
   finish(){
     if (this.done) return;
@@ -1230,6 +1256,7 @@ class VoiceCheck {
       <ul class="fbtips">${tips.slice(0, 5).map(t => `<li>${esc(t)}</li>`).join('')}</ul>`;
     this.state.textContent = 'Your score and suggestions are below.';
     this.renderPlay();
+    reveal(this.res);
     if (cfg.onScore) cfg.onScore(r.score, text);
   }
   renderPlay(){
@@ -1481,8 +1508,8 @@ function completeDesc(){
   const full = descriptionText(p);
   const minWords = Math.max(18, Math.round(full.split(/\s+/).length * 0.55));
   vcDesc.arm({
-    targets, minWords, model: full,
-    hint:`Listen to the model first if you like, then press the microphone and read the six sentences above (about ${minWords} words).`,
+    targets, minWords, model: full, maxMs: 45000, silence: 2800,
+    hint:`Listen to the model first if you like, then just read the six sentences aloud (about ${minWords} words) — scoring starts as soon as you stop.`,
     onScore: (score) => {
       S.readScore = score;
       S.viewers += Math.round(score * 1.2);
@@ -1927,8 +1954,8 @@ function setMode(m){
 function armSpeak(){
   const q = S.qs[S.qi];
   vcTalk.arm({
-    model: q.better, maxMs: 20000, hideModel: true,
-    hint: 'Press the microphone and answer as the host — two or three sentences.',
+    model: q.better, maxMs: 25000, hideModel: true, silence: 2400,
+    hint: 'Press the microphone and answer as the host — I score it as soon as you stop.',
     onText: (text) => finishAnswer(text, 'speak')
   });
 }
@@ -2001,6 +2028,11 @@ function finishAnswer(text, src){
   showFeedback(r, q);
 }
 
+function reveal(el){
+  if (!el || window.innerWidth > 700) return;
+  setTimeout(() => { try { el.scrollIntoView({ behavior:'smooth', block:'center' }); } catch(e){} }, 60);
+}
+
 function showFeedback(r, q){
   const cls = r.score >= 80 ? 'good' : r.score >= 55 ? 'mid' : 'low';
   const head = r.score >= 85 ? 'Excellent answer!' : r.score >= 70 ? 'Good answer.' : r.score >= 50 ? 'You are getting there.' : 'Let’s rebuild this answer.';
@@ -2019,6 +2051,7 @@ function showFeedback(r, q){
       <ul class="fbtips">${r.tips.map(t => `<li class="${t.k}">${esc(t.t)}</li>`).join('')}</ul>
       <div class="modelbox"><b>A stronger version:</b> ${esc(q.better)}</div>
     </div>`;
+  reveal($('fbArea'));
 }
 
 $('btnNextQ').onclick = () => {
