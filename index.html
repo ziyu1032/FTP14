@@ -1,0 +1,1696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hainan Live! — Bring Hometown Goodies to the World</title>
+<style>
+  :root{
+    --cream:#FFF8F3;
+    --ink:#12242E;
+    --ink-soft:#5B6B73;
+    --orange:#F97316;
+    --orange-soft:#FFE7D3;
+    --teal:#0E7490;
+    --teal-soft:#D9F1F5;
+    --pink:#EC4899;
+    --mango:#FBBF24;
+    --leaf:#16A34A;
+    --card:#FFFFFF;
+    --shadow:0 10px 30px rgba(18,36,46,.10);
+    --shadow-lg:0 24px 60px rgba(18,36,46,.18);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:"Segoe UI","Helvetica Neue",Arial,"Microsoft YaHei",sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(900px 520px at 8% -8%, #FFE3CC 0%, rgba(255,227,204,0) 60%),
+      radial-gradient(760px 460px at 102% 4%, #D7F0F5 0%, rgba(215,240,245,0) 62%),
+      radial-gradient(700px 520px at 50% 118%, #FFE9F2 0%, rgba(255,233,242,0) 60%),
+      var(--cream);
+    min-height:100%;
+    overflow-x:hidden;
+  }
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  .wrap{max-width:1280px;margin:0 auto;padding:20px 20px 34px}
+
+  /* ---------- top bar ---------- */
+  .topbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.2px}
+  .brand .dot{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;font-size:18px;
+    background:linear-gradient(135deg,var(--orange),var(--pink));color:#fff;box-shadow:var(--shadow)}
+  .brand small{display:block;font-weight:600;color:var(--ink-soft);font-size:11.5px;letter-spacing:.6px;text-transform:uppercase}
+  .spacer{flex:1}
+  .pill{display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border-radius:999px;background:#fff;
+    box-shadow:var(--shadow);font-size:13px;font-weight:700;color:var(--ink-soft)}
+  .pill b{color:var(--ink)}
+  .pill.live{background:#FFF1E8;color:#C2410C}
+  .pill.live i{width:8px;height:8px;border-radius:50%;background:#EF4444;display:inline-block;animation:pulse 1.4s infinite}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}}
+
+  /* ---------- screens ---------- */
+  .screen{display:none;animation:fade .35s ease}
+  .screen.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+  /* ---------- start ---------- */
+  .hero{display:grid;grid-template-columns:1.15fr .85fr;gap:26px;align-items:center;
+    background:linear-gradient(135deg,#FFFFFF 0%,#FFF3E8 100%);border-radius:28px;padding:38px 38px 34px;box-shadow:var(--shadow-lg)}
+  .kicker{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:800;letter-spacing:1.4px;
+    text-transform:uppercase;color:var(--teal);background:var(--teal-soft);padding:7px 12px;border-radius:999px}
+  h1{font-family:Georgia,"Times New Roman",serif;font-size:46px;line-height:1.08;margin:16px 0 12px;letter-spacing:-.5px}
+  h1 em{font-style:normal;color:var(--orange)}
+  .lede{font-size:16px;line-height:1.65;color:var(--ink-soft);max-width:54ch}
+  .steps-mini{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0 26px}
+  .steps-mini span{font-size:13px;font-weight:700;color:var(--ink);background:#fff;border:1px solid #F3E4D8;
+    padding:8px 12px;border-radius:12px}
+  .btn{display:inline-flex;align-items:center;gap:10px;padding:15px 26px;border-radius:16px;font-size:16px;font-weight:800;
+    background:linear-gradient(135deg,var(--orange),#FB8A3C);color:#fff;box-shadow:0 12px 26px rgba(249,115,22,.35);
+    transition:transform .15s ease, box-shadow .15s ease;white-space:nowrap}
+  .btn:hover{transform:translateY(-2px);box-shadow:0 18px 34px rgba(249,115,22,.42)}
+  .btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+  .btn.ghost{background:#fff;color:var(--ink);box-shadow:var(--shadow);border:1px solid #F0E3D8}
+  .btn.ghost:hover{box-shadow:var(--shadow-lg)}
+  .btn.small{padding:11px 18px;font-size:14px;border-radius:13px}
+  .hero-art{position:relative;display:grid;place-items:center;min-height:270px}
+  .phone-mini{width:190px;height:330px;border-radius:30px;background:linear-gradient(160deg,#12313D,#0B1F27);
+    box-shadow:var(--shadow-lg);position:relative;overflow:hidden;transform:rotate(4deg)}
+  .phone-mini::after{content:"";position:absolute;inset:8px;border-radius:24px;
+    background:radial-gradient(circle at 30% 20%,#2A5C63,transparent 60%),radial-gradient(circle at 80% 80%,#7A3E1D,transparent 55%)}
+  .phone-mini .mini-emoji{position:absolute;inset:0;display:grid;place-items:center;font-size:76px;z-index:2;
+    filter:drop-shadow(0 10px 18px rgba(0,0,0,.45))}
+  .phone-mini .mini-live{position:absolute;top:20px;left:20px;z-index:3;font-size:10px;font-weight:800;color:#fff;
+    background:#EF4444;padding:4px 9px;border-radius:6px;letter-spacing:1px}
+  .float-heart{position:absolute;font-size:26px;animation:rise 2.6s ease-out forwards;pointer-events:none;opacity:0}
+  @keyframes rise{
+    0%{opacity:0;transform:translateY(0) scale(.7)}
+    15%{opacity:1;transform:translateY(-20px) scale(1)}
+    100%{opacity:0;transform:translateY(-210px) scale(1.15) rotate(12deg)}
+  }
+
+  /* ---------- product select ---------- */
+  .section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin:6px 0 18px;flex-wrap:wrap}
+  .section-head h2{font-family:Georgia,serif;font-size:28px;letter-spacing:-.3px}
+  .section-head p{color:var(--ink-soft);font-size:14px;margin-top:6px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:16px}
+  .prod{background:var(--card);border-radius:20px;padding:18px;box-shadow:var(--shadow);text-align:left;
+    border:2px solid transparent;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease;position:relative;overflow:hidden}
+  .prod:hover{transform:translateY(-4px);border-color:var(--orange);box-shadow:var(--shadow-lg)}
+  .prod .emoji{font-size:38px;line-height:1}
+  .prod h3{font-size:16px;margin:10px 0 4px;letter-spacing:-.2px}
+  .prod .meta{font-size:12.5px;color:var(--ink-soft);line-height:1.45}
+  .prod .tag{position:absolute;top:14px;right:14px;font-size:10.5px;font-weight:800;letter-spacing:.6px;
+    padding:4px 8px;border-radius:7px;background:var(--orange-soft);color:#C2410C}
+  .hintbar{margin-top:18px;font-size:13px;color:var(--ink-soft)}
+
+  /* ---------- nav (back / products / restart) ---------- */
+  .navbar{display:flex;align-items:center;gap:8px;margin:-2px 0 14px;flex-wrap:wrap}
+  .navbtn{display:inline-flex;align-items:center;gap:6px;padding:8px 13px;border-radius:11px;background:#fff;
+    border:1px solid #EFE3D7;font-size:12.5px;font-weight:700;color:var(--ink);
+    box-shadow:0 4px 14px rgba(18,36,46,.06);transition:.15s}
+  .navbtn:hover{border-color:var(--orange);color:#C2410C;transform:translateY(-1px)}
+  .navbtn.quiet{color:var(--ink-soft);font-weight:600}
+  .navstep{margin-left:auto;font-size:11.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--ink-soft)}
+  @media (max-width:700px){ .navstep{display:none} }
+
+  /* ---------- shared 3-col room ---------- */
+  .room{display:grid;grid-template-columns:270px minmax(0,1fr) 300px;gap:16px;align-items:start}
+  .stage{background:linear-gradient(165deg,#12313D,#0A1A22 70%);border-radius:24px;padding:15px;box-shadow:var(--shadow-lg);
+    position:relative;overflow:hidden;color:#fff}
+  .stage::before{content:"";position:absolute;inset:0;
+    background:radial-gradient(420px 200px at 20% 0%,rgba(249,115,22,.35),transparent 60%),
+               radial-gradient(380px 220px at 90% 100%,rgba(14,116,144,.45),transparent 62%)}
+  .stage .top{position:relative;z-index:2;display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .livebadge{display:inline-flex;align-items:center;gap:6px;background:#EF4444;padding:5px 10px;border-radius:8px;
+    font-size:11px;font-weight:900;letter-spacing:1.2px}
+  .livebadge i{width:6px;height:6px;border-radius:50%;background:#fff;animation:pulse 1.2s infinite}
+  .viewbox{font-size:12px;font-weight:700;background:rgba(255,255,255,.14);padding:5px 10px;border-radius:8px;backdrop-filter:blur(4px)}
+  .stage .showcase{position:relative;z-index:2;display:grid;place-items:center;height:150px;margin-top:2px}
+  .stage .showcase .big{font-size:76px;filter:drop-shadow(0 18px 26px rgba(0,0,0,.5));animation:bob 3.4s ease-in-out infinite}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+  .stage .caption{position:relative;z-index:2;text-align:center;margin-top:2px}
+  .stage .caption strong{display:block;font-size:15.5px;letter-spacing:-.2px;line-height:1.3}
+  .stage .caption span{font-size:11.5px;color:#B7CFD6}
+  .hearts{position:absolute;inset:0;pointer-events:none;z-index:3}
+  .ticker{position:relative;z-index:2;margin-top:12px;background:rgba(255,255,255,.1);border-radius:12px;padding:8px 11px;
+    font-size:11.5px;color:#DCEBEF;display:flex;justify-content:space-between;gap:8px}
+  .ticker b{color:#fff}
+  .factsheet{position:relative;z-index:2;margin-top:10px;background:rgba(255,255,255,.09);border-radius:12px;padding:10px 11px;
+    font-size:11.5px;line-height:1.6;color:#D6E7EB}
+  .factsheet b{color:#FFD9B8;font-weight:700}
+  .factsheet .fh{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#9EC0C9;margin-bottom:4px}
+
+  .panel{background:var(--card);border-radius:24px;padding:20px;box-shadow:var(--shadow);display:flex;flex-direction:column;min-height:470px}
+  .panel .row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+  .chip{font-size:11.5px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--teal);
+    background:var(--teal-soft);padding:6px 10px;border-radius:8px}
+  .dots{display:flex;gap:5px}
+  .dots i{width:8px;height:8px;border-radius:50%;background:#E9DFD6;display:block;transition:.2s}
+  .dots i.on{background:var(--orange);transform:scale(1.2)}
+  .dots i.done{background:var(--leaf)}
+  .frame{font-size:12.5px;color:var(--ink-soft);line-height:1.5;margin:6px 0 12px}
+  .panel h3.ttl{font-family:Georgia,serif;font-size:20px;letter-spacing:-.2px;margin:2px 0 4px}
+
+  /* ---------- description build ---------- */
+  .desc-lines{font-family:Georgia,"Times New Roman",serif;font-size:19px;line-height:2.05;color:var(--ink)}
+  .desc-lines p{margin:0 0 2px}
+  .blank{display:inline-block;min-width:88px;padding:2px 10px;margin:0 2px;border-bottom:3px solid #E7D6C6;
+    color:#B49B87;text-align:center;transition:.18s;border-radius:6px 6px 0 0;font-size:17px;vertical-align:baseline}
+  .blank.active{background:#FFF2E4;border-bottom-color:var(--orange);color:#C2410C;animation:blink 1.8s infinite}
+  .blank.done{background:#EAF7EE;border-bottom-color:var(--leaf);color:#166534;font-weight:600}
+  @keyframes blink{0%,100%{box-shadow:0 0 0 0 rgba(249,115,22,.22)}50%{box-shadow:0 0 0 5px rgba(249,115,22,0)}}
+
+  .bankbox{margin-top:auto;padding-top:12px;border-top:1px dashed #F0E4D9}
+  .banklabel{display:block;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-soft);margin-bottom:9px}
+  .wordchips{display:flex;flex-wrap:wrap;gap:9px}
+  .wchip{padding:10px 15px;border-radius:12px;background:#FFFBF7;border:2px solid #F2E6DB;font-size:14.5px;transition:.15s;line-height:1.3}
+  .wchip:hover{border-color:var(--orange);background:#FFF4EA;transform:translateY(-2px)}
+  .wchip.bad{animation:shake .42s;border-color:#F87171;background:#FEF2F2;color:#B91C1C}
+  .wchip.ok{border-color:var(--leaf);background:#F0FDF4;color:#166534}
+  @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+
+  .feedback{margin-top:10px;font-size:13px;line-height:1.5;color:var(--ink-soft);min-height:38px}
+  .feedback b{color:var(--ink)}
+  .feedback .ok{color:var(--leaf);font-weight:800}
+  .feedback .no{color:#DC2626;font-weight:800}
+
+  /* ---------- mic card ---------- */
+  .mic{display:flex;gap:14px;align-items:flex-start;background:#FFFBF7;border:1.5px dashed #EADACA;border-radius:18px;padding:14px}
+  .micbtn{flex:none;width:88px;height:88px;border-radius:50%;color:#fff;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:2px;background:linear-gradient(135deg,var(--orange),#FB8A3C);
+    box-shadow:0 12px 24px rgba(249,115,22,.35);transition:.18s}
+  .micbtn:hover{transform:translateY(-2px)}
+  .micbtn .ico{font-size:28px;line-height:1}
+  .micbtn .lbl{font-size:10px;font-weight:800;letter-spacing:.3px}
+  .micbtn.rec{background:linear-gradient(135deg,#EF4444,#DC2626);box-shadow:0 0 0 0 rgba(239,68,68,.5);animation:recpulse 1.4s infinite}
+  @keyframes recpulse{0%{box-shadow:0 0 0 0 rgba(239,68,68,.45)}70%{box-shadow:0 0 0 16px rgba(239,68,68,0)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}}
+  .micbody{flex:1;min-width:0}
+  .mstate{font-size:12.5px;color:var(--ink-soft);line-height:1.5}
+  .mcap{font-size:14px;color:var(--ink);line-height:1.45;margin-top:6px;min-height:20px;font-style:italic}
+  .mcap:not(:empty){background:#fff;border-radius:10px;padding:7px 10px;border:1px solid #F0E4D9}
+  .mres{margin-top:8px}
+  .scoreline{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .score{font-family:Georgia,serif;font-size:32px;line-height:1;font-weight:700}
+  .score.good{color:var(--leaf)} .score.mid{color:#D97706} .score.low{color:#DC2626}
+  .score small{font-size:12px;color:var(--ink-soft);font-weight:400;font-family:inherit}
+  .verdict{font-size:13px;line-height:1.45;color:var(--ink-soft);max-width:46ch}
+  .verdict b{color:var(--ink);display:block;font-size:13.5px}
+  .kchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .kchip{font-size:11px;font-weight:700;padding:4px 9px;border-radius:999px;background:#F1F5F9;color:#64748B}
+  .kchip.ok{background:#DCFCE7;color:#166534}
+  .kchip.no{background:#FEE2E2;color:#991B1B}
+  .mact{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .minibtn{font-size:12px;font-weight:700;padding:7px 12px;border-radius:10px;background:#fff;border:1px solid #EFE3D7;color:var(--ink)}
+  .minibtn:hover{border-color:var(--orange);color:#C2410C}
+  .modelbox{margin-top:9px;font-size:13px;line-height:1.55;background:#F0F9FF;border-left:3px solid var(--teal);
+    padding:8px 11px;border-radius:8px;color:#0F3F4F}
+  .modelbox b{color:var(--teal)}
+  .typebox{display:flex;gap:8px;margin-top:8px}
+  .typebox input{flex:1;border:2px solid #F2E6DB;background:#fff;border-radius:11px;padding:9px 11px;font-family:inherit;font-size:14px}
+  .typebox input:focus{outline:none;border-color:var(--orange)}
+
+  /* ---------- chat ---------- */
+  .chat{background:#fff;border-radius:24px;box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden}
+  .chat header{padding:12px 14px;border-bottom:1px solid #F4EAE1;font-weight:800;font-size:12.5px;display:flex;
+    justify-content:space-between;align-items:center;letter-spacing:.3px}
+  .chat header span{font-weight:600;color:var(--ink-soft);font-size:11px}
+  .feed{flex:1;overflow-y:auto;padding:11px 13px;display:flex;flex-direction:column;gap:8px;scroll-behavior:smooth;max-height:430px}
+  .msg{font-size:12.5px;line-height:1.45;background:#F8F3EE;border-radius:12px;padding:7px 10px;animation:fade .3s ease}
+  .msg b{color:var(--teal);font-weight:800}
+  .msg.hi{background:#FFF1E8}
+  .msg.low{background:#FDF2F2}
+
+  /* ---------- talk screen ---------- */
+  .talk{display:grid;grid-template-columns:250px minmax(0,1fr) 356px;gap:16px;align-items:start}
+  .side{display:flex;flex-direction:column;gap:14px}
+  .sidecard{background:#fff;border-radius:20px;padding:15px;box-shadow:var(--shadow)}
+  .sidecard h4{font-size:11px;letter-spacing:1.1px;text-transform:uppercase;color:var(--teal);margin-bottom:9px}
+  .pat{width:100%;border-collapse:collapse;font-size:12px}
+  .pat td{padding:6px 3px;border-bottom:1px dashed #F2E6DB;vertical-align:top;line-height:1.4}
+  .pat tr:last-child td{border-bottom:none}
+  .pat td:first-child{width:46%;color:var(--ink);font-weight:700;padding-right:6px}
+  .pat td:last-child{color:var(--ink-soft)}
+  .bankgroup{margin-bottom:9px}
+  .bankgroup .gh{font-size:10.5px;letter-spacing:.8px;text-transform:uppercase;color:#94A3B8;margin-bottom:5px}
+  .bchips{display:flex;flex-wrap:wrap;gap:5px}
+  .bchip{font-size:12px;padding:5px 8px;border-radius:8px;background:#F8F3EE;border:1px solid #EFE3D7;line-height:1.2}
+  .bchip:hover{border-color:var(--orange);background:#FFF4EA;color:#C2410C}
+  .draft{width:100%;min-height:62px;border-radius:13px;border:2px solid #F2E6DB;background:#FFFBF7;padding:9px 11px;
+    font-family:inherit;font-size:14px;line-height:1.5;resize:vertical;color:var(--ink)}
+  .draft:focus{outline:none;border-color:var(--orange);background:#fff}
+  .draft.badlang{border-color:#F87171;background:#FEF2F2}
+  .langwarn{margin-top:8px;font-size:12.5px;font-weight:700;color:#B91C1C;display:none}
+  .langwarn.show{display:block}
+
+  .hintbtn{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;color:#C2410C;
+    background:var(--orange-soft);border-radius:9px;padding:6px 11px;margin:0 0 10px;transition:.15s}
+  .hintbtn:hover{background:#FFD9BC}
+  .hintbox{display:none;background:#FFFBEB;border:1.5px solid #FDE68A;border-radius:14px;padding:12px 14px;margin:0 0 12px}
+  .hintbox.show{display:block;animation:fade .25s}
+  .hintbox h5{font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#B45309;margin-bottom:9px}
+  .hintstep{display:flex;gap:9px;font-size:12.5px;line-height:1.5;margin-bottom:7px;color:#422006}
+  .hintstep:last-child{margin-bottom:0}
+  .hintstep b{flex:none;width:18px;height:18px;border-radius:6px;background:#FDE68A;color:#92400E;display:grid;
+    place-items:center;font-size:10.5px;margin-top:1px}
+  .hintstep em{font-style:normal;color:#92400E}
+
+  .modes{display:flex;align-items:center;gap:7px;margin:4px 0 10px;flex-wrap:wrap}  .mode{padding:8px 14px;border-radius:11px;background:#fff;border:2px solid #EFE3D7;font-size:13px;font-weight:800;color:var(--ink-soft);transition:.15s}
+  .mode:hover{border-color:var(--orange)}
+  .mode.active{background:var(--orange-soft);border-color:var(--orange);color:#C2410C}
+  .modehint{font-size:11.5px;color:var(--ink-soft);margin-left:auto}
+
+  .fb{margin-top:12px;background:#FFFDFB;border:1.5px solid #F2E6DB;border-radius:16px;padding:14px}
+  .fbhead{display:flex;gap:12px;align-items:flex-start}
+  .fbhead .score{flex:none}
+  .fbhead .verdict{flex:1}
+  .fbsub{font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--ink-soft);margin:10px 0 6px}
+  .fbtips{list-style:none;display:flex;flex-direction:column;gap:7px;margin:6px 0 0}
+  .fbtips li{font-size:13px;line-height:1.5;color:var(--ink);padding-left:22px;position:relative}
+  .fbtips li:before{content:"→";position:absolute;left:4px;color:var(--orange);font-weight:800}
+  .fbtips li.gram:before{content:"✎";color:#DC2626}
+  .fbtips li.good:before{content:"✓";color:var(--leaf)}
+  .qtext{font-family:Georgia,"Times New Roman",serif;font-size:21px;line-height:1.45;letter-spacing:-.2px;margin:2px 0 8px}
+  .qhint{font-size:12px;color:var(--ink-soft);margin-bottom:10px;line-height:1.5}
+  .qhead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+
+  /* ---------- result ---------- */
+  .report{display:grid;grid-template-columns:360px minmax(0,1fr);gap:16px;align-items:start}
+  .scorecard{background:linear-gradient(160deg,#12313D,#0A1A22);color:#fff;border-radius:26px;padding:24px;box-shadow:var(--shadow-lg)}
+  .scorecard h2{font-family:Georgia,serif;font-size:24px;margin-bottom:4px}
+  .scorecard .sub{color:#A9C4CC;font-size:12.5px;line-height:1.5}
+  .stars{font-size:23px;letter-spacing:3px;margin:12px 0 4px;color:var(--mango)}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}
+  .stat{background:rgba(255,255,255,.09);border-radius:13px;padding:10px 11px}
+  .stat b{display:block;font-size:21px;letter-spacing:-.5px}
+  .stat span{font-size:10.5px;color:#A9C4CC;letter-spacing:.5px;text-transform:uppercase}
+  .breakdown{margin-top:16px;display:flex;flex-direction:column;gap:8px}
+  .brow{display:grid;grid-template-columns:1fr 42px;gap:6px 8px;font-size:11.5px;color:#C7DCE2;align-items:center}
+  .brow .bar{grid-column:1/-1;height:6px;border-radius:99px;background:rgba(255,255,255,.14);overflow:hidden}
+  .brow .bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#FB8A3C,#FBBF24);width:0;transition:width .8s ease}
+  .script{background:#fff;border-radius:26px;padding:22px;box-shadow:var(--shadow)}
+  .script h3{font-family:Georgia,serif;font-size:21px;margin-bottom:4px}
+  .script .tip{font-size:12.5px;color:var(--ink-soft);margin-bottom:12px;line-height:1.5}
+  .line{display:flex;gap:11px;padding:10px 0;border-bottom:1px dashed #F0E4D9;font-size:14px;line-height:1.55}
+  .line:last-child{border-bottom:none}
+  .line .n{flex:none;width:24px;height:24px;border-radius:8px;background:var(--orange-soft);color:#C2410C;
+    display:grid;place-items:center;font-size:11.5px;font-weight:900}
+  .line .txt{flex:1}
+  .line .said{display:block;margin-top:3px;font-size:12.5px;color:var(--ink-soft)}
+  .line .said b{color:var(--ink)}
+  .line .sc{flex:none;font-family:Georgia,serif;font-weight:700;font-size:15px}
+  .secTitle{font-size:11px;letter-spacing:1.1px;text-transform:uppercase;color:var(--teal);margin:16px 0 4px}
+  .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}
+
+  @media (max-width:1180px){
+    .talk{grid-template-columns:1fr}
+    .side{flex-direction:row;flex-wrap:wrap}
+    .sidecard{flex:1 1 300px}
+  }
+  @media (max-width:1050px){
+    .room{grid-template-columns:1fr}
+    .report{grid-template-columns:1fr}
+    .hero{grid-template-columns:1fr;padding:28px}
+    .hero-art{display:none}
+    h1{font-size:36px}
+    .chat{max-height:220px}
+    .panel{min-height:auto}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand">
+      <div class="dot">🥥</div>
+      <div>Hainan Live!
+        <small>English for Cross-border E-commerce · Unit 5 Lesson B</small>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <div class="pill" id="pillProduct" style="display:none">Product <b id="pName">—</b></div>
+    <div class="pill live" id="pillViewers" style="display:none"><i></i> <b id="vCount">0</b> watching</div>
+    <div class="pill" id="pillLikes" style="display:none">❤️ <b id="lCount">0</b></div>
+  </div>
+
+  <div class="navbar" id="nav" style="display:none">
+    <button class="navbtn" id="navBack">◂ Back</button>
+    <button class="navbtn quiet" id="navProducts">▦ Choose product</button>
+    <button class="navbtn quiet" id="navRestart">↺ Restart</button>
+    <span class="navstep" id="navStep"></span>
+  </div>
+
+  <!-- ============ START ============ -->
+  <section class="screen active" id="screen-start">
+    <div class="hero">
+      <div>
+        <span class="kicker">Live commerce challenge</span>
+        <h1>Bring <em>hometown goodies</em><br>to the world</h1>
+        <p class="lede">You are the new host of a Hainan live-streaming room. Pick a local specialty,
+          describe it in six sentences, then handle three questions that real viewers ask. You can speak your answers for a
+          score at any step — speaking is optional, never compulsory.</p>
+        <div class="steps-mini">
+          <span>1 · Pick a product</span>
+          <span>2 · Describe it (6 sentences)</span>
+          <span>3 · Handle 3 viewer questions</span>
+        </div>
+        <button class="btn" id="btnStart">Start selling ▸</button>
+        <button class="btn ghost" id="btnHowTo" style="margin-left:10px">How it works</button>
+        <p class="hintbar" id="howto" style="display:none;max-width:62ch;line-height:1.65">
+          <b>Step 2 — Describe:</b> six sentence frames appear with blanks. Click the right word to fill each blank;
+          you can only move on when it is correct. After that you may read the whole description aloud for a score —
+          or skip it.<br>
+          <b>Step 3 — Handle viewer questions:</b> three questions real buyers ask about the product you are selling — each item has its own set.
+          Type your answer or say it into the microphone — either way the AI scores it and tells you how to improve.<br>
+          <b>Always available:</b> ◂ Back goes one step back, ▦ Choose product returns to the product list, ↺ Restart
+          begins this product again.
+        </p>
+      </div>
+      <div class="hero-art">
+        <div class="phone-mini">
+          <div class="mini-live">LIVE</div>
+          <div class="mini-emoji">🥥</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SELECT ============ -->
+  <section class="screen" id="screen-select">
+    <div class="section-head">
+      <div>
+        <h2>Step 1 · Choose your product</h2>
+        <p>Every item comes from a different part of Hainan. Read the card before you go live — you will need these facts.</p>
+      </div>
+    </div>
+    <div class="grid" id="productGrid"></div>
+    <p class="hintbar">Tip: the facts on the card (place of origin, taste, use) are exactly what you must say in the next step.</p>
+  </section>
+
+  <!-- ============ DESCRIPTION ============ -->
+  <section class="screen" id="screen-desc">
+    <div class="room">
+      <div class="stage">
+        <div class="top">
+          <span class="livebadge"><i></i>LIVE</span>
+          <span class="viewbox">👀 <b id="vCount2">0</b></span>
+        </div>
+        <div class="showcase"><div class="big" id="stageEmoji">🥥</div></div>
+        <div class="caption">
+          <strong id="stageName">Hainan coconut products</strong>
+          <span id="stageOrigin">from Wenchang</span>
+        </div>
+        <div class="ticker">
+          <span>🛒 <b id="orderCount">0</b></span>
+          <span>❤️ <b id="likeCount">0</b></span>
+        </div>
+        <div class="factsheet" id="factSheet"></div>
+        <div class="hearts" id="hearts"></div>
+      </div>
+
+      <div class="panel">
+        <div class="row">
+          <span class="chip" id="descChip">Blank 1 / 7</span>
+          <div class="dots" id="descDots"></div>
+        </div>
+        <h3 class="ttl" id="descTitle">Describe your product</h3>
+        <p class="frame" id="descFrame">Click the correct word for each blank. You can only move on when it is right.</p>
+        <div class="desc-lines" id="descLines"></div>
+
+        <div class="bankbox" id="descBankBox">
+          <span class="banklabel" id="bankLabel">Choose the word for blank 1</span>
+          <div class="wordchips" id="descBank"></div>
+          <p class="feedback" id="descFeedback"></p>
+        </div>
+
+        <div id="descReadBox" style="display:none;margin-top:14px">
+          <div id="micDesc"></div>
+          <div class="row" style="margin-top:12px">
+            <span class="hintbar" style="margin:0" id="readHint">Reading aloud is optional — do it for a score, or skip straight to the Q&amp;A.</span>
+            <button class="btn small" id="btnToTalk">Go to the Q&amp;A room ▸</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat">
+        <header>Live chat <span>audience</span></header>
+        <div class="feed" id="feed"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TALK ============ -->
+  <section class="screen" id="screen-talk">
+    <div class="talk">
+      <div class="stage">
+        <div class="top">
+          <span class="livebadge"><i></i>LIVE</span>
+          <span class="viewbox">👀 <b id="vCount3">0</b></span>
+        </div>
+        <div class="showcase" style="height:120px"><div class="big" id="stageEmoji2">🥥</div></div>
+        <div class="caption">
+          <strong id="stageName2">Hainan coconut products</strong>
+          <span id="stageOrigin2">from Wenchang</span>
+        </div>
+        <div class="ticker">
+          <span>🛒 <b id="orderCount2">0</b></span>
+          <span>❤️ <b id="likeCount2">0</b></span>
+        </div>
+        <div class="factsheet" id="factSheet2"></div>
+      </div>
+
+      <div class="panel">
+        <div class="qhead">
+          <span class="chip" id="qChip">Question 1 / 3</span>
+          <div class="dots" id="qDots"></div>
+        </div>
+        <p class="qtext" id="qText">…</p>
+        <p class="qhint" id="qHint">A viewer says this in your live room. Answer as the host — type it or say it.</p>
+
+        <button class="hintbtn" id="btnHint">💡 Hint · how to answer</button>
+        <div class="hintbox" id="hintBox"></div>
+
+        <div class="modes">
+          <button class="mode active" data-m="speak">🎙️ Speak</button>
+          <button class="mode" data-m="type">⌨ Type</button>
+          <span class="modehint" id="modeHint">Say your answer, then the AI scores it.</span>
+        </div>
+
+        <div id="micTalk"></div>
+
+        <div id="typeBox" style="display:none">
+          <textarea class="draft" id="qDraft" placeholder="Write your answer as the host — in English, two or three sentences…"></textarea>
+          <div class="langwarn" id="langWarn">English only — please remove the Chinese characters and answer in English.</div>
+          <div class="row" style="margin-top:8px">
+            <span class="hintbar" style="margin:0" id="wordCount">0 words</span>
+            <button class="btn small" id="btnSubmit">Check my answer ▸</button>
+          </div>
+        </div>
+
+        <div id="fbArea"></div>
+
+        <div class="row" style="margin-top:auto;padding-top:14px">
+          <span class="hintbar" style="margin:0" id="talkHint">Answer in a full sentence — or skip; speaking is optional.</span>
+          <button class="btn small" id="btnNextQ">Next question ▸</button>
+        </div>
+      </div>
+
+      <div class="side">
+        <div class="sidecard">
+          <h4>Sentence patterns</h4>
+          <table class="pat" id="patTable"></table>
+        </div>
+        <div class="sidecard">
+          <h4>Word bank · click to use</h4>
+          <div id="bankArea"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ RESULT ============ -->
+  <section class="screen" id="screen-result">
+    <div class="report">
+      <div class="scorecard">
+        <h2>Host report</h2>
+        <p class="sub" id="rSub">Product · Hainan coconut products</p>
+        <div class="stars" id="starRow">★★★★★</div>
+        <p class="sub" id="starWord">Excellent host!</p>
+        <div class="stats">
+          <div class="stat"><b id="rOverall">0</b><span>Overall / 100</span></div>
+          <div class="stat"><b id="rRead">0</b><span>Reading aloud</span></div>
+          <div class="stat"><b id="rAns">0</b><span>Q&amp;A average</span></div>
+          <div class="stat"><b id="rViewers">0</b><span>Viewers</span></div>
+        </div>
+        <div class="breakdown" id="rBreak"></div>
+      </div>
+      <div class="script">
+        <h3>Your full sales script</h3>
+        <p class="tip">Six description sentences plus three model answers. Read the whole script aloud once more — this is your final pitch.</p>
+        <div id="scriptLines"></div>
+        <div class="actions">
+          <button class="btn" id="btnAgain">Sell another product ▸</button>
+          <button class="btn ghost" id="btnRestart">Play again</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ================================================================== data */
+const PRODUCTS = [
+  { id:'coconut', emoji:'🥥', name:'Hainan coconut products', short:'Coconut', origin:'Wenchang',
+    famous:'its sweet, creamy taste', useAs:'a sweet treat', care:'packed in a gift box', adj:'refreshing',
+    note:'Coconut candy, coconut oil, coconut milk.' },
+  { id:'coffee', emoji:'☕', name:'Hainan coffee', short:'Coffee', origin:'Xinglong',
+    famous:'its strong aroma', useAs:'a morning drink', care:'roasted in small batches', adj:'aromatic',
+    note:'Xinglong coffee is the island classic.' },
+  { id:'fruit', emoji:'🥭', name:'Hainan tropical fruit', short:'Tropical fruit', origin:'Sanya',
+    famous:'its bright colours and fresh juice', useAs:'a healthy snack', care:'picked at sunrise', adj:'juicy',
+    note:'Mango, lychee and dragon fruit.' },
+  { id:'pearls', emoji:'🫧', name:'Hainan seawater pearls', short:'Seawater pearls', origin:'Lingshui',
+    famous:'their soft, fine lustre', useAs:'a gift for someone special', care:'polished by hand', adj:'elegant',
+    note:'Grown in the clean southern bays.' },
+  { id:'brocade', emoji:'🧵', name:'Li brocade', short:'Li brocade', origin:'Wuzhishan',
+    famous:'its fine workmanship', useAs:'a beautiful scarf', care:'woven by hand', adj:'colourful',
+    note:'Hand-woven by Li ethnic artisans.' },
+  { id:'tea', emoji:'🍵', name:'Baisha green tea', short:'Green tea', origin:'Baisha',
+    famous:'its fresh, light taste', useAs:'a daily drink', care:'picked from the mountain garden', adj:'fragrant',
+    note:'Grown in the misty mountain gardens.' },
+  { id:'pepper', emoji:'🌶️', name:'Hainan pepper', short:'Pepper', origin:'Qiongzhong',
+    famous:'its strong, sharp flavour', useAs:'a cooking spice', care:'dried in the sun', adj:'flavourful',
+    note:'The island’s best-known spice.' }
+];
+
+/* six description sentences, 7 blanks (sentence 1 has two) */
+const SEG = [
+  [['t','This is '],[0],['t',', a specialty from '],[1],['t','.']],
+  [['t','It is famous for '],[2],['t','.']],
+  [['t','People usually use it as '],[3],['t','.']],
+  [['t','Every order is '],[4],['t',' before it is shipped.']],
+  [['t','Customers love it because it is '],[5],['t','.']],
+  [['t','Through live streaming, we can help '],[6],['t',' go global.']]
+];
+const BLANK_FIELDS = ['name','origin','famous','useAs','care','adj','name'];
+const FIELD_HINT = {
+  name:'Look at the product name on the card.',
+  origin:'Which town or city does it come from? Read the card.',
+  famous:'What is the product known for?',
+  useAs:'How do people use it at home?',
+  care:'How is each order prepared before it is shipped?',
+  adj:'Which adjective describes this product?'
+};
+
+const PRAISE = ['Wow, that sounds amazing 😍','Take my money!','Just placed an order!','Where can I buy it?',
+  'So tempting!','Shipping to Singapore, please!','❤️❤️❤️','This is why I love Hainan.','The host explains it so clearly!'];
+const DOUBT = ['Hmm, is that right?','Wait — which product are you talking about?','Can you check the product card?',
+  'That doesn’t sound like Hainan.','I’m a little confused…','Are you sure about that?'];
+const AMBIENT = ['Hello from Malaysia! 👋','First time in your live room.','The music is nice!','🔥🔥','Which one is the best seller?',
+  'I visited Haikou last year.','Do you ship to Thailand?'];
+
+const STOP = new Set(['a','an','the','its','it','is','are','of','and','for','in','on','with','to','before','from','this','that','their','they','we','can','as','at','by']);
+
+/* ================================================================== state */
+const S = {
+  p:null, blanks:[], bi:0, wrong:0, descDone:false,
+  readScore:null, qi:0, qs:[], answers:[],
+  viewers:128, likes:0, orders:0
+};
+
+const $ = id => document.getElementById(id);
+const screens = ['screen-start','screen-select','screen-desc','screen-talk','screen-result'];
+const NAV_LABEL = {
+  'screen-select':'Step 1 · Choose',
+  'screen-desc':'Step 2 · Describe',
+  'screen-talk':'Step 3 · Answer',
+  'screen-result':'Report'
+};
+function show(id){
+  screens.forEach(s => $(s).classList.toggle('active', s === id));
+  $('nav').style.display = (id === 'screen-start') ? 'none' : 'flex';
+  $('navStep').textContent = NAV_LABEL[id] || '';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function rnd(a){ return a[Math.floor(Math.random()*a.length)]; }
+function shuffle(a){ return a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(v=>v[1]); }
+function esc(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function norm(s){ return (s||'').toLowerCase().replace(/[^a-z0-9'\s]/g,' ').replace(/\s+/g,' ').trim(); }
+function keysOf(phrase){
+  return phrase.toLowerCase().replace(/[^a-z0-9\s-]/g,' ').split(/\s+/)
+    .filter(w => w && !STOP.has(w) && w.length > 1);
+}
+
+/* ================================================================== scoring */
+function scoreSpeech(text, targets, minWords){
+  const t = norm(text);
+  const toks = t ? t.split(' ') : [];
+  const has = k => toks.some(w => w === k || w === k+'s' || w === k+'es' || w === k+'d' || w === k+'ed'
+    || w === k+'ing' || (w.startsWith(k) && w.length <= k.length + 3));
+  const chips = targets.map(g => {
+    const need = Math.max(1, Math.ceil(g.keys.length * 0.6));
+    const hits = g.keys.filter(has);
+    return { label:g.label, ok: hits.length >= need, missing: g.keys.filter(k => !has(k)) };
+  });
+  const okCount = chips.filter(c => c.ok).length;
+  const lenF = Math.min(1, toks.length / (minWords || 12));
+  let score = Math.round((okCount / Math.max(1, targets.length)) * 70 + lenF * 30);
+  if (toks.length < 3) score = Math.min(score, 20);
+  return { score: Math.max(0, Math.min(100, score)), chips, words: toks.length };
+}
+function band(score){
+  if (score >= 85) return ['Excellent!', 'Clear, complete and confident — that is exactly how a live host should sound.'];
+  if (score >= 70) return ['Good answer.', 'You were easy to understand. Add the missing points to make the answer complete.'];
+  if (score >= 50) return ['Almost there.', 'The main idea came through, but some key words were missed.'];
+  return ['Let’s try again.', 'Listen to the model answer once, then say it in your own words.'];
+}
+function speak(text){
+  if (!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'en-US'; u.rate = .92;
+  speechSynthesis.speak(u);
+}
+
+/* ================================================================== voice check */
+class VoiceCheck {
+  constructor(host){
+    this.host = host;
+    host.innerHTML = `
+      <div class="mic">
+        <button class="micbtn" type="button">
+          <span class="ico">🎙️</span><span class="lbl">Tap to speak</span>
+        </button>
+        <div class="micbody">
+          <div class="mstate">Press the microphone and say your sentence.</div>
+          <div class="mcap"></div>
+          <div class="mres"></div>
+          <div class="mact"></div>
+        </div>
+      </div>`;
+    this.btn = host.querySelector('.micbtn');
+    this.lbl = host.querySelector('.lbl');
+    this.state = host.querySelector('.mstate');
+    this.cap = host.querySelector('.mcap');
+    this.res = host.querySelector('.mres');
+    this.act = host.querySelector('.mact');
+    this.btn.onclick = () => this.recording ? this.stop() : this.start();
+    this.cfg = null; this.recording = false;
+    this.audioURL = null;
+  }
+  arm(cfg){
+    this.cfg = cfg;
+    this.recording = false; this.done = false;
+    this.transcript = ''; this.interim = ''; this.err = null;
+    this.cap.textContent = '';
+    this.res.innerHTML = '';
+    this.act.innerHTML = '';
+    this.btn.classList.remove('rec');
+    this.lbl.textContent = 'Tap to speak';
+    this.state.textContent = cfg.hint || 'Press the microphone and say your sentence.';
+    this.maxMs = cfg.maxMs || 22000;
+  }
+  async start(){
+    if (!this.cfg) return;
+    this.done = false;
+    this.transcript = ''; this.interim = ''; this.err = null;
+    this.cap.textContent = ''; this.res.innerHTML = ''; this.act.innerHTML = '';
+    this.recording = true;
+    this.btn.classList.add('rec');
+    this.lbl.textContent = 'Listening…';
+    this.state.textContent = 'Listening… speak naturally, then tap again to stop.';
+
+    try{
+      this.stream = await navigator.mediaDevices.getUserMedia({ audio:true });
+      if (window.MediaRecorder){
+        this.chunks = [];
+        this.mr = new MediaRecorder(this.stream);
+        this.mr.ondataavailable = e => { if (e.data && e.data.size) this.chunks.push(e.data); };
+        this.mr.onstop = () => {
+          if (this.chunks && this.chunks.length){
+            const blob = new Blob(this.chunks, { type: this.chunks[0].type || 'audio/webm' });
+            if (this.audioURL) URL.revokeObjectURL(this.audioURL);
+            this.audioURL = URL.createObjectURL(blob);
+          }
+          this.renderPlay();
+        };
+        this.mr.start();
+      }
+    } catch(e){ /* mic may be blocked; still try recognition */ }
+
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SR){
+      try{
+        const r = new SR();
+        r.lang = 'en-US'; r.interimResults = true; r.continuous = true; r.maxAlternatives = 1;
+        r.onresult = ev => {
+          let fin = '', itr = '';
+          for (let i = ev.resultIndex; i < ev.results.length; i++){
+            const rs = ev.results[i];
+            if (rs.isFinal) fin += rs[0].transcript + ' ';
+            else itr += rs[0].transcript;
+          }
+          if (fin) this.transcript += fin;
+          this.interim = itr;
+          this.cap.textContent = (this.transcript + itr).trim();
+        };
+        r.onerror = ev => { this.err = ev.error; };
+        r.onend = () => { if (this.recording) this.stop(); };
+        r.start();
+        this.recog = r;
+      } catch(e){ this.err = 'start-failed'; }
+    } else {
+      this.err = 'unsupported';
+    }
+    clearTimeout(this.timer);
+    this.timer = setTimeout(() => this.stop(), this.maxMs);
+  }
+  stop(){
+    if (!this.recording) return;
+    this.recording = false;
+    clearTimeout(this.timer);
+    this.btn.classList.remove('rec');
+    this.lbl.textContent = 'Tap to speak';
+    try{ if (this.recog) this.recog.stop(); }catch(e){}
+    try{ if (this.mr && this.mr.state !== 'inactive') this.mr.stop(); }catch(e){}
+    try{ if (this.stream) this.stream.getTracks().forEach(t => t.stop()); }catch(e){}
+    setTimeout(() => this.finish(), 500);
+  }
+  finish(){
+    if (this.done) return;
+    const text = (this.transcript + ' ' + this.interim).replace(/\s+/g,' ').trim();
+    if (text.split(' ').filter(Boolean).length < 2){
+      const hard = ['unsupported','network','not-allowed','service-not-allowed','audio-capture','start-failed'].includes(this.err);
+      if (hard){ this.showTyped(); return; }
+      this.state.textContent = 'I did not catch anything. Press the microphone and try again, a little louder.';
+      this.done = false;
+      return;
+    }
+    this.done = true;
+    this.cap.textContent = text;
+    this.renderPlay();
+    if (this.cfg.onText){
+      this.state.textContent = 'Got it — your score and suggestions are below.';
+      this.cfg.onText(text);
+      return;
+    }
+    this.evaluate(text);
+  }
+  evaluate(text){
+    const cfg = this.cfg;
+    const r = scoreSpeech(text, cfg.targets, cfg.minWords);
+    const cls = r.score >= 80 ? 'good' : r.score >= 55 ? 'mid' : 'low';
+    const [head, tail] = band(r.score);
+    const missing = r.chips.filter(c => !c.ok).map(c => c.label);
+    const shortNote = r.words < (cfg.minWords || 12) * 0.6
+      ? ' Your answer was quite short — aim for one full sentence with a subject and a verb.' : '';
+    this.res.innerHTML = `
+      <div class="scoreline">
+        <span class="score ${cls}">${r.score}<small>/100</small></span>
+        <div class="verdict"><b>${head}</b>${tail}${missing.length ? ' Missing: ' + esc(missing.join(', ')) + '.' : ''}${shortNote}</div>
+      </div>
+      <div class="kchips">${r.chips.map(c => `<span class="kchip ${c.ok ? 'ok' : 'no'}">${c.ok ? '✓' : '○'} ${esc(c.label)}</span>`).join('')}</div>`;
+    this.state.textContent = 'Check the chips: green = the recogniser heard that part.';
+    this.renderPlay();
+    if (cfg.onScore) cfg.onScore(r.score, text);
+  }
+  renderPlay(){
+    const btns = [];
+    if (this.audioURL) btns.push(`<button class="minibtn" data-a="play">▶ My recording</button>`);
+    btns.push(`<button class="minibtn" data-a="again">↺ Try again</button>`);
+    if (!this.cfg.hideModel) btns.push(`<button class="minibtn" data-a="model">🔊 Model answer</button>`);
+    this.act.innerHTML = btns.join('');
+    this.act.querySelectorAll('[data-a]').forEach(b => b.onclick = () => {
+      const a = b.dataset.a;
+      if (a === 'play' && this.audioURL) new Audio(this.audioURL).play();
+      if (a === 'again'){ this.arm(this.cfg); this.start(); }
+      if (a === 'model'){
+        if (window.speechSynthesis){ speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(this.cfg.model); u.lang='en-US'; u.rate=.9; speechSynthesis.speak(u); }
+        const box = document.createElement('div');
+        box.className = 'modelbox';
+        box.innerHTML = `<b>Model:</b> ${esc(this.cfg.model)}`;
+        this.res.appendChild(box);
+      }
+    });
+  }
+  showTyped(){
+    this.state.textContent = 'Speech recognition is not available in this browser. Type what you said — the same scoring will run.';
+    this.res.innerHTML = `<div class="typebox"><input type="text" placeholder="Type your sentence…"><button class="minibtn">Check</button></div>`;
+    const input = this.res.querySelector('input');
+    const btn = this.res.querySelector('button');
+    const go = () => {
+      const v = input.value.trim();
+      if (v.split(' ').length < 2) return;
+      this.done = true;
+      this.cap.textContent = v;
+      this.evaluate(v);
+    };
+    btn.onclick = go;
+    input.onkeydown = e => { if (e.key === 'Enter') go(); };
+  }
+}
+
+/* ================================================================== start */
+$('btnHowTo').onclick = () => { const h = $('howto'); h.style.display = h.style.display === 'none' ? 'block' : 'none'; };
+$('btnStart').onclick = () => { renderProducts(); show('screen-select'); };
+
+/* ---------- global navigation: back / products / restart ---------- */
+function currentScreen(){
+  return screens.find(s => $(s).classList.contains('active')) || 'screen-start';
+}
+$('navBack').onclick = () => {
+  const cur = currentScreen();
+  if (cur === 'screen-select'){ show('screen-start'); return; }
+  if (cur === 'screen-desc'){ renderProducts(); show('screen-select'); return; }
+  if (cur === 'screen-talk'){
+    if (S.qi > 0){ S.qi--; renderQuestion(); }
+    else { show('screen-desc'); }
+    return;
+  }
+  if (cur === 'screen-result'){ S.qi = 2; show('screen-talk'); renderQuestion(); }
+};
+$('navProducts').onclick = () => { renderProducts(); show('screen-select'); };
+$('navRestart').onclick = () => {
+  if (S.p){ startGame(S.p.id); }
+  else { renderProducts(); show('screen-select'); }
+};
+
+function renderProducts(){
+  $('productGrid').innerHTML = PRODUCTS.map(p => `
+    <button class="prod" data-id="${p.id}">
+      <span class="tag">${p.origin.toUpperCase()}</span>
+      <div class="emoji">${p.emoji}</div>
+      <h3>${p.name}</h3>
+      <div class="meta">${p.note}</div>
+    </button>`).join('');
+  document.querySelectorAll('.prod').forEach(b => b.onclick = () => startGame(b.dataset.id));
+}
+
+/* ================================================================== setup */
+function startGame(id){
+  const p = PRODUCTS.find(x => x.id === id);
+  S.p = p; S.bi = 0; S.wrong = 0; S.descDone = false;
+  S.readScore = null; S.answers = []; S.qi = 0;
+  S.viewers = 128; S.likes = 0; S.orders = 0;
+
+  S.blanks = BLANK_FIELDS.map(f => {
+    const others = shuffle(PRODUCTS.filter(x => x.id !== p.id).map(x => x[f]));
+    return { field:f, ans:p[f], options: shuffle([p[f], others[0], others[1]]) };
+  });
+
+  $('stageEmoji').textContent = p.emoji;
+  $('stageEmoji2').textContent = p.emoji;
+  $('stageName').textContent = p.name;
+  $('stageName2').textContent = p.name;
+  $('stageOrigin').textContent = 'from ' + p.origin;
+  $('stageOrigin2').textContent = 'from ' + p.origin;
+  $('pName').textContent = p.short;
+  $('pillProduct').style.display = 'inline-flex';
+  $('pillViewers').style.display = 'inline-flex';
+  $('pillLikes').style.display = 'inline-flex';
+  $('feed').innerHTML = '';
+  $('hearts').innerHTML = '';
+  $('factSheet').innerHTML = factsHTML(p);
+  $('factSheet2').innerHTML = factsHTML(p);
+  $('descReadBox').style.display = 'none';
+  $('descBankBox').style.display = 'block';
+  $('descTitle').textContent = 'Describe your product';
+  $('descFrame').textContent = 'Click the correct word for each blank. You can only move on when it is right.';
+  updateHud();
+  pushMsg('Welcome to the live room! Introduce the product first.', 'hi');
+  show('screen-desc');
+  renderDesc();
+}
+function factsHTML(p){
+  return `<div class="fh">Product card</div>
+    <div><b>Name</b> · ${esc(p.name)}</div>
+    <div><b>From</b> · ${esc(p.origin)}</div>
+    <div><b>Famous for</b> · ${esc(p.famous)}</div>
+    <div><b>Used as</b> · ${esc(p.useAs)}</div>
+    <div><b>Every order</b> · ${esc(p.care)}</div>`;
+}
+function updateHud(){
+  ['vCount','vCount2','vCount3'].forEach(i => { if ($(i)) $(i).textContent = S.viewers; });
+  ['lCount','likeCount','likeCount2'].forEach(i => { if ($(i)) $(i).textContent = S.likes; });
+  ['orderCount','orderCount2'].forEach(i => { if ($(i)) $(i).textContent = S.orders; });
+}
+function pushMsg(text, kind){
+  const d = document.createElement('div');
+  d.className = 'msg' + (kind ? ' ' + kind : '');
+  d.innerHTML = text;
+  $('feed').appendChild(d);
+  $('feed').scrollTop = $('feed').scrollHeight;
+}
+function burst(n){
+  for (let i = 0; i < n; i++){
+    const h = document.createElement('span');
+    h.className = 'float-heart';
+    h.textContent = rnd(['❤️','🥥','🔥','👏','✨']);
+    h.style.left = (14 + Math.random() * 220) + 'px';
+    h.style.bottom = '30px';
+    h.style.animationDelay = (i * 0.12) + 's';
+    $('hearts').appendChild(h);
+    setTimeout(() => h.remove(), 3000);
+  }
+}
+
+/* ================================================================== step 2: description */
+function renderDesc(){
+  $('descChip').textContent = S.descDone ? 'Description complete' : `Blank ${S.bi + 1} / ${S.blanks.length}`;
+  $('descDots').innerHTML = S.blanks.map((_, i) =>
+    `<i class="${i < S.bi ? 'done' : (i === S.bi ? 'on' : '')}"></i>`).join('');
+
+  $('descLines').innerHTML = SEG.map(row => '<p>' + row.map(seg => {
+    if (typeof seg[0] === 'string'){
+      return esc(seg[1]);
+    }
+    const i = seg[0], b = S.blanks[i];
+    const filled = i < S.bi;
+    const cls = filled ? 'done' : (i === S.bi ? 'active' : '');
+    const w = Math.max(86, Math.min(250, b.ans.length * 10.4));
+    return `<span class="blank ${cls}" data-b="${i}" style="min-width:${w}px">${filled ? esc(b.ans) : '____'}</span>`;
+  }).join('') + '</p>').join('');
+
+  if (S.descDone) return;
+  const b = S.blanks[S.bi];
+  $('bankLabel').textContent = `Choose the word for blank ${S.bi + 1}`;
+  $('descBank').innerHTML = b.options.map(o => `<button class="wchip" data-v="${esc(o)}">${esc(o)}</button>`).join('');
+  $('descBank').querySelectorAll('.wchip').forEach(el => {
+    el.onclick = () => pickWord(el, el.dataset.v);
+  });
+}
+
+function pickWord(el, val){
+  const b = S.blanks[S.bi];
+  if (val === b.ans){
+    el.classList.add('ok');
+    S.bi++;
+    S.viewers += 40 + Math.floor(Math.random() * 55);
+    S.likes += 12 + Math.floor(Math.random() * 26);
+    S.orders += 2 + Math.floor(Math.random() * 5);
+    updateHud();
+    burst(2);
+    $('descFeedback').innerHTML = `<span class="ok">✔ Right.</span> “${esc(val)}” fits this blank.`;
+    if (Math.random() < .6) pushMsg(rnd(PRAISE), 'hi');
+    setTimeout(() => {
+      if (S.bi >= S.blanks.length){ completeDesc(); }
+      else { renderDesc(); $('descFeedback').innerHTML = ''; }
+    }, 420);
+  } else {
+    S.wrong++;
+    el.classList.add('bad');
+    setTimeout(() => el.classList.remove('bad'), 500);
+    S.viewers = Math.max(60, S.viewers - 6);
+    updateHud();
+    $('descFeedback').innerHTML = `<span class="no">✘ Not this one.</span> ${FIELD_HINT[b.field]} (Look at the product card on the left.)`;
+    pushMsg(rnd(DOUBT), 'low');
+  }
+}
+
+function completeDesc(){
+  S.descDone = true;
+  renderDesc();
+  $('descChip').textContent = 'Description complete';
+  $('descTitle').textContent = 'Read your description aloud (optional)';
+  $('descFrame').textContent = 'Reading aloud is optional. Do it for a score, or skip straight to the Q&A — nothing blocks you.';
+  $('descBankBox').style.display = 'none';
+  $('descReadBox').style.display = 'block';
+  burst(6);
+  pushMsg('👍 Sounds good — now say it out loud!', 'hi');
+
+  const p = S.p;
+  const targets = [
+    { label:'product name', keys:keysOf(p.name) },
+    { label:'place of origin', keys:[norm(p.origin)] },
+    { label:'what it is famous for', keys:keysOf(p.famous) },
+    { label:'how people use it', keys:keysOf(p.useAs) },
+    { label:'how each order is prepared', keys:keysOf(p.care) },
+    { label:'a quality word', keys:[p.adj] },
+    { label:'“go global”', keys:['global'] }
+  ];
+  const full = descriptionText(p);
+  const minWords = Math.max(18, Math.round(full.split(/\s+/).length * 0.55));
+  vcDesc.arm({
+    targets, minWords, model: full,
+    hint:`Read the six sentences above. About ${minWords} words — take your time.`,
+    onScore: (score) => {
+      S.readScore = score;
+      S.viewers += Math.round(score * 1.2);
+      S.likes += Math.round(score / 2);
+      S.orders += Math.round(score / 8);
+      updateHud();
+      if (score >= 70) burst(4);
+    }
+  });
+}
+
+function descriptionText(p){
+  return `This is ${p.name}, a specialty from ${p.origin}. It is famous for ${p.famous}. `
+    + `People usually use it as ${p.useAs}. Every order is ${p.care} before it is shipped. `
+    + `Customers love it because it is ${p.adj}. Through live streaming, we can help ${p.name} go global.`;
+}
+
+/* ================================================================== step 3: live Q&A */
+/* every product gets its own three viewer questions */
+const QA_BANK = {
+
+  /* ---------------- coconut products ---------------- */
+  coconut: [
+    { tag:'Which one to choose',
+      q:'A viewer asks: “You have candy, oil and milk — which one should I buy first?”',
+      groups:[
+        { label:'recommend one of the three', words:['candy','oil','milk','recommend','suggest','start','first','choose'] },
+        { label:'say why — taste or use', words:['sweet','creamy','taste','cook','skin','drink','breakfast','dessert','coffee'] },
+        { label:'invite the viewer to try or order', words:['set','gift','box','order','cart','try','bundle','three','all'] }
+      ],
+      better:'Good question! If it is your first time, start with our coconut candy — it is sweet and creamy, and children love it. The oil is better for cooking and for your skin. Or take the gift box and try all three.',
+      hint:[
+        { t:'Pick one and name it', s:'“I would start with our coconut candy.”' },
+        { t:'Say why — taste or use', s:'“It is sweet and creamy, and it goes well with coffee.”' },
+        { t:'Mention the other two briefly', s:'“The oil is better for cooking and for your skin.”' },
+        { t:'Invite them to order', s:'“Take the gift box and try all three.”' }
+      ]
+    },
+    { tag:'Sugar and health',
+      q:'A viewer asks: “The candy looks very sweet. Do you have a sugar-free one? My father is diabetic.”',
+      groups:[
+        { label:'answer honestly about the sugar', words:['sugar','sweet','yes','no','less','low','free','honest'] },
+        { label:'suggest another product instead', words:['oil','milk','coconut water','tea','another','instead','alternative','product'] },
+        { label:'give polite health advice', words:['doctor','health','little','small','careful','diet','every day','advice'] }
+      ],
+      better:'That is a good question. The candy does contain sugar, so I would not give it to him every day. Our coconut oil has no sugar at all, and it is better for cooking. Please ask his doctor first — health always comes first.',
+      hint:[
+        { t:'Be honest about the sugar', s:'“The candy does contain sugar.”' },
+        { t:'Offer a better product for him', s:'“Our coconut oil has no sugar at all.”' },
+        { t:'Say how much is safe', s:'“A little now and then is fine, but not every day.”' },
+        { t:'Add a caring warning', s:'“Please ask his doctor first.”' }
+      ]
+    },
+    { tag:'How to use the oil',
+      q:'A viewer asks: “What do I do with coconut oil — can I cook with it, or is it only for skin?”',
+      groups:[
+        { label:'say it is for cooking', words:['cook','fry','bake','kitchen','food','dish','rice'] },
+        { label:'say it is also for skin or hair', words:['skin','hair','face','body','moisture','massage','dry'] },
+        { label:'give one simple instruction', words:['spoon','small','warm','day','keep','store','cool','dry'] }
+      ],
+      better:'Both! In the kitchen it is perfect for frying and for baking — one spoon gives a lovely coconut smell. On your skin, warm a few drops in your hands and use it after a shower. Keep the jar in a cool, dark place and it will last for months.',
+      hint:[
+        { t:'Answer “both”', s:'“Both — you can cook with it and use it on your skin.”' },
+        { t:'Cooking first', s:'“One spoon is enough for fried rice.”' },
+        { t:'Then the skin', s:'“Warm a few drops and use it after a shower.”' },
+        { t:'How to store it', s:'“Keep the jar in a cool, dark place.”' }
+      ]
+    }
+  ],
+
+  /* ---------------- coffee ---------------- */
+  coffee: [
+    { tag:'Strength and caffeine',
+      q:'A viewer asks: “How strong is this coffee? I like a strong cup, but I drink it at night.”',
+      groups:[
+        { label:'describe the strength or aroma', words:['strong','aroma','bold','rich','flavour','flavor','dark','mild'] },
+        { label:'mention caffeine or the time of day', words:['caffeine','night','sleep','morning','late','awake','decaf'] },
+        { label:'give a practical suggestion', words:['cup','milk','try','half','small','first','suggest','recommend'] }
+      ],
+      better:'Xinglong coffee is quite strong — it has a deep, smoky aroma. I drink mine in the morning, not at night, because the caffeine will keep you awake. If you are new to it, start with one small cup and add a little milk.',
+      hint:[
+        { t:'Describe the strength', s:'“It is quite strong, with a deep, smoky aroma.”' },
+        { t:'Mention the caffeine', s:'“It has a lot of caffeine, so it will keep you awake.”' },
+        { t:'Suggest a time to drink it', s:'“I always drink mine in the morning.”' },
+        { t:'Give a tip for beginners', s:'“Start with one small cup and add a little milk.”' }
+      ]
+    },
+    { tag:'Bean or ground',
+      q:'A viewer asks: “Is it whole bean or ground? I don’t have a grinder at home.”',
+      groups:[
+        { label:'say which form it comes in', words:['bean','ground','powder','whole','grind','form','both'] },
+        { label:'help them choose', words:['choose','option','can','ask','note','order','ready','filter'] },
+        { label:'explain how to keep it fresh', words:['fresh','seal','bag','air','cool','dry','week','month','store','keep'] }
+      ],
+      better:'We sell both. The whole beans keep their aroma longer, but if you have no grinder, choose the ground one — it is ready for your filter. Keep the bag sealed in a cool, dry place and finish it within a month.',
+      hint:[
+        { t:'Say what you sell', s:'“We sell both whole beans and ground coffee.”' },
+        { t:'Recommend the ground one', s:'“If you have no grinder, choose the ground one.”' },
+        { t:'Explain the difference', s:'“Whole beans keep their aroma longer.”' },
+        { t:'Say how to store it', s:'“Keep the bag sealed and finish it within a month.”' }
+      ]
+    },
+    { tag:'Brewing problem',
+      q:'A viewer asks: “How should I make it? Last time my coffee tasted bitter.”',
+      groups:[
+        { label:'give the water temperature', words:['hot','water','degree','boil','temperature','cup','spoon'] },
+        { label:'give an amount or a time', words:['minute','second','wait','three','four','spoon','amount','brew'] },
+        { label:'explain why it was bitter', words:['bitter','too long','too much','burn','hot','strong','over'] }
+      ],
+      better:'Use water just below boiling — about ninety degrees — one spoon of coffee for each cup, and wait three to four minutes. If it tastes bitter, the water was too hot or the coffee sat too long. Try a shorter brew next time.',
+      hint:[
+        { t:'Temperature first', s:'“Use water just below boiling — about ninety degrees.”' },
+        { t:'How much coffee', s:'“One spoon for each cup.”' },
+        { t:'How long to wait', s:'“Wait three to four minutes, then take the coffee out.”' },
+        { t:'Explain the bitter taste', s:'“If it is bitter, the water was too hot or it sat too long.”' }
+      ]
+    }
+  ],
+
+  /* ---------------- tropical fruit ---------------- */
+  fruit: [
+    { tag:'Freshness in shipping',
+      q:'A viewer asks: “Will the mangoes still be fresh when they arrive? Fruit goes bad so fast.”',
+      groups:[
+        { label:'promise freshness and say how it is packed', words:['fresh','pack','box','ice','cool','protect','foam','wrap'] },
+        { label:'say how long delivery takes', words:['day','fast','quick','express','air','arrive','deliver','two','three'] },
+        { label:'give a guarantee', words:['guarantee','refund','replace','bad','damage','photo','money back','new'] }
+      ],
+      better:'Don’t worry! We pick the fruit at sunrise and pack every box with a cool pack and soft foam. Express delivery takes two or three days inside China. If any piece arrives damaged, send me a photo and we replace it or refund you.',
+      hint:[
+        { t:'Calm the viewer down', s:'“Don’t worry — we pick the fruit at sunrise.”' },
+        { t:'Say how it is packed', s:'“Every box has a cool pack and soft foam.”' },
+        { t:'Give the delivery time', s:'“Express delivery takes two or three days.”' },
+        { t:'Promise a refund', s:'“If any piece is damaged, send a photo and we replace it.”' }
+      ]
+    },
+    { tag:'Is it ripe?',
+      q:'A viewer asks: “How do I know when the lychee is ready to eat?”',
+      groups:[
+        { label:'describe the colour or the feel', words:['red','colour','color','soft','firm','skin','smell','aroma','green'] },
+        { label:'tell them how to test it', words:['press','touch','smell','open','peel','look','feel','gently'] },
+        { label:'say what to do if it is not ready', words:['wait','day','room','fridge','cold','keep','ripe','table'] }
+      ],
+      better:'Look at the colour first — a ripe lychee is deep red, not green. Press it gently: it should feel soft but not mushy, and it smells sweet. If it is still firm, leave it on the table for a day or two, then put it in the fridge.',
+      hint:[
+        { t:'Start with the colour', s:'“A ripe lychee is deep red, not green.”' },
+        { t:'Then the feel', s:'“Press it gently — it should be soft but not mushy.”' },
+        { t:'Smell is a good test', s:'“It should smell sweet.”' },
+        { t:'What to do if it is firm', s:'“Leave it on the table for a day or two.”' }
+      ]
+    },
+    { tag:'Sending it as a gift',
+      q:'A viewer asks: “Can I send a fruit box straight to my friend in Guangzhou as a gift?”',
+      groups:[
+        { label:'say yes and explain how', words:['yes','send','gift','address','directly','straight','order','friend'] },
+        { label:'mention a card or a message', words:['card','message','note','name','write','wish','free'] },
+        { label:'mention the date or the timing', words:['day','date','arrive','before','birthday','festival','time','tell'] }
+      ],
+      better:'Yes, of course! Just give me your friend’s address when you order, and we send the box straight to them. I can add a small card with your message. Tell me the date you want, and we will time the delivery for that day.',
+      hint:[
+        { t:'Answer “yes”', s:'“Yes, of course you can.”' },
+        { t:'Explain how it works', s:'“Give me your friend’s address and we send it straight there.”' },
+        { t:'Offer the card', s:'“I can add a card with your message.”' },
+        { t:'Ask about the date', s:'“Tell me the date and we will time the delivery.”' }
+      ]
+    }
+  ],
+
+  /* ---------------- seawater pearls ---------------- */
+  pearls: [
+    { tag:'Real or imitation',
+      q:'A viewer asks: “Are these real pearls, or just plastic imitations?”',
+      groups:[
+        { label:'say they are real cultured pearls', words:['real','genuine','cultured','natural','true','authentic'] },
+        { label:'give a test or a proof', words:['certificate','test','rub','tooth','weight','lustre','luster','check','label','cool'] },
+        { label:'promise a refund', words:['refund','money back','guarantee','return','fake','full'] }
+      ],
+      better:'These are real cultured pearls, grown in the clean bays of Lingshui. Every piece comes with a certificate, and you can test it yourself — real pearls feel cool and slightly rough when you rub them together. If a laboratory says it is not real, we refund you in full.',
+      hint:[
+        { t:'Say what they are', s:'“These are real cultured pearls from Lingshui.”' },
+        { t:'Give one proof', s:'“Every piece comes with a certificate.”' },
+        { t:'Teach a simple test', s:'“Rub two pearls together — real ones feel slightly rough.”' },
+        { t:'Promise a refund', s:'“If it is not real, we refund you in full.”' }
+      ]
+    },
+    { tag:'Care and lustre',
+      q:'A viewer asks: “How do I take care of pearls? Will they lose their shine?”',
+      groups:[
+        { label:'say when to take them off', words:['perfume','shower','swim','sport','take off','before','remove','chemical'] },
+        { label:'explain how to clean them', words:['soft','cloth','water','wipe','clean','dry','gentle','pearl'] },
+        { label:'explain how to store them', words:['box','pouch','separate','store','keep','dark','silk','scratch'] }
+      ],
+      better:'Good question! Put your pearls on last, after your perfume, and take them off before you shower or swim. Wipe them with a soft cloth after wearing, and keep them in the silk pouch — away from other jewellery so they do not scratch. Do that, and the lustre will last for years.',
+      hint:[
+        { t:'Perfume comes first, pearls last', s:'“Put your pearls on after your perfume.”' },
+        { t:'Say what to avoid', s:'“Take them off before you shower or swim.”' },
+        { t:'How to clean them', s:'“Wipe them with a soft cloth after wearing.”' },
+        { t:'How to store them', s:'“Keep them in the silk pouch, away from other jewellery.”' }
+      ]
+    },
+    { tag:'Custom order',
+      q:'A viewer asks: “Can you make this into a necklace for my mother, with a certificate?”',
+      groups:[
+        { label:'say yes and describe the service', words:['yes','make','necklace','set','design','custom','choose','chain','silver'] },
+        { label:'mention the certificate or the box', words:['certificate','box','gift','pack','card','paper','free'] },
+        { label:'mention the time or the price', words:['day','week','price','cost','extra','free','time','three'] }
+      ],
+      better:'Of course! Choose the pearl you like and we set it on a silver chain — it takes about three days. The necklace comes with its certificate in a gift box, and the card is free. Your mother will love it.',
+      hint:[
+        { t:'Say yes politely', s:'“Of course — that is a lovely idea.”' },
+        { t:'Explain what you do', s:'“Choose the pearl and we set it on a silver chain.”' },
+        { t:'Give the time and the certificate', s:'“It takes three days and comes with a certificate.”' },
+        { t:'Mention the free gift box', s:'“The gift box and the card are free.”' }
+      ]
+    }
+  ],
+
+  /* ---------------- Li brocade ---------------- */
+  brocade: [
+    { tag:'Hand-woven or machine',
+      q:'A viewer asks: “Is this hand-woven or machine-made? How can I tell?”',
+      groups:[
+        { label:'say it is hand-woven', words:['hand','woven','handmade','artisan','loom','traditional'] },
+        { label:'explain how to tell the difference', words:['pattern','back','thread','irregular','feel','colour','color','tell','look','even'] },
+        { label:'mention the weaver or the village', words:['li','wuzhishan','village','auntie','ethnic','family','generation','woman'] }
+      ],
+      better:'Every piece is hand-woven on a wooden loom by Li artisans in Wuzhishan. Turn it over and look at the back — a machine makes the threads perfectly even, but a human hand leaves small differences. That is the signature of real Li brocade.',
+      hint:[
+        { t:'Say it is hand-woven', s:'“Every piece is hand-woven by Li artisans in Wuzhishan.”' },
+        { t:'Give the viewer a test', s:'“Turn it over and look at the back.”' },
+        { t:'Explain the difference', s:'“A machine is perfectly even; a hand leaves small differences.”' },
+        { t:'Connect it to the people', s:'“These women learn the craft from their mothers.”' }
+      ]
+    },
+    { tag:'Washing and care',
+      q:'A viewer asks: “Can I wash it in the washing machine?”',
+      groups:[
+        { label:'say no clearly', words:['no','not','never','avoid','cannot','machine','hand'] },
+        { label:'give the right way to wash', words:['hand','cold','water','gentle','soft','soap','wash','dry','shade','flat'] },
+        { label:'warn about what damages it', words:['bleach','hot','sun','dryer','iron','shrink','fade','pull'] }
+      ],
+      better:'Please never put it in the washing machine — the threads will pull and the colour will fade. Wash it by hand in cold water with a little soft soap, then dry it flat in the shade. Keep it away from bleach and direct sun.',
+      hint:[
+        { t:'Say no clearly', s:'“Please never put it in the washing machine.”' },
+        { t:'Explain the damage', s:'“The threads will pull and the colour will fade.”' },
+        { t:'Give the right method', s:'“Wash it by hand in cold water with soft soap.”' },
+        { t:'Say how to dry it', s:'“Dry it flat in the shade, away from the sun.”' }
+      ]
+    },
+    { tag:'Meaning of the pattern',
+      q:'A viewer asks: “Does the pattern mean anything, or is it just decoration?”',
+      groups:[
+        { label:'say the pattern has a meaning', words:['mean','meaning','symbol','story','represent','stand for','tradition','message'] },
+        { label:'name one example', words:['dragon','flower','deer','bird','frog','river','mountain','sun','ancestor','fish'] },
+        { label:'connect it to a wish or the culture', words:['luck','happiness','harvest','family','blessing','wish','culture','life','good'] }
+      ],
+      better:'Nothing here is just decoration. Every pattern tells a story — the frog means rain and a good harvest, the deer means long life, and the flower means happiness. Li women learn these patterns from their mothers, so you are wearing a piece of our history.',
+      hint:[
+        { t:'Say no — it is not just decoration', s:'“Nothing here is just decoration.”' },
+        { t:'Give one example', s:'“The frog means rain and a good harvest.”' },
+        { t:'Give a second example', s:'“The deer means long life.”' },
+        { t:'Connect it to the culture', s:'“Li women learn these patterns from their mothers.”' }
+      ]
+    }
+  ],
+
+  /* ---------------- Baisha green tea ---------------- */
+  tea: [
+    { tag:'Is it fresh?',
+      q:'A viewer asks: “Is this tea from this year’s spring harvest?”',
+      groups:[
+        { label:'say yes and name the season', words:['spring','year','fresh','new','march','april','harvest','pick','this'] },
+        { label:'describe the taste', words:['fresh','light','sweet','clean','taste','flavour','flavor','aroma','green'] },
+        { label:'say how it is kept fresh', words:['seal','tin','cool','dry','fridge','air','keep','store','week'] }
+      ],
+      better:'Yes — this is this year’s spring harvest, picked in late March from the mountain garden in Baisha. That is why the taste is so light and fresh. We seal it in an air-tight tin the same week, and it stays fresh for about a year.',
+      hint:[
+        { t:'Say yes and give the season', s:'“Yes, this is this year’s spring harvest.”' },
+        { t:'Name the place and the month', s:'“It was picked in late March in Baisha.”' },
+        { t:'Describe the taste', s:'“That is why it tastes so light and fresh.”' },
+        { t:'Say how it is stored', s:'“We seal it in an air-tight tin the same week.”' }
+      ]
+    },
+    { tag:'Brewing temperature',
+      q:'A viewer asks: “What water temperature should I use? I don’t want it bitter.”',
+      groups:[
+        { label:'give a temperature or say not boiling', words:['eighty','degree','boiling','warm','hot','cool','water'] },
+        { label:'give an amount or a time', words:['spoon','glass','cup','minute','second','wait','amount','little'] },
+        { label:'explain the bitter problem', words:['bitter','too hot','too long','boil','burn','strong','take out'] }
+      ],
+      better:'Green tea hates boiling water. Wait two or three minutes after the kettle boils — about eighty degrees is perfect. Use one small spoon for a glass and take the leaves out after one minute. If it is bitter, the water was too hot or the leaves stayed in too long.',
+      hint:[
+        { t:'Warn about boiling water', s:'“Green tea hates boiling water.”' },
+        { t:'Give the temperature', s:'“Wait two or three minutes — about eighty degrees is perfect.”' },
+        { t:'Say how much and how long', s:'“One small spoon for a glass, one minute.”' },
+        { t:'Explain the bitterness', s:'“If it is bitter, the water was too hot.”' }
+      ]
+    },
+    { tag:'Shelf life',
+      q:'A viewer asks: “How long can I keep it? Does green tea go bad?”',
+      groups:[
+        { label:'give a storage time', words:['month','year','week','long','keep','last','open','seal'] },
+        { label:'explain how to store it', words:['seal','tin','cool','dry','fridge','air','dark','moisture','smell'] },
+        { label:'say how to tell it is old', words:['smell','yellow','dull','taste','flat','old','change','lose'] }
+      ],
+      better:'An opened tin is best within three months, and a sealed one keeps for about a year. Store it in a cool, dry place away from light and strong smells — the fridge is fine if the tin is closed. If the leaves turn yellow and lose their smell, the tea is old.',
+      hint:[
+        { t:'Give the time', s:'“An opened tin is best within three months.”' },
+        { t:'Say how to store it', s:'“Keep it cool and dry, away from light and strong smells.”' },
+        { t:'How to tell it is old', s:'“If the leaves turn yellow, the tea is old.”' },
+        { t:'Add the smell test', s:'“Good tea still has a fresh, grassy smell.”' }
+      ]
+    }
+  ],
+
+  /* ---------------- Hainan pepper ---------------- */
+  pepper: [
+    { tag:'White or black',
+      q:'A viewer asks: “Is this white pepper or black pepper? Which one should I use for soup?”',
+      groups:[
+        { label:'say which kind it is, or that you sell both', words:['white','black','both','kind','type','sell','have'] },
+        { label:'explain the difference in taste or use', words:['soup','hot','sharp','mild','aroma','flavour','flavor','meat','fish','smooth'] },
+        { label:'give a recommendation', words:['recommend','suggest','use','better','try','choose','soup'] }
+      ],
+      better:'We sell both, and they are quite different. Black pepper is sharper and better on meat; white pepper is milder and smoother, so it is the one for soup and fish. If you cook a lot of Chinese dishes, take the white one.',
+      hint:[
+        { t:'Say what you sell', s:'“We sell both white and black pepper.”' },
+        { t:'Describe the black one', s:'“Black pepper is sharper and better on meat.”' },
+        { t:'Describe the white one', s:'“White pepper is milder and smoother.”' },
+        { t:'Give a clear recommendation', s:'“For soup and fish, take the white one.”' }
+      ]
+    },
+    { tag:'Too spicy for children',
+      q:'A viewer asks: “Is it very hot? My children can’t eat spicy food.”',
+      groups:[
+        { label:'describe how hot it is', words:['hot','spicy','strong','sharp','mild','little','not very'] },
+        { label:'say how much to use', words:['little','pinch','small','drop','bit','amount','half','spoon'] },
+        { label:'reassure them or give a way to serve it', words:['children','kids','try','separate','own','bowl','first','safe'] }
+      ],
+      better:'It is strong, but a little goes a long way — one small pinch is enough for a whole pot of soup. It adds aroma more than heat. For the children, serve their bowls first, then add the pepper to the pot. That way everyone is happy.',
+      hint:[
+        { t:'Be honest about the heat', s:'“It is strong, but a little goes a long way.”' },
+        { t:'Say how much to use', s:'“One small pinch is enough for a whole pot.”' },
+        { t:'Explain what it really adds', s:'“It adds aroma more than heat.”' },
+        { t:'Solve the children’s problem', s:'“Serve their bowls first, then add the pepper.”' }
+      ]
+    },
+    { tag:'Whole or ground',
+      q:'A viewer asks: “Do you sell it whole or ground? Which one keeps its flavour?”',
+      groups:[
+        { label:'say which forms you sell', words:['whole','ground','powder','both','seed','form','sell'] },
+        { label:'explain which keeps flavour better', words:['flavour','flavor','aroma','fresh','keep','last','grind','store','longer'] },
+        { label:'give a practical tip', words:['grinder','mill','just before','cook','jar','seal','dry','dark'] }
+      ],
+      better:'Both are available. Whole peppercorns keep their aroma for a year or more — grind them just before you cook. The ground one is more convenient but loses its smell after two or three months, so keep it in a sealed jar in a dark cupboard.',
+      hint:[
+        { t:'Say what you sell', s:'“Both are available.”' },
+        { t:'Compare the two', s:'“Whole peppercorns keep their aroma for a year or more.”' },
+        { t:'Give a cooking tip', s:'“Grind them just before you cook.”' },
+        { t:'Say how to store the powder', s:'“Keep the ground pepper in a sealed jar, in the dark.”' }
+      ]
+    }
+  ]
+};
+
+function makeQuestions(p){
+  return QA_BANK[p.id] || QA_BANK.coffee;
+}
+
+const GRAMMAR = [
+  { re:/\bi\s+very\s+(like|love|want)\b/i, fix:'I really like …', why:'“very” cannot modify a verb — use “really”.' },
+  { re:/\bit\s+have\b/i, fix:'it has', why:'third person singular takes “has”.' },
+  { re:/\bthey\s+has\b/i, fix:'they have', why:'“they” takes “have”.' },
+  { re:/\bcan\s+able\s+to\b/i, fix:'can', why:'use “can”, not “can able to”.' },
+  { re:/\bcan\s+(shipped|delivered|sent|shipping)\b/i, fix:'can ship / can deliver', why:'after “can” use the base verb.' },
+  { re:/\bmore\s+(cheaper|easier|better|faster)\b/i, fix:'cheaper / easier / better', why:'do not add “more” to a comparative.' },
+  { re:/\bhow\s+much\s+(money|price)\b/i, fix:'how much is it / what is the price', why:'“how much money” is not natural here.' },
+  { re:/\bno\s+have\b/i, fix:'we don’t have', why:'use “don’t have”, not “no have”.' },
+  { re:/\bvery\s+much\s+(cheap|good|nice|beautiful)\b/i, fix:'very cheap / really good', why:'“very much” does not modify adjectives.' },
+  { re:/\bdiscount\s+for\s+you\b/i, fix:'a discount for you', why:'add the article “a” before “discount”.' }
+];
+
+const OPENER = ['good question','great question','sure','of course','yes','no problem','thank','hello','hi','welcome','exactly','i understand','right','okay','ok'];
+const CTA = ['click','cart','order','buy','link','follow','message','dm','below','button','today','take it','check out'];
+
+function evalOpen(text, q){
+  const raw = (text || '').trim();
+  const t = norm(raw);
+  const toks = t ? t.split(' ').filter(Boolean) : [];
+  const words = toks.length;
+  const hasW = w => toks.some(x => x === w || x === w+'s' || x === w+'es' || x === w+'ed' || x === w+'ing'
+    || (x.startsWith(w) && x.length <= w.length + 3));
+
+  const hit = q.groups.map(g => ({ label:g.label, ok:g.words.some(hasW) }));
+  const covered = hit.filter(h => h.ok).length;
+  const content = covered / q.groups.length;
+
+  const lenF = Math.min(1, words / 20);
+  const opener = OPENER.some(k => t.includes(k));
+  const cta = CTA.some(k => t.includes(k));
+  const tone = (opener ? 10 : 0) + (cta ? 10 : 0);
+  const errors = GRAMMAR.filter(g => g.re.test(raw));
+
+  let score = Math.round(content * 50 + lenF * 20 + tone + (words < 5 ? 0 : Math.max(0, 10 - errors.length * 3)));
+  if (words < 4) score = Math.min(score, 25);
+  score = Math.max(0, Math.min(100, score));
+
+  const tips = [];
+  const missing = hit.filter(h => !h.ok).map(h => h.label);
+  if (missing.length) tips.push({ k:'', t:`Add this information: ${missing.join('; ')}. The viewer will trust you more.` });
+  if (words < 12) tips.push({ k:'', t:`Your answer is only ${words} words. A live host gives two or three short sentences: a quick reply, one reason, and an invitation.` });
+  else if (words > 70) tips.push({ k:'', t:'Your answer is long for a live room. Cut it to two or three short sentences — viewers lose focus.' });
+  errors.slice(0, 2).forEach(e => tips.push({ k:'gram', t:`Say “${e.fix}” instead — ${e.why}` }));
+  if (!cta) tips.push({ k:'', t:'Finish with a call to action: “Click the cart below and I’ll ship it to you today.”' });
+  if (!opener) tips.push({ k:'', t:'Open with a friendly reply: “Good question!”, “Sure, of course!” or “I understand.”' });
+  if (score >= 85) tips.push({ k:'good', t:'Strong answer. Add one personal detail to sound even warmer — for example “I use it every morning myself.”' });
+
+  return { score, hit, tips: tips.slice(0, 5), words };
+}
+
+function startTalk(){
+  S.qs = makeQuestions(S.p);
+  S.qi = 0;
+  show('screen-talk');
+  renderPatterns();
+  renderBank();
+  renderQuestion();
+}
+
+function setMode(m){
+  if (S.mode === 'speak' && m !== 'speak' && vcTalk && vcTalk.recording) vcTalk.stop();
+  S.mode = m;
+  document.querySelectorAll('.mode').forEach(b => b.classList.toggle('active', b.dataset.m === m));
+  $('micTalk').style.display = (m === 'speak') ? 'block' : 'none';
+  $('typeBox').style.display = (m === 'type') ? 'block' : 'none';
+  $('modeHint').textContent = (m === 'speak')
+    ? 'Say your answer — the AI scores it and suggests changes.'
+    : 'Write your answer — the AI scores it and suggests changes.';
+  if (m === 'speak' && S.qs && S.qs.length) armSpeak();
+}
+
+function armSpeak(){
+  const q = S.qs[S.qi];
+  vcTalk.arm({
+    model: q.better, maxMs: 20000, hideModel: true,
+    hint: 'Press the microphone and answer as the host — two or three sentences.',
+    onText: (text) => finishAnswer(text, 'speak')
+  });
+}
+
+function renderQuestion(){
+  const q = S.qs[S.qi];
+  $('qChip').textContent = `Question ${S.qi + 1} / 3`;
+  $('qDots').innerHTML = S.qs.map((_, i) =>
+    `<i class="${i < S.qi ? 'done' : (i === S.qi ? 'on' : '')}"></i>`).join('');
+  $('qText').textContent = q.q;
+  $('qHint').textContent = `Scene · ${q.tag}. A viewer types this in your live room — answer as the host.`;
+  $('qDraft').value = '';
+  $('qDraft').classList.remove('badlang');
+  $('langWarn').classList.remove('show');
+  $('btnSubmit').disabled = false;
+  $('wordCount').textContent = '0 words';
+  $('fbArea').innerHTML = '';
+  renderHint();
+  $('btnNextQ').textContent = S.qi === 2 ? 'See the report ▸' : 'Next question ▸';
+  const prev = S.answers[S.qi];
+  $('talkHint').textContent = prev
+    ? `You scored ${prev.score} here — answer again if you like, or move on.`
+    : 'Answer in a full sentence — or skip; speaking is optional.';
+  setMode(S.mode || 'speak');
+}
+
+const CJK = /[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]/;
+
+function renderHint(){
+  const q = S.qs[S.qi];
+  $('hintBox').innerHTML = '<h5>Thinking steps — answer in this order</h5>' +
+    q.hint.map((h, i) => `<div class="hintstep"><b>${i + 1}</b><span><strong>${esc(h.t)}</strong> — <em>${esc(h.s)}</em></span></div>`).join('');
+  $('hintBox').classList.remove('show');
+  $('btnHint').textContent = '💡 Hint · how to answer';
+}
+
+$('btnHint').onclick = () => {
+  const open = $('hintBox').classList.toggle('show');
+  $('btnHint').textContent = open ? '💡 Hide hint' : '💡 Hint · how to answer';
+};
+
+function checkEnglish(){
+  const bad = CJK.test($('qDraft').value);
+  $('qDraft').classList.toggle('badlang', bad);
+  $('langWarn').classList.toggle('show', bad);
+  $('btnSubmit').disabled = bad;
+  return !bad;
+}
+
+function finishAnswer(text, src){
+  if (CJK.test(text)){
+    $('fbArea').innerHTML = `<div class="fb">
+      <div class="fbhead">
+        <span class="score low">!</span>
+        <div class="verdict"><b>English only, please.</b> Your answer contains Chinese words, so it was not scored.
+        Say the same idea again in English — open the hint above if you need the sentence starters.</div>
+      </div>
+      <div class="modelbox"><b>A stronger version:</b> ${esc(S.qs[S.qi].better)}</div>
+    </div>`;
+    return;
+  }
+  const q = S.qs[S.qi];
+  const r = evalOpen(text, q);
+  S.answers[S.qi] = { score:r.score, text, src, q:q.q, model:q.better };
+  S.viewers += Math.round(r.score * 1.5);
+  S.likes += Math.round(r.score / 1.5);
+  S.orders += Math.round(r.score / 6);
+  updateHud();
+  if (r.score >= 70){ burst(3); pushMsg(rnd(PRAISE), 'hi'); } else pushMsg(rnd(DOUBT), 'low');
+  showFeedback(r, q);
+}
+
+function showFeedback(r, q){
+  const cls = r.score >= 80 ? 'good' : r.score >= 55 ? 'mid' : 'low';
+  const head = r.score >= 85 ? 'Excellent answer!' : r.score >= 70 ? 'Good answer.' : r.score >= 50 ? 'You are getting there.' : 'Let’s rebuild this answer.';
+  const tail = r.score >= 85 ? ' Clear, complete and friendly — this is how a real host answers.'
+    : r.score >= 70 ? ' The viewer would understand you. A few small changes will make it stronger.'
+    : r.score >= 50 ? ' The idea is there; the structure and details need work.'
+    : ' Read the stronger version below, then try again in your own words.';
+  $('fbArea').innerHTML = `
+    <div class="fb">
+      <div class="fbhead">
+        <span class="score ${cls}">${r.score}<small>/100</small></span>
+        <div class="verdict"><b>${head}</b>${tail}</div>
+      </div>
+      <div class="kchips">${r.hit.map(h => `<span class="kchip ${h.ok ? 'ok' : 'no'}">${h.ok ? '✓' : '○'} ${esc(h.label)}</span>`).join('')}</div>
+      <div class="fbsub">How to improve</div>
+      <ul class="fbtips">${r.tips.map(t => `<li class="${t.k}">${esc(t.t)}</li>`).join('')}</ul>
+      <div class="modelbox"><b>A stronger version:</b> ${esc(q.better)}</div>
+    </div>`;
+}
+
+$('btnNextQ').onclick = () => {
+  if (S.qi < 2){ S.qi++; renderQuestion(); return; }
+  showResult();
+};
+
+$('btnSubmit').onclick = () => {
+  if (!checkEnglish()) return;
+  const v = $('qDraft').value.trim();
+  const n = v.split(/\s+/).filter(Boolean).length;
+  if (n < 2){ $('wordCount').textContent = 'Write at least one full sentence first.'; $('qDraft').focus(); return; }
+  finishAnswer(v, 'type');
+};
+$('qDraft').addEventListener('input', () => {
+  const n = $('qDraft').value.trim().split(/\s+/).filter(Boolean).length;
+  const ok = checkEnglish();
+  $('wordCount').textContent = ok ? (n + (n === 1 ? ' word' : ' words')) : 'English only';
+});
+document.querySelectorAll('.mode').forEach(b => { b.onclick = () => { $('fbArea').innerHTML = ''; setMode(b.dataset.m); }; });
+
+function renderPatterns(){
+  const rows = [
+    ['Good question! …', 'Good question! Let me explain.'],
+    ['Yes, of course. We …', 'Yes, of course. We ship to most countries.'],
+    ['Don’t worry — …', 'Don’t worry — every box has an official code.'],
+    ['It usually takes …', 'It usually takes five to seven days.'],
+    ['Today we have …', 'Today we have a special price for our live audience.'],
+    ['If you …, you can …', 'If you change your mind, you can return it.'],
+    ['Click the cart below and …', 'Click the cart below and I’ll ship it today.']
+  ];
+  $('patTable').innerHTML = rows.map(r => `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join('');
+}
+
+function renderBank(){
+  const p = S.p;
+  const groups = [
+    ['Politeness', ['Good question!', 'Sure', 'Of course', 'No problem', 'I understand', 'Thank you']],
+    ['Product', [p.short.toLowerCase(), p.origin, 'Hainan', 'specialty', 'real', 'genuine']],
+    ['Shipping', ['ship', 'deliver', 'five to seven days', 'track', 'free shipping', 'Southeast Asia']],
+    ['Price', ['discount', 'special price', '10% off', 'free gift', 'worth it', 'budget']],
+    ['Action', ['click the cart', 'order now', 'message me', 'follow me', 'limited stock']]
+  ];
+  $('bankArea').innerHTML = groups.map(g => `
+    <div class="bankgroup">
+      <div class="gh">${g[0]}</div>
+      <div class="bchips">${g[1].map(w => `<button class="bchip" data-w="${esc(w)}">${esc(w)}</button>`).join('')}</div>
+    </div>`).join('');
+  $('bankArea').querySelectorAll('.bchip').forEach(b => {
+    b.onclick = () => {
+      const d = $('qDraft');
+      d.value = (d.value.trim() ? d.value.trim() + ' ' : '') + b.dataset.w;
+      d.focus();
+      d.dispatchEvent(new Event('input'));
+    };
+  });
+}
+
+/* ================================================================== report */
+function showResult(){
+  const p = S.p;
+  const ansScores = [0,1,2].map(i => {
+    const a = S.answers[i];
+    return (a && typeof a.score === 'number') ? a.score : null;
+  });
+  const done = ansScores.filter(v => v !== null);
+  const ansAvg = done.length ? Math.round(done.reduce((x, y) => x + y, 0) / done.length) : null;
+  const parts = done.concat(S.readScore == null ? [] : [S.readScore]);
+  const overall = parts.length ? Math.round(parts.reduce((x, y) => x + y, 0) / parts.length) : null;
+
+  $('rSub').textContent = 'Product · ' + p.name;
+  $('rOverall').textContent = overall == null ? '—' : overall;
+  $('rRead').textContent = S.readScore == null ? '—' : S.readScore;
+  $('rAns').textContent = ansAvg == null ? '—' : ansAvg;
+  $('rViewers').textContent = S.viewers;
+
+  if (overall == null){
+    $('starRow').textContent = '☆☆☆☆☆';
+    $('starWord').textContent = 'No score yet — you skipped the speaking parts. Go back and try one question out loud.';
+  } else {
+    const stars = overall >= 90 ? 5 : overall >= 78 ? 4 : overall >= 62 ? 3 : overall >= 45 ? 2 : 1;
+    $('starRow').textContent = '★★★★★'.slice(0, stars) + '☆☆☆☆☆'.slice(0, 5 - stars);
+    $('starWord').textContent =
+      stars === 5 ? 'A natural host — clear, warm and complete.' :
+      stars === 4 ? 'Strong show. A few key words slipped, but the audience stayed.' :
+      stars === 3 ? 'A steady show. Rehearse the patterns before your next stream.' :
+      stars === 2 ? 'The message got through, but the answers were thin. Try again.' :
+                    'The audience drifted away. Read the model answers, then go live again.';
+  }
+
+  const rows = [['Reading aloud', S.readScore]]
+    .concat(ansScores.map((s, i) => ['Q' + (i + 1), s]));
+  $('rBreak').innerHTML = rows.map(r => {
+    const v = (r[1] == null) ? null : r[1];
+    return `<div class="brow"><span>${esc(r[0])}</span><b>${v == null ? '—' : v}</b>
+      <span class="bar"><i style="width:${v == null ? 0 : v}%;${v == null ? 'background:#5B7683' : ''}"></i></span></div>`;
+  }).join('');
+
+  const lines = SEG.map((row, i) => {
+    const text = row.map(seg => typeof seg[0] === 'string' ? seg[1] : S.blanks[seg[0]].ans).join('');
+    return `<div class="line"><span class="n">${i + 1}</span><span class="txt">${esc(text)}</span></div>`;
+  }).join('');
+
+  const qa = S.qs.map((q, i) => {
+    const a = S.answers[i];
+    const sc = (a && typeof a.score === 'number') ? a.score : null;
+    const col = sc == null ? '#8FA6AE' : sc >= 80 ? 'var(--leaf)' : sc >= 55 ? '#D97706' : '#DC2626';
+    return `<div class="line">
+      <span class="n">Q${i + 1}</span>
+      <span class="txt">${esc(q.q)}
+        <span class="said"><b>Model:</b> ${esc(q.better)}</span>
+        <span class="said">${sc == null ? '<b>You said:</b> (skipped)' : `<b>You said:</b> ${esc(a.text)}`}</span>
+      </span>
+      <span class="sc" style="color:${col}">${sc == null ? '—' : sc}</span>
+    </div>`;
+  }).join('');
+
+  $('scriptLines').innerHTML =
+    `<div class="secTitle">Step 2 · Product description</div>${lines}
+     <div class="secTitle">Step 3 · Q&amp;A</div>${qa}`;
+
+  show('screen-result');
+}
+
+$('btnToTalk').onclick = () => { startTalk(); };
+$('btnAgain').onclick = () => { renderProducts(); show('screen-select'); };
+$('btnRestart').onclick = () => { show('screen-start'); };
+
+/* ================================================================== voice instances */
+const vcDesc = new VoiceCheck($('micDesc'));
+const vcTalk = new VoiceCheck($('micTalk'));
+
+/* keyboard: 1/2/3 picks a word chip in step 2 */
+document.addEventListener('keydown', e => {
+  if (!$('screen-desc').classList.contains('active')) return;
+  if (e.key >= '1' && e.key <= '3'){
+    const chips = document.querySelectorAll('#descBank .wchip');
+    const c = chips[+e.key - 1];
+    if (c) c.click();
+  }
+});
+</script>
+</body>
+</html>
