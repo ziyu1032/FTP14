@@ -207,6 +207,8 @@
   .mact{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
   .minibtn{font-size:12px;font-weight:700;padding:7px 12px;border-radius:10px;background:#fff;border:1px solid #EFE3D7;color:var(--ink)}
   .minibtn:hover{border-color:var(--orange);color:#C2410C}
+  .minibtn.playing{background:#FFF1E6;border-color:var(--orange);color:#C2410C;box-shadow:0 0 0 3px rgba(249,115,22,.12)}
+  .minibtn.paused{background:#FFF7ED;border-color:#FDBA74;color:#C2410C}
   .modelbox{margin-top:9px;font-size:13px;line-height:1.55;background:#F0F9FF;border-left:3px solid var(--teal);
     padding:8px 11px;border-radius:8px;color:#0F3F4F}
   .modelbox b{color:var(--teal)}
@@ -874,7 +876,7 @@ function band(score){
   if (score >= 50) return ['Almost there.', 'The main idea came through, but some key words were missed.'];
   return ['Let’s try again.', 'Listen to the model answer once, then say it in your own words.'];
 }
-/* prefer a natural American (en-US) voice: neural voices first, then the usual OS ones */
+/* ---------- reading aloud: natural American voice, with pause / continue ---------- */
 let US_VOICE = null;
 function pickUSVoice(){
   if (!('speechSynthesis' in window)) return;
@@ -882,10 +884,10 @@ function pickUSVoice(){
   if (!all.length) return;
   const us = all.filter(v => /^en[-_]?US/i.test(v.lang));
   const order = [
-    /natural|neural/i,                       /* Edge: Microsoft Aria/Jenny/Guy Online (Natural) */
-    /google us english/i,                    /* Chrome */
-    /aria|jenny|guy|michelle|andrew|emma/i,  /* Windows neural / online */
-    /samantha|alex|allison|ava|tom|zoe/i,    /* macOS / iOS */
+    /natural|neural|online/i,                    /* Edge: Aria / Jenny / Guy Online (Natural) */
+    /google us english/i,                        /* Chrome desktop */
+    /samantha|ava|allison|serena|karen|moira/i,  /* macOS / iOS */
+    /aria|jenny|guy|michelle|andrew|emma/i,      /* Windows */
     /en[-_]?us/i
   ];
   for (const re of order){
@@ -900,15 +902,171 @@ if ('speechSynthesis' in window){
   [200, 600, 1500, 3000].forEach(t => setTimeout(pickUSVoice, t));
 }
 
-function speak(text){
-  if (!('speechSynthesis' in window) || !text) return;
-  speechSynthesis.cancel();
-  pickUSVoice();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'en-US'; u.rate = .9; u.pitch = 1;
-  if (US_VOICE) u.voice = US_VOICE;
-  speechSynthesis.speak(u);
+/* a real neural voice beats an old desktop robot voice */
+function localVoiceIsNatural(){
+  if (!US_VOICE) return false;
+  const n = (US_VOICE.name || '') + ' ' + (US_VOICE.voiceURI || '');
+  if (/natural|neural|online|google|samantha|ava|allison|serena|karen|moira/i.test(n)) return true;
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '');
 }
+
+let REMOTE_OK = null;       /* null = untried, false = blocked, do not retry */
+
+const Speaker = {
+  state: 'idle',            /* idle | playing | paused */
+  btn: null, text: '', mode: '', el: null, chunks: [], idx: 0,
+
+  /* break the script into sentence groups so the reading breathes like a person */
+  chunkText(t){
+    const clean = String(t).replace(/\s+/g, ' ').trim();
+    const parts = clean.match(/[^.!?]+[.!?]*/g) || [clean];
+    const out = []; let cur = '';
+    parts.forEach(raw => {
+      const p = raw.trim(); if (!p) return;
+      if (cur && (cur + ' ' + p).length <= 150) cur += ' ' + p;
+      else { if (cur) out.push(cur); cur = p; }
+    });
+    if (cur) out.push(cur);
+    return out.length ? out : [clean];
+  },
+
+  setLabel(btn, st){
+    if (!btn) return;
+    if (!btn.dataset.idle) btn.dataset.idle = btn.textContent;
+    btn.textContent = st === 'playing' ? '⏸ Pause' : st === 'paused' ? '▶ Continue' : btn.dataset.idle;
+    btn.classList.toggle('playing', st === 'playing');
+    btn.classList.toggle('paused', st === 'paused');
+  },
+
+  setState(st){
+    this.state = st;
+    if (this.btn) this.setLabel(this.btn, st);
+  },
+
+  toggle(text, btn){
+    if (btn && this.btn === btn && this.text === text){
+      if (this.state === 'playing') return this.pause();
+      if (this.state === 'paused') return this.resume();
+    }
+    this.play(text, btn);
+  },
+
+  play(text, btn){
+    const prev = this.btn;
+    this.hardStop();
+    if (prev && prev !== btn) this.setLabel(prev, 'idle');
+    if (!text) return;
+    this.btn = btn; this.text = text;
+    if (btn) this.setLabel(btn, 'idle');
+    this.chunks = this.chunkText(text);
+    this.idx = 0;
+    this.setState('playing');
+    if (REMOTE_OK === false || (window.speechSynthesis && localVoiceIsNatural())){
+      this.mode = 'local'; this.speakLocal();
+    } else {
+      this.mode = 'remote'; this.nextRemote();
+    }
+  },
+
+  nextRemote(){
+    if (this.state === 'idle') return;
+    if (this.idx >= this.chunks.length) return this.finish();
+    const a = new Audio();
+    a.preload = 'auto';
+    a.src = 'https://fanyi.baidu.com/gettts?lan=en&spd=3&source=web&text=' + encodeURIComponent(this.chunks[this.idx]);
+    this.el = a;
+    let fell = false;
+    const fail = () => {
+      if (fell) return;
+      fell = true;
+      REMOTE_OK = false;                 /* never make the class wait twice */
+      this.toLocal();
+    };
+    a.onerror = fail;
+    a.onended = () => {
+      this.idx++;
+      if (this.idx >= this.chunks.length) return this.finish();
+      setTimeout(() => { if (this.state === 'playing') this.nextRemote(); }, 150);
+    };
+    const pr = a.play();
+    if (pr && pr.catch) pr.catch(fail);
+    setTimeout(() => {
+      if (!fell && this.state === 'playing' && this.el === a && a.readyState < 2) fail();
+    }, 2600);
+  },
+
+  toLocal(){
+    this.mode = 'local';
+    if (!window.speechSynthesis) return this.finish();
+    try { speechSynthesis.cancel(); } catch(e){}
+    this.speakLocal();
+  },
+
+  speakLocal(){
+    if (!window.speechSynthesis || this.state === 'idle') return;
+    if (this.idx >= this.chunks.length) return this.finish();
+    const u = new SpeechSynthesisUtterance(this.chunks[this.idx]);
+    u.lang = 'en-US'; u.rate = 0.96; u.pitch = 1; u.volume = 1;
+    if (US_VOICE) u.voice = US_VOICE;
+    u.onend = () => {
+      if (this.state !== 'playing') return;
+      this.idx++;
+      if (this.idx >= this.chunks.length) return this.finish();
+      setTimeout(() => { if (this.state === 'playing') this.speakLocal(); }, 140);
+    };
+    u.onerror = () => this.finish();
+    speechSynthesis.speak(u);
+  },
+
+  pause(){
+    if (this.state !== 'playing') return;
+    if (this.mode === 'remote' && this.el) this.el.pause();
+    else if (window.speechSynthesis){
+      try { speechSynthesis.pause(); } catch(e){}
+      /* some engines ignore pause — stop instead and replay this sentence on resume */
+      setTimeout(() => {
+        if (this.state === 'paused' && this.mode === 'local' && !speechSynthesis.paused){
+          try { speechSynthesis.cancel(); } catch(e){}
+          this.mode = 'local-restart';
+        }
+      }, 150);
+    }
+    this.setState('paused');
+  },
+
+  resume(){
+    if (this.state !== 'paused') return;
+    this.setState('playing');
+    if (this.mode === 'local-restart'){ this.mode = 'local'; return this.speakLocal(); }
+    if (this.mode === 'remote' && this.el){
+      if (this.el.ended){ this.idx++; return this.nextRemote(); }
+      const pr = this.el.play();
+      if (pr && pr.catch) pr.catch(() => this.toLocal());
+    } else if (window.speechSynthesis){ try { speechSynthesis.resume(); } catch(e){} }
+  },
+
+  finish(){
+    this.hardStop();
+    if (this.btn) this.setLabel(this.btn, 'idle');
+    this.btn = null; this.text = '';
+  },
+
+  hardStop(){
+    if (this.el){ try { this.el.pause(); this.el.onended = null; this.el.removeAttribute('src'); } catch(e){} }
+    if (window.speechSynthesis){ try { speechSynthesis.cancel(); } catch(e){} }
+    this.el = null; this.chunks = []; this.idx = 0; this.mode = '';
+    this.state = 'idle';
+  },
+
+  stop(){
+    const b = this.btn;
+    this.hardStop();
+    if (b) this.setLabel(b, 'idle');
+    this.btn = null; this.text = '';
+  }
+};
+
+function speak(text, btn){ Speaker.toggle(text, btn); }
 
 /* ================================================================== voice check */
 class VoiceCheck {
@@ -950,11 +1108,14 @@ class VoiceCheck {
     if (cfg.model && !cfg.hideModel) this.renderPreListen();
   }
   renderPreListen(){
-    this.act.innerHTML = `<button class="minibtn listen" data-a="listen">🔊 Listen first · American voice</button>`;
-    this.act.querySelector('[data-a="listen"]').onclick = () => speak(this.cfg.model);
+    this.act.innerHTML = `<button class="minibtn listen" data-a="listen" title="Tap again to pause or continue">🔊 Listen first · American voice</button>`;
+    const b = this.act.querySelector('[data-a="listen"]');
+    b.onclick = () => speak(this.cfg.model, b);
   }
   async start(){
     if (!this.cfg) return;
+    Speaker.stop();
+    if (this.recAudio && !this.recAudio.paused) this.recAudio.pause();
     this.done = false;
     this.transcript = ''; this.interim = ''; this.err = null;
     this.cap.textContent = ''; this.res.innerHTML = ''; this.act.innerHTML = '';
@@ -1073,16 +1234,16 @@ class VoiceCheck {
   }
   renderPlay(){
     const btns = [];
-    if (this.audioURL) btns.push(`<button class="minibtn" data-a="play">▶ My recording</button>`);
+    if (this.audioURL) btns.push(`<button class="minibtn" data-a="play" data-idle="▶ My recording">▶ My recording</button>`);
     btns.push(`<button class="minibtn" data-a="again">↺ Try again</button>`);
     if (!this.cfg.hideModel) btns.push(`<button class="minibtn" data-a="model">🔊 Model answer</button>`);
     this.act.innerHTML = btns.join('');
     this.act.querySelectorAll('[data-a]').forEach(b => b.onclick = () => {
       const a = b.dataset.a;
-      if (a === 'play' && this.audioURL) new Audio(this.audioURL).play();
+      if (a === 'play' && this.audioURL) this.toggleRecording(b);
       if (a === 'again'){ this.arm(this.cfg); this.start(); }
       if (a === 'model'){
-        speak(this.cfg.model);
+        speak(this.cfg.model, b);
         if (!this.res.querySelector('.modelbox')){
           const box = document.createElement('div');
           box.className = 'modelbox';
@@ -1091,6 +1252,26 @@ class VoiceCheck {
         }
       }
     });
+  }
+  toggleRecording(btn){
+    if (!this.recAudio || this.recAudioURL !== this.audioURL){
+      this.recAudio = new Audio(this.audioURL);
+      this.recAudioURL = this.audioURL;
+      this.recAudio.onended = () => {
+        btn.classList.remove('playing');
+        btn.textContent = btn.dataset.idle || '▶ My recording';
+      };
+    }
+    if (this.recAudio.paused){
+      Speaker.stop();
+      this.recAudio.play();
+      btn.classList.add('playing');
+      btn.textContent = '⏸ Pause';
+    } else {
+      this.recAudio.pause();
+      btn.classList.remove('playing');
+      btn.textContent = '▶ Continue';
+    }
   }
   showTyped(){
     this.state.textContent = 'Speech recognition is not available in this browser. Type what you said — the same scoring will run.';
