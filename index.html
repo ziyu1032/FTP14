@@ -212,8 +212,9 @@
   .modelbox{margin-top:9px;font-size:13px;line-height:1.55;background:#F0F9FF;border-left:3px solid var(--teal);
     padding:8px 11px;border-radius:8px;color:#0F3F4F}
   .modelbox b{color:var(--teal)}
-  .typebox{display:flex;gap:8px;margin-top:8px}
-  .typebox input{flex:1;border:2px solid #F2E6DB;background:#fff;border-radius:11px;padding:9px 11px;font-family:inherit;font-size:14px}
+  .typebox{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+  .typebox input{flex:1 1 160px;min-width:0;border:2px solid #F2E6DB;background:#fff;border-radius:11px;padding:9px 11px;font-family:inherit;font-size:14px}
+  .heard{margin-top:8px;font-size:12.5px;color:var(--ink-soft);font-style:italic}
   .typebox input:focus{outline:none;border-color:var(--orange)}
 
   /* ---------- chat ---------- */
@@ -1109,25 +1110,60 @@ class VoiceCheck {
     this.transcript = ''; this.interim = ''; this.err = null;
     this.cap.textContent = '';
     this.res.innerHTML = '';
-    this.act.innerHTML = '';
     this.btn.classList.remove('rec');
     this.lbl.textContent = 'Tap to speak';
     this.state.textContent = cfg.hint || 'Press the microphone and say your sentence.';
     this.maxMs = cfg.maxMs || 22000;
-    if (cfg.model && !cfg.hideModel) this.renderPreListen();
+    this.renderActions();
   }
-  renderPreListen(){
-    this.act.innerHTML = `<button class="minibtn listen" data-a="listen" title="Tap again to pause or continue">🔊 Listen first · American voice</button>`;
-    const b = this.act.querySelector('[data-a="listen"]');
-    b.onclick = () => speak(this.cfg.model, b);
+
+  /* one action row for every state — the Check button is always reachable */
+  renderActions(){
+    if (!this.cfg){ this.act.innerHTML = ''; return; }
+    const btns = [];
+    if (this.cfg.model && !this.cfg.hideModel && !this.done)
+      btns.push(`<button class="minibtn listen" data-a="listen" data-idle="🔊 Listen first · American voice" title="Tap again to pause or continue">🔊 Listen first · American voice</button>`);
+    btns.push(`<button class="minibtn check" data-a="check" data-idle="✓ Check &amp; score">✓ Check &amp; score</button>`);
+    if (this.audioURL) btns.push(`<button class="minibtn" data-a="play" data-idle="▶ My recording">▶ My recording</button>`);
+    if (this.done) btns.push(`<button class="minibtn" data-a="again">↺ Try again</button>`);
+    if (this.cfg.model && !this.cfg.hideModel && this.done)
+      btns.push(`<button class="minibtn" data-a="model" data-idle="🔊 Model answer">🔊 Model answer</button>`);
+    this.act.innerHTML = btns.join('');
+    this.act.querySelectorAll('[data-a]').forEach(b => { b.onclick = () => this.action(b.dataset.a, b); });
   }
+
+  action(a, b){
+    if (a === 'listen') return Speaker.toggle(this.cfg.model, b);
+    if (a === 'check') return this.checkNow();
+    if (a === 'play') return this.toggleRecording(b);
+    if (a === 'again'){ Speaker.stop(); this.arm(this.cfg); this.start(); return; }
+    if (a === 'model'){
+      Speaker.toggle(this.cfg.model, b);
+      if (!this.res.querySelector('.modelbox')){
+        const box = document.createElement('div');
+        box.className = 'modelbox';
+        box.innerHTML = `<b>Model:</b> ${esc(this.cfg.model)}`;
+        this.res.appendChild(box);
+      }
+    }
+  }
+
+  /* pressing Check must always end with a score card */
+  checkNow(){
+    if (this.recording){ this.state.textContent = 'Checking your answer…'; return this.stop(true); }
+    if (!this.done) return this.finish();
+    reveal(this.res);
+    reveal($('fbArea'));
+  }
+
   async start(){
     if (!this.cfg) return;
     Speaker.stop();
     if (this.recAudio && !this.recAudio.paused) this.recAudio.pause();
     this.done = false;
     this.transcript = ''; this.interim = ''; this.err = null;
-    this.cap.textContent = ''; this.res.innerHTML = ''; this.act.innerHTML = '';
+    this.cap.textContent = ''; this.res.innerHTML = '';
+    this.renderActions();
     this.recording = true;
     this.btn.classList.add('rec');
     this.lbl.textContent = 'Listening…';
@@ -1145,7 +1181,7 @@ class VoiceCheck {
             if (this.audioURL) URL.revokeObjectURL(this.audioURL);
             this.audioURL = URL.createObjectURL(blob);
           }
-          this.renderPlay();
+          this.renderActions();
         };
         this.mr.start();
       }
@@ -1194,31 +1230,38 @@ class VoiceCheck {
       }
     }, 250);
   }
-  stop(){
-    if (!this.recording) return;
+
+  stop(fast){
+    if (!this.recording){ if (!this.done) this.finish(); return; }
     this.recording = false;
     clearTimeout(this.timer);
     clearInterval(this.watch);
     this.btn.classList.remove('rec');
     this.lbl.textContent = 'Tap to speak';
-    try{ if (this.recog) this.recog.stop(); }catch(e){}
+    if (!/^Got it/.test(this.state.textContent)) this.state.textContent = 'Checking your answer…';
+
+    let fired = false;
+    const once = () => { if (fired) return; fired = true; this.finish(); };
+    try{ if (this.recog){ this.recog.onend = once; this.recog.stop(); } }catch(e){}
     try{ if (this.mr && this.mr.state !== 'inactive') this.mr.stop(); }catch(e){}
     try{ if (this.stream) this.stream.getTracks().forEach(t => t.stop()); }catch(e){}
-    setTimeout(() => this.finish(), 420);
+
+    const said = (this.transcript + this.interim).trim().split(/\s+/).filter(Boolean).length >= 2;
+    setTimeout(once, fast ? 400 : (said ? 700 : 2600));
   }
+
   finish(){
     if (this.done) return;
-    const text = (this.transcript + ' ' + this.interim).replace(/\s+/g,' ').trim();
-    if (text.split(' ').filter(Boolean).length < 2){
-      const hard = ['unsupported','network','not-allowed','service-not-allowed','audio-capture','start-failed'].includes(this.err);
-      if (hard){ this.showTyped(); return; }
-      this.state.textContent = 'I did not catch anything. Press the microphone and try again, a little louder.';
-      this.done = false;
+    const text = (this.transcript + ' ' + this.interim).replace(/\s+/g, ' ').trim();
+    const words = text.split(/\s+/).filter(Boolean).length;
+    if (words < 2){
+      this.state.textContent = 'I could not catch the words this time. Type what you said, then press “Check & score” — you will still get a score and suggestions.';
+      this.showTyped('');
       return;
     }
     this.done = true;
     this.cap.textContent = text;
-    this.renderPlay();
+    this.renderActions();
     if (this.cfg.onText){
       this.state.textContent = 'Got it — your score and suggestions are below.';
       this.cfg.onText(text);
@@ -1226,6 +1269,7 @@ class VoiceCheck {
     }
     this.evaluate(text);
   }
+
   evaluate(text){
     const cfg = this.cfg;
     const r = scoreSpeech(text, cfg.targets, cfg.minWords);
@@ -1255,31 +1299,41 @@ class VoiceCheck {
       <div class="fbsub">How to improve</div>
       <ul class="fbtips">${tips.slice(0, 5).map(t => `<li>${esc(t)}</li>`).join('')}</ul>`;
     this.state.textContent = 'Your score and suggestions are below.';
-    this.renderPlay();
+    this.renderActions();
     reveal(this.res);
     if (cfg.onScore) cfg.onScore(r.score, text);
   }
-  renderPlay(){
-    const btns = [];
-    if (this.audioURL) btns.push(`<button class="minibtn" data-a="play" data-idle="▶ My recording">▶ My recording</button>`);
-    btns.push(`<button class="minibtn" data-a="again">↺ Try again</button>`);
-    if (!this.cfg.hideModel) btns.push(`<button class="minibtn" data-a="model">🔊 Model answer</button>`);
-    this.act.innerHTML = btns.join('');
-    this.act.querySelectorAll('[data-a]').forEach(b => b.onclick = () => {
-      const a = b.dataset.a;
-      if (a === 'play' && this.audioURL) this.toggleRecording(b);
-      if (a === 'again'){ this.arm(this.cfg); this.start(); }
-      if (a === 'model'){
-        speak(this.cfg.model, b);
-        if (!this.res.querySelector('.modelbox')){
-          const box = document.createElement('div');
-          box.className = 'modelbox';
-          box.innerHTML = `<b>Model:</b> ${esc(this.cfg.model)}`;
-          this.res.appendChild(box);
-        }
+
+  /* typed rescue path: still scored, still gets suggestions */
+  showTyped(heard){
+    this.state.textContent = 'I could not catch the words this time. Type what you said, then press Check — the score and suggestions will appear.';
+    this.res.innerHTML = `
+      <div class="typebox">
+        <input type="text" placeholder="Type the sentence you just said…">
+        <button class="minibtn" type="button">Check &amp; score</button>
+      </div>
+      ${heard ? `<div class="heard">Heard: “${esc(heard)}”</div>` : ''}`;
+    const input = this.res.querySelector('input');
+    const btn = this.res.querySelector('button');
+    const go = () => {
+      const v = input.value.trim();
+      if (v.split(/\s+/).filter(Boolean).length < 2){ input.focus(); return; }
+      this.done = true;
+      this.cap.textContent = v;
+      this.res.innerHTML = '';
+      this.renderActions();
+      if (this.cfg.onText){
+        this.state.textContent = 'Got it — your score and suggestions are below.';
+        this.cfg.onText(v);
+        return;
       }
-    });
+      this.evaluate(v);
+    };
+    btn.onclick = go;
+    input.onkeydown = e => { if (e.key === 'Enter') go(); };
+    try { input.focus({ preventScroll:true }); } catch(e){}
   }
+
   toggleRecording(btn){
     if (!this.recAudio || this.recAudioURL !== this.audioURL){
       this.recAudio = new Audio(this.audioURL);
@@ -1299,21 +1353,6 @@ class VoiceCheck {
       btn.classList.remove('playing');
       btn.textContent = '▶ Continue';
     }
-  }
-  showTyped(){
-    this.state.textContent = 'Speech recognition is not available in this browser. Type what you said — the same scoring will run.';
-    this.res.innerHTML = `<div class="typebox"><input type="text" placeholder="Type your sentence…"><button class="minibtn">Check</button></div>`;
-    const input = this.res.querySelector('input');
-    const btn = this.res.querySelector('button');
-    const go = () => {
-      const v = input.value.trim();
-      if (v.split(' ').length < 2) return;
-      this.done = true;
-      this.cap.textContent = v;
-      this.evaluate(v);
-    };
-    btn.onclick = go;
-    input.onkeydown = e => { if (e.key === 'Enter') go(); };
   }
 }
 
