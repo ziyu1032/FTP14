@@ -213,7 +213,7 @@ let CLS_NAME = CLS;
 const esc = s => String(s==null?'':s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const cls = v => v==null||v==='' ? '' : (v>=85?'g':v>=70?'y':'r');
 
-const SC = new URLSearchParams(location.search).get('sharecode') || '';
+const SC = new URLSearchParams(location.search).get('sharecode') || 'P2LBXVKRSS';
 let RID = 'current';
 const API_HOST = 'https://adec7b0b23c60c0ba.app.workbuddy.host';
 const SNAP_URL = 'data/snapshot.json';
