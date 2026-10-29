@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FTP14 成绩汇总 · 粘贴版</title>
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif; background:#f2f6f5; min-height:100vh; padding:20px 14px; }
+  .wrap { max-width:1000px; margin:0 auto; }
+  h1 { font-size:1.5rem; color:#12313d; }
+  .sub { color:#5b6b73; font-size:.88rem; margin:4px 0 16px; line-height:1.6; }
+  .card { background:#fff; border-radius:18px; padding:20px; box-shadow:0 8px 26px rgba(18,36,46,.08); margin-bottom:18px; }
+  textarea { width:100%; min-height:150px; padding:14px; border-radius:12px; border:2px solid #cfe0dd; font-size:.85rem; font-family:inherit; resize:vertical; }
+  .row { display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; }
+  button { padding:11px 22px; border:none; border-radius:12px; background:#0e7490; color:#fff; font-weight:700; cursor:pointer; }
+  button.ghost { background:#fff; color:#0e7490; border:2px solid #0e7490; }
+  table { width:100%; border-collapse:collapse; font-size:.86rem; }
+  th, td { padding:9px 8px; border-bottom:1px solid #e5eeec; text-align:left; white-space:nowrap; }
+  th { color:#5b6b73; font-size:.74rem; text-transform:uppercase; letter-spacing:.5px; }
+  td.num { text-align:center; font-weight:700; }
+  .good { color:#16a34a; } .mid { color:#d97706; } .low { color:#dc2626; }
+  tr:hover td { background:#f7fbfa; }
+  .bars { display:flex; flex-direction:column; gap:8px; }
+  .bar-row { display:flex; align-items:center; gap:10px; font-size:.9rem; }
+  .bar-label { width:200px; color:#12313d; font-weight:600; }
+  .bar-track { flex:1; background:#e8f0ef; border-radius:8px; height:22px; }
+  .bar-fill { height:100%; border-radius:8px; background:linear-gradient(90deg,#0e7490,#16a34a); min-width:2px; }
+  .bar-num { width:34px; text-align:right; font-weight:700; }
+  .tip { font-size:.85rem; color:#5b6b73; background:#f0f7f6; border-radius:10px; padding:12px 14px; margin-bottom:14px; line-height:1.7; }
+  .empty { text-align:center; color:#8aa; padding:26px; }
+  .count { font-size:.85rem; color:#5b6b73; margin-bottom:10px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>📊 FTP14 · 学生选品与成绩汇总</h1>
+  <p class="sub">把班级群里学生发来的成绩整批复制粘贴到下面 → 自动生成表格、选品分布图，可导出 Excel（CSV）</p>
+
+  <div class="card">
+    <div class="tip">
+      使用方法：<br>
+      ① 学生在结算页点「📋 复制我的成绩」→ 粘到班级群<br>
+      ② 你在群里全选这些文本（可一次几十条），复制 → 粘贴到下面的框<br>
+      ③ 点「开始汇总」，之后有新同学继续追加粘贴即可（自动去重）
+    </div>
+    <textarea id="raw" placeholder="把学生发来的成绩粘贴到这里，每行一条，形如：&#10;FTP14|张三|Hainan coffee|85|90|78|88|85|86|10/29 10:24"></textarea>
+    <div class="row">
+      <button onclick="parse()">开始汇总</button>
+      <button class="ghost" onclick="appendMode()">追加模式（保留已有数据）</button>
+      <button class="ghost" onclick="downloadCSV()">⬇ 导出 CSV（Excel 可打开）</button>
+      <button class="ghost" onclick="clearAll()">清空</button>
+    </div>
+    <p class="sub" id="msg" style="margin-top:10px"></p>
+  </div>
+
+  <div class="card">
+    <b>选品分布（谁选了哪个产品带货）</b>
+    <div class="bars" id="bars" style="margin-top:12px"></div>
+  </div>
+
+  <div class="card">
+    <div class="count" id="count"></div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead><tr>
+          <th>时间</th><th>姓名</th><th>选品</th><th>朗读</th><th>Q1</th><th>Q2</th><th>Q3</th><th>Q&A均分</th><th>总评</th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div id="empty" class="empty">还没有数据 —— 粘贴后点「开始汇总」</div>
+  </div>
+</div>
+
+<script>
+let rows = [];
+let append = false;
+
+function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function cls(v){ if(v===''||v==null) return ''; const n=Number(v); return n>=80?'good':n>=55?'mid':'low'; }
+
+function parse(){
+  const text = document.getElementById('raw').value || '';
+  const lines = text.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+  const parsed = [];
+  lines.forEach(l => {
+    const parts = l.split('|').map(s=>s.trim());
+    if(parts.length < 9) return;                       // 不是成绩行，跳过
+    const name = parts[1] || '匿名';
+    const product = parts[2] || '';
+    const read = parts[3], q1 = parts[4], q2 = parts[5], q3 = parts[6];
+    const avg = parts[7], overall = parts[8];
+    const time = parts[9] || '';
+    if(!name && !product) return;
+    parsed.push({ time, name, product, read, q1, q2, q3, avg, overall });
+  });
+
+  if(!append) rows = [];
+  // 去重：姓名+选品+时间 相同视为同一条
+  const seen = new Set(rows.map(r => r.name+'|'+r.product+'|'+r.time));
+  let added = 0;
+  parsed.forEach(p => {
+    const key = p.name+'|'+p.product+'|'+p.time;
+    if(seen.has(key)) return;
+    seen.add(key); rows.push(p); added++;
+  });
+
+  document.getElementById('msg').textContent =
+    '解析到 ' + parsed.length + ' 条成绩，新增 ' + added + ' 条，当前共 ' + rows.length + ' 条。';
+  render();
+  append = false;   // 汇总后回到替换模式，下次需再点“追加模式”
+}
+
+function appendMode(){
+  append = true;
+  parse();
+}
+
+function render(){
+  const tb = document.getElementById('tbody');
+  document.getElementById('empty').style.display = rows.length ? 'none' : 'block';
+  document.getElementById('count').textContent = '共 ' + rows.length + ' 名学生';
+
+  const dist = {};
+  rows.forEach(r => { dist[r.product||'未知'] = (dist[r.product||'未知']||0)+1; });
+  const items = Object.entries(dist).sort((a,b)=>b[1]-a[1]);
+  const max = Math.max(1, ...items.map(x=>x[1]));
+  document.getElementById('bars').innerHTML = items.length
+    ? items.map(([n,c]) => `<div class="bar-row"><span class="bar-label">${esc(n)}</span>
+        <div class="bar-track"><div class="bar-fill" style="width:${Math.round(c/max*100)}%"></div></div>
+        <span class="bar-num">${c}</span></div>`).join('')
+    : '<span class="empty">暂无数据</span>';
+
+  tb.innerHTML = rows.map(r => `<tr>
+    <td>${esc(r.time)}</td>
+    <td><b>${esc(r.name)}</b></td>
+    <td>${esc(r.product)}</td>
+    <td class="num ${cls(r.read)}">${r.read===''?'—':r.read}</td>
+    <td class="num ${cls(r.q1)}">${r.q1===''?'—':r.q1}</td>
+    <td class="num ${cls(r.q2)}">${r.q2===''?'—':r.q2}</td>
+    <td class="num ${cls(r.q3)}">${r.q3===''?'—':r.q3}</td>
+    <td class="num ${cls(r.avg)}">${r.avg===''?'—':r.avg}</td>
+    <td class="num ${cls(r.overall)}" style="font-size:1rem">${r.overall===''?'—':r.overall}</td>
+  </tr>`).join('');
+}
+
+function downloadCSV(){
+  if(!rows.length){ alert('还没有数据'); return; }
+  const head = ['时间','姓名','选品','朗读','Q1','Q2','Q3','Q&A均分','总评'];
+  const body = rows.map(r => [r.time,r.name,r.product,r.read,r.q1,r.q2,r.q3,r.avg,r.overall]
+    .map(v => '"' + String(v).replace(/"/g,'""') + '"').join(','));
+  const csv = '\ufeff' + [head.join(','), ...body].join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'FTP14成绩汇总.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+function clearAll(){
+  rows = []; document.getElementById('raw').value = '';
+  document.getElementById('msg').textContent = '已清空。';
+  render();
+}
+</script>
+</body>
+</html>
