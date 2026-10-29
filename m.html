@@ -921,33 +921,62 @@ function buildPayload(){
 }
 
 let sending = false;
+async function postPayload(payload){
+  const r = await fetch(apiUrl('/api/submit'), {
+    method:'POST',
+    headers:{ 'Content-Type':'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if(!r.ok) throw new Error('HTTP ' + r.status);
+  return await r.json();
+}
+function sendOk(tip, btn, manual){
+  localStorage.removeItem('ftp14pending');
+  tip.textContent = '✅ 已发送给老师 ✓（老师那边已经能看到）';
+  if(manual){ btn.textContent = '✅ 已送达'; setTimeout(()=>{ btn.textContent='📤 再发一次'; }, 2500); }
+  else { btn.textContent = '✅ 已自动发送给老师'; }
+}
 async function sendToTeacher(manual){
   if(!S.p) return;
   if(sending) return;
   sending = true;
+  const payload = buildPayload();
   const tip = $('uploadTip');
   const btn = $('btnSend');
   tip.style.display = 'block';
   tip.textContent = '☁️ 正在发送给老师…';
   if(manual) btn.textContent = '⏳ 正在发送…';
   try{
-    const r = await fetch(apiUrl('/api/submit'), {
-      method:'POST',
-      headers:{ 'Content-Type':'application/json' },
-      body: JSON.stringify(buildPayload())
-    });
-    if(!r.ok) throw new Error('HTTP ' + r.status);
-    await r.json();
-    tip.textContent = '✅ 已发送给老师 ✓（老师那边已经能看到）';
-    if(manual){ btn.textContent = '✅ 已送达'; setTimeout(()=>{ btn.textContent='📤 再发一次'; }, 2500); }
-    else { btn.textContent = '✅ 已自动发送给老师'; }
+    await postPayload(payload);
+    sendOk(tip, btn, manual);
   }catch(e){
-    tip.textContent = '⚠️ 发送失败（可能是网络问题），请点下方按钮重试';
-    btn.textContent = '🔁 重试发送给老师';
+    // 失败后自动重试一次（1.5 秒后）
+    try{
+      await new Promise(r => setTimeout(r, 1500));
+      await postPayload(payload);
+      sendOk(tip, btn, manual);
+    }catch(e2){
+      // 仍失败：存到手机本地，下次打开页面自动补发
+      try{ localStorage.setItem('ftp14pending', JSON.stringify(payload)); }catch(_){}
+      tip.textContent = '⚠️ 暂时没发出去（网络问题）。已保存在手机上，恢复网络后重新打开本页会自动补发，也可以点下方按钮重试';
+      btn.textContent = '🔁 重试发送给老师';
+    }
   }
   sending = false;
 }
 $('btnSend').onclick = () => sendToTeacher(true);
+
+/* 页面一打开就检查：上次有没有没发出去的成绩，有就自动补发 */
+window.addEventListener('load', () => {
+  const p = localStorage.getItem('ftp14pending');
+  if(!p) return;
+  setTimeout(async () => {
+    try{
+      await postPayload(JSON.parse(p));
+      localStorage.removeItem('ftp14pending');
+    }catch(e){ /* 仍然失败就留着，下次再试 */ }
+  }, 1500);
+});
 /* ================= 一键复制成绩（零账号方案） ================= */
 function composeReport(){
   const ansScores = [0,1,2].map(i => {
