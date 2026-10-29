@@ -574,6 +574,21 @@
   body{max-width:430px;margin:0 auto;
     box-shadow:0 0 0 1px rgba(18,36,46,.05),0 18px 50px rgba(18,36,46,.14)}
   .wrap{max-width:100%}
+
+  /* ---------- 完成遮罩 ---------- */
+  #doneOverlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:9999;
+    background:rgba(9,22,30,.88);backdrop-filter:blur(4px);padding:24px;animation:fade .3s ease}
+  #doneOverlay.on{display:flex}
+  .doneCard{background:linear-gradient(160deg,#FFFFFF 0%,#FFF3E8 100%);border-radius:26px;padding:34px 26px 26px;
+    max-width:340px;width:100%;text-align:center;box-shadow:0 30px 70px rgba(0,0,0,.35);animation:pop .35s ease}
+  @keyframes pop{from{opacity:0;transform:scale(.9) translateY(12px)}to{opacity:1;transform:none}}
+  .doneIcon{font-size:56px;line-height:1;margin-bottom:10px}
+  .doneCard h2{margin:0 0 6px;font-size:24px;font-weight:900;color:#12242E}
+  .doneCard p{margin:0 0 18px;color:#5B6B73;font-size:14px}
+  .doneBtns{display:flex;flex-direction:column;gap:9px}
+  .doneBtns .btn{width:100%;justify-content:center}
+  .doneBtns .btn.ghost{border:1px solid rgba(18,36,46,.18);color:var(--ink)}
+  .doneTip{margin:14px 0 0 !important;font-size:12px;color:#8a9aa2;min-height:16px}
 </style>
 </head>
 <body>
@@ -810,9 +825,8 @@
           <div class="stat"><b id="rViewers">0</b><span>Viewers</span></div>
         </div>
         <div class="breakdown" id="rBreak"></div>
-        <div id="sendWrap" style="margin-top:14px">
-          <button class="btn small" id="btnSend" style="width:100%">📤 发送给老师</button>
-          <button class="btn small" id="btnCopy" style="width:100%;margin-top:8px;background:transparent;border:1px solid rgba(255,255,255,.35);color:#cfe9e6">📋 复制成绩（备用）</button>
+        <div id="sendWrap" style="margin-top:16px">
+          <button class="btn small" id="btnSubmitFinish" style="width:100%;font-size:1.05rem;padding:14px 16px">✅ 完成 / Submit</button>
         </div>
       </div>
       <div class="script">
@@ -826,6 +840,21 @@
       </div>
     </div>
   </section>
+
+  <!-- ============ 完成遮罩：学生点“完成 / Submit”后才出现 ============ -->
+  <div id="doneOverlay">
+    <div class="doneCard">
+      <div class="doneIcon">🎉</div>
+      <h2>你已完成游戏！</h2>
+      <p>All done — great job, host!</p>
+      <div class="doneBtns">
+        <button class="btn" id="doneAnother">🛍 换一个产品</button>
+        <button class="btn ghost" id="doneRestart">🔁 再玩一次</button>
+        <button class="btn ghost" id="doneBack" style="border:0;background:none;color:#8a9aa2;font-size:13px;padding:6px">← 返回看我的报告</button>
+      </div>
+      <p class="doneTip" id="doneTip"></p>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -891,11 +920,15 @@ const S = {
 
 const $ = id => document.getElementById(id);
 
-/* ================= 成绩上报（老师自建后台，实时收取） =================
-   学生点“发送给老师”或进入结算页时自动上报；失败不影响游戏 */
+/* ================= 成绩提交（后台实时收集，学生端不显示“发送”字样） =================
+   学生点「完成 / Submit」时提交；进入结算页也会静默提交一次（同一局去重，不会重复计） */
 const API_HOST = 'https://adec7b0b23c60c0ba.app.workbuddy.host';
 const API_SC   = 'P2LBXVKRSS';
 const apiUrl = p => API_HOST + p + '?sharecode=' + encodeURIComponent(API_SC);
+
+/* 每一局生成一个局号，后台按局号去重：同一局只保留一条记录 */
+let SID = '';
+function newSession(){ SID = 's' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
 
 function buildPayload(){
   const ansScores = [0,1,2].map(i => {
@@ -911,6 +944,7 @@ function buildPayload(){
     return a ? { q:a.q, score:a.score, text:(a.text||'').slice(0,300) } : null;
   });
   return {
+    sid: SID,
     name: S.name || '匿名',
     productId: S.p.id, product: S.p.name,
     readScore: S.readScore,
@@ -930,41 +964,51 @@ async function postPayload(payload){
   if(!r.ok) throw new Error('HTTP ' + r.status);
   return await r.json();
 }
-function sendOk(tip, btn, manual){
-  localStorage.removeItem('ftp14pending');
-  tip.textContent = '✅ 已发送给老师 ✓（老师那边已经能看到）';
-  if(manual){ btn.textContent = '✅ 已送达'; setTimeout(()=>{ btn.textContent='📤 再发一次'; }, 2500); }
-  else { btn.textContent = '✅ 已自动发送给老师'; }
-}
-async function sendToTeacher(manual){
-  if(!S.p) return;
-  if(sending) return;
+
+/* mode: 'silent' 静默提交（不打扰学生） / 'manual' 学生点了“完成” */
+async function submitScore(mode){
+  if(!S.p) return false;
+  if(sending) return false;
   sending = true;
   const payload = buildPayload();
-  const tip = $('uploadTip');
-  const btn = $('btnSend');
-  tip.style.display = 'block';
-  tip.textContent = '☁️ 正在发送给老师…';
-  if(manual) btn.textContent = '⏳ 正在发送…';
+  let ok = false;
   try{
     await postPayload(payload);
-    sendOk(tip, btn, manual);
+    ok = true;
   }catch(e){
-    // 失败后自动重试一次（1.5 秒后）
     try{
       await new Promise(r => setTimeout(r, 1500));
       await postPayload(payload);
-      sendOk(tip, btn, manual);
-    }catch(e2){
-      // 仍失败：存到手机本地，下次打开页面自动补发
-      try{ localStorage.setItem('ftp14pending', JSON.stringify(payload)); }catch(_){}
-      tip.textContent = '⚠️ 暂时没发出去（网络问题）。已保存在手机上，恢复网络后重新打开本页会自动补发，也可以点下方按钮重试';
-      btn.textContent = '🔁 重试发送给老师';
-    }
+      ok = true;
+    }catch(e2){ /* 下面处理 */ }
+  }
+  if(ok){
+    try{ localStorage.removeItem('ftp14pending'); }catch(_){}
+  }else{
+    try{ localStorage.setItem('ftp14pending', JSON.stringify(payload)); }catch(_){}
   }
   sending = false;
+  return ok;
 }
-$('btnSend').onclick = () => sendToTeacher(true);
+
+/* 学生点“完成 / Submit” → 提交成绩 → 显示完成画面 */
+$('btnSubmitFinish').onclick = async () => {
+  const btn = $('btnSubmitFinish');
+  const tip = $('uploadTip');
+  btn.disabled = true;
+  btn.textContent = '⏳ 提交中…';
+  tip.style.display = 'block';
+  tip.textContent = '⏳ 正在提交…';
+  const ok = await submitScore('manual');
+  btn.disabled = false;
+  btn.textContent = '✅ 完成 / Submit';
+  tip.style.display = 'none';
+  $('doneTip').textContent = ok ? '' : '⚠️ 网络不佳，成绩没提交成功，请检查网络后再玩一次（重开页面会自动补交）';
+  $('doneOverlay').classList.add('on');
+};
+$('doneAnother').onclick = () => { $('doneOverlay').classList.remove('on'); newSession(); renderProducts(); show('screen-select'); };
+$('doneBack').onclick = () => { $('doneOverlay').classList.remove('on'); };
+$('doneRestart').onclick = () => { $('doneOverlay').classList.remove('on'); newSession(); show('screen-start'); };
 
 /* 页面一打开就检查：上次有没有没发出去的成绩，有就自动补发 */
 window.addEventListener('load', () => {
@@ -977,39 +1021,6 @@ window.addEventListener('load', () => {
     }catch(e){ /* 仍然失败就留着，下次再试 */ }
   }, 1500);
 });
-/* ================= 一键复制成绩（零账号方案） ================= */
-function composeReport(){
-  const ansScores = [0,1,2].map(i => {
-    const a = S.answers[i];
-    return (a && typeof a.score === 'number') ? a.score : '';
-  });
-  const done = ansScores.filter(v => v !== '');
-  const ansAvg = done.length ? Math.round(done.reduce((x,y)=>x+y,0)/done.length) : '';
-  const parts = done.concat(S.readScore == null ? [] : [S.readScore]);
-  const overall = parts.length ? Math.round(parts.reduce((x,y)=>x+y,0)/parts.length) : '';
-  const d = new Date();
-  const time = (d.getMonth()+1) + '/' + d.getDate() + ' ' +
-    String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
-  const line = ['FTP14', S.name || '匿名', S.p.name, S.readScore == null ? '' : S.readScore,
-    ansScores[0], ansScores[1], ansScores[2], ansAvg, overall, time].join('|');
-  return line;
-}
-$('btnCopy').onclick = async () => {
-  const txt = composeReport();
-  try{
-    await navigator.clipboard.writeText(txt);
-  }catch(e){
-    const ta = document.createElement('textarea');
-    ta.value = txt; ta.style.position='fixed'; ta.style.opacity='0';
-    document.body.appendChild(ta); ta.select();
-    try{ document.execCommand('copy'); }catch(_){}
-    ta.remove();
-  }
-  const b = $('btnCopy');
-  b.textContent = '✅ 已复制，粘贴发给老师';
-  setTimeout(()=>{ b.textContent = '📋 复制我的成绩（发给老师）'; }, 2500);
-};
-/* ================= 复制结束 ================= */
 const screens =['screen-start','screen-select','screen-desc','screen-talk','screen-result'];
 const NAV_LABEL = {
   'screen-select':'Step 1 · Choose',
@@ -1529,6 +1540,7 @@ class VoiceCheck {
 $('btnHowTo').onclick = () => { const h = $('howto'); h.style.display = h.style.display === 'none' ? 'block' : 'none'; };
 $('btnStart').onclick = () => {
   S.name = ($('studentName').value || '').trim() || '匿名';
+  newSession();
   renderProducts(); show('screen-select');
 };
 
@@ -2385,12 +2397,12 @@ function showResult(){
      <div class="secTitle">Step 3 · Q&amp;A</div>${qa}`;
 
   show('screen-result');
-  sendToTeacher(false);   // 进入结算页即自动上报，无需学生操作
+  submitScore('silent');   // 静默提交一次：学生就算中途关掉页面，成绩也不会丢（与点“完成”同一局，后台自动去重）
 }
 
 $('btnToTalk').onclick = () => { startTalk(); };
-$('btnAgain').onclick = () => { renderProducts(); show('screen-select'); };
-$('btnRestart').onclick = () => { show('screen-start'); };
+$('btnAgain').onclick = () => { newSession(); renderProducts(); show('screen-select'); };
+$('btnRestart').onclick = () => { newSession(); show('screen-start'); };
 
 /* ================================================================== voice instances */
 const vcDesc = new VoiceCheck($('micDesc'));
