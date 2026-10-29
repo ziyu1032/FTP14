@@ -256,7 +256,10 @@ async function loadSnapshot(){
     const snap = await r.json();
     const cs = snap.classes || {};
     const info = cs[CLS] || {};
-    const okCode = (CODE === 'ftp14-teacher') || (info.tcode && CODE.toUpperCase() === String(info.tcode).toUpperCase());
+    const known = !!cs[CLS];
+    const okCode = (CODE === 'ftp14-teacher')
+      || (info.tcode && CODE.toUpperCase() === String(info.tcode).toUpperCase())
+      || (!known && !!CODE);   // 新建的班还没进备份：暂时放行，等第一次备份后就按老师码校验
     if(!okCode){
       $('upd').textContent = '⚠️ 访问码不对（离线备份模式）';
       rows = []; render(); return;
