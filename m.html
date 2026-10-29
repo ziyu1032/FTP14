@@ -810,6 +810,7 @@
           <div class="stat"><b id="rViewers">0</b><span>Viewers</span></div>
         </div>
         <div class="breakdown" id="rBreak"></div>
+        <button class="btn small" id="btnCopy" style="margin-top:14px;width:100%">📋 复制我的成绩（发给老师）</button>
       </div>
       <div class="script">
         <h3>Your full sales script</h3>
@@ -892,6 +893,39 @@ const $ = id => document.getElementById(id);
    未替换时上报自动关闭，游戏完全不受影响 */
 const SB = { url:'__SB_URL__', key:'__SB_KEY__' };
 const REPORT_ENABLED = !!SB.key && SB.url.indexOf('__SB') !== 0;
+/* ================= 一键复制成绩（零账号方案） ================= */
+function composeReport(){
+  const ansScores = [0,1,2].map(i => {
+    const a = S.answers[i];
+    return (a && typeof a.score === 'number') ? a.score : '';
+  });
+  const done = ansScores.filter(v => v !== '');
+  const ansAvg = done.length ? Math.round(done.reduce((x,y)=>x+y,0)/done.length) : '';
+  const parts = done.concat(S.readScore == null ? [] : [S.readScore]);
+  const overall = parts.length ? Math.round(parts.reduce((x,y)=>x+y,0)/parts.length) : '';
+  const d = new Date();
+  const time = (d.getMonth()+1) + '/' + d.getDate() + ' ' +
+    String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  const line = ['FTP14', S.name || '匿名', S.p.name, S.readScore == null ? '' : S.readScore,
+    ansScores[0], ansScores[1], ansScores[2], ansAvg, overall, time].join('|');
+  return line;
+}
+$('btnCopy').onclick = async () => {
+  const txt = composeReport();
+  try{
+    await navigator.clipboard.writeText(txt);
+  }catch(e){
+    const ta = document.createElement('textarea');
+    ta.value = txt; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); }catch(_){}
+    ta.remove();
+  }
+  const b = $('btnCopy');
+  b.textContent = '✅ 已复制，粘贴发给老师';
+  setTimeout(()=>{ b.textContent = '📋 复制我的成绩（发给老师）'; }, 2500);
+};
+/* ================= 复制结束 ================= */
 async function reportToCloud(){
   if(!REPORT_ENABLED || !S.p) return;
   const ansScores = [0,1,2].map(i => {
