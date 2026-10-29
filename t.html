@@ -79,9 +79,9 @@
 
 <script>
 /* ===== 与 m.html 中相同的配置（替换后生效）===== */
-const CFG = { base:'__LC_BASE__', appId:'__LC_APPID__', appKey:'__LC_APPKEY__' };
+const CFG = { url:'__SB_URL__', key:'__SB_KEY__' };
 const ACCESS_CODE = 'ftp14-teacher';   // 想改密码就改这里
-const ENABLED = !!CFG.appId && !!CFG.appKey && CFG.base.indexOf('__LC') !== 0;
+const ENABLED = !!CFG.key && CFG.url.indexOf('__SB') !== 0;
 let cache = [];
 
 function unlock(){
@@ -101,14 +101,13 @@ function cls(v){ return v==null?'':(v>=80?'good':v>=55?'mid':'low'); }
 function fmtTime(iso){ const d=new Date(iso); return (d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
 
 async function loadData(){
-  if(!ENABLED){ document.getElementById('updatedAt').textContent='⚠️ 尚未配置 LeanCloud（和 m.html 里一起替换占位符）'; return; }
+  if(!ENABLED){ document.getElementById('updatedAt').textContent='⚠️ 尚未配置 Supabase（和 m.html 里一起替换占位符）'; return; }
   try{
-    const r = await fetch(CFG.base + '/1.1/classes/submission?order=-createdAt&limit=500', {
-      headers:{ 'X-LC-Id':CFG.appId, 'X-LC-Key':CFG.appKey }
+    const r = await fetch(CFG.url + '/rest/v1/submission?select=*&order=created_at.desc&limit=500', {
+      headers:{ 'apikey':CFG.key, 'Authorization':'Bearer ' + CFG.key }
     });
     if(!r.ok) throw new Error('HTTP '+r.status);
-    const data = await r.json();
-    cache = data.results || [];
+    cache = await r.json();
     render();
     document.getElementById('updatedAt').textContent = '更新于 ' + new Date().toLocaleTimeString('zh-CN');
   }catch(e){
@@ -122,7 +121,7 @@ function render(){
 
   /* 选品分布 */
   const dist = {};
-  cache.forEach(r => { dist[r.product || r.productId || '未知'] = (dist[r.product || r.productId || '未知']||0)+1; });
+  cache.forEach(r => { dist[r.product || r.product_id || '未知'] = (dist[r.product || r.product_id || '未知']||0)+1; });
   const items = Object.entries(dist).sort((a,b)=>b[1]-a[1]);
   const max = Math.max(1, ...items.map(x=>x[1]));
   document.getElementById('productBars').innerHTML = items.length
@@ -136,14 +135,14 @@ function render(){
   tb.innerHTML = cache.map((r,i) => {
     const o = r.overall;
     return `<tr>
-      <td>${fmtTime(r.createdAt)}</td>
+      <td>${fmtTime(r.created_at)}</td>
       <td><b>${esc(r.name)}</b></td>
       <td>${esc(r.product||'')}</td>
-      <td class="num ${cls(r.readScore)}">${r.readScore ?? '—'}</td>
+      <td class="num ${cls(r.read_score)}">${r.read_score ?? '—'}</td>
       <td class="num ${cls(r.q1)}">${r.q1 ?? '—'}</td>
       <td class="num ${cls(r.q2)}">${r.q2 ?? '—'}</td>
       <td class="num ${cls(r.q3)}">${r.q3 ?? '—'}</td>
-      <td class="num ${cls(r.ansAvg)}">${r.ansAvg ?? '—'}</td>
+      <td class="num ${cls(r.ans_avg)}">${r.ans_avg ?? '—'}</td>
       <td class="num ${cls(o)}" style="font-size:1rem">${o ?? '—'}</td>
       <td><span class="detail" onclick="toggleAns(${i})">答案</span>
         <pre class="ans" id="ans${i}">${renderAnswers(r.answers)}</pre></td>
