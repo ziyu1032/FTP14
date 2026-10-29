@@ -572,8 +572,47 @@ $('btnQr').onclick = () => {
 };
 $('btnCopyQr').onclick = e => copyText(stuUrl(), e.target, '📋 复制学生链接');
 $('btnRefresh').onclick = load;
-$('btnCsv').onclick = () => { location.href = q('/api/csv'); };
-$('btnCsv2').onclick = () => { location.href = q('/api/csv') + '&mode=summary'; };
+const csvCell = v => { const t = String(v==null?'':v); return /[",\n]/.test(t) ? '"' + t.replace(/"/g,'""') + '"' : t; };
+const csvRow = a => a.map(csvCell).join(',');
+function downloadCsv(name, text){
+  const blob = new Blob(['\ufeff' + text], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+}
+function exportCsv(mode){
+  if(!OFFLINE){ location.href = q('/api/csv') + (mode === 'summary' ? '&mode=summary' : ''); return; }
+  const nm = r => String((r.name||'').trim() || 'Anonymous');
+  const num = r => (typeof r.overall === 'number' ? r.overall : -1);
+  let out = '';
+  if(mode === 'summary'){
+    const order = [], g = {};
+    rows.forEach(r => { const k = nm(r); if(!g[k]){ g[k] = []; order.push(k); } g[k].push(r); });
+    out += csvRow(['姓名','提交次数','最高分','最高分那次选品','最后一次选品','最后一次总评','平均分','每次成绩明细（第几次|时间|选品|总评）']) + '\r\n';
+    order.forEach(k => {
+      const it = g[k], last = it[it.length-1];
+      const best = it.reduce((a,b) => num(b) > num(a) ? b : a, it[0]);
+      const sc = it.map(num).filter(x => x >= 0);
+      const avg = sc.length ? Math.round(sc.reduce((a,b)=>a+b,0)/sc.length) : '';
+      const det = it.map((r,i) => '第' + (i+1) + '次|' + (r.server_time||'') + '|' + (r.product||'') + '|' + (r.overall==null?'':r.overall)).join(' ； ');
+      out += csvRow([k, it.length, best.overall==null?'':best.overall, best.product||'', last.product||'', last.overall==null?'':last.overall, avg, det]) + '\r\n';
+    });
+    downloadCsv('ftp14_' + CLS + '_summary.csv', out);
+  } else {
+    out += csvRow(['第几次','时间','姓名','选品','朗读分','Q1','Q2','Q3','Q&A均分','总评','回答']) + '\r\n';
+    const seen = {};
+    rows.forEach(r => {
+      const k = nm(r); seen[k] = (seen[k]||0) + 1;
+      out += csvRow([seen[k], r.server_time||'', r.name||'', r.product||'',
+        r.readScore==null?'':r.readScore, r.q1==null?'':r.q1, r.q2==null?'':r.q2, r.q3==null?'':r.q3,
+        r.ansAvg==null?'':r.ansAvg, r.overall==null?'':r.overall,
+        (r.answers||[]).map(x => x==null?'':x).join(' / ')]) + '\r\n';
+    });
+    downloadCsv('ftp14_' + CLS + '.csv', out);
+  }
+}
+$('btnCsv').onclick = () => exportCsv('detail');
+$('btnCsv2').onclick = () => exportCsv('summary');
 load();
 setInterval(load, 15000);
 </script>
