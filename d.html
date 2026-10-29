@@ -290,7 +290,7 @@ function applyData(d, live){
     rows = d.rows || [];
     CLS_NAME = d.clsName || CLS;
     $('clsTag').textContent = (CLS === 'default') ? '我的班级' : ('🏫 ' + CLS_NAME + ' 的班级');
-    $('lnkNew').setAttribute('href', 'https://adec7b0b23c60c0ba.app.workbuddy.host/new?sharecode=' + encodeURIComponent(SC));
+    $('lnkNew').setAttribute('href', 'https://ziyu1032.github.io/FTP14/new.html');
     const bc = $('btnClaim'), un = d.unclaimed || 0;
     if(un > 0 && CLS !== 'default'){
       bc.style.display = '';
