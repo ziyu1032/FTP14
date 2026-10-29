@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FTP14 选品与成绩 · 老师后台</title>
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif; background:#f2f6f5; min-height:100vh; padding:20px 14px; }
+  .wrap { max-width:1000px; margin:0 auto; }
+  h1 { font-size:1.5rem; color:#12313d; margin-bottom:4px; }
+  .sub { color:#5b6b73; font-size:.9rem; margin-bottom:18px; }
+  .card { background:#fff; border-radius:18px; padding:20px; box-shadow:0 8px 26px rgba(18,36,46,.08); margin-bottom:18px; }
+  .gate { max-width:420px; margin:80px auto; text-align:center; }
+  .gate input { width:100%; padding:13px; border-radius:12px; border:2px solid #cbd; font-size:1rem; text-align:center; margin:12px 0; }
+  .gate button { width:100%; padding:13px; border:none; border-radius:12px; background:#0e7490; color:#fff; font-size:1rem; font-weight:700; cursor:pointer; }
+  .stats { display:flex; gap:14px; flex-wrap:wrap; }
+  .stat { flex:1; min-width:120px; background:#f0f7f6; border-radius:14px; padding:14px; text-align:center; }
+  .stat b { display:block; font-size:1.7rem; color:#0e7490; }
+  .stat span { font-size:.78rem; color:#5b6b73; }
+  .bars { display:flex; flex-direction:column; gap:8px; margin-top:6px; }
+  .bar-row { display:flex; align-items:center; gap:10px; font-size:.9rem; }
+  .bar-label { width:190px; color:#12313d; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .bar-track { flex:1; background:#e8f0ef; border-radius:8px; height:22px; position:relative; }
+  .bar-fill { height:100%; border-radius:8px; background:linear-gradient(90deg,#0e7490,#16a34a); min-width:2px; }
+  .bar-num { width:34px; text-align:right; font-weight:700; color:#12313d; }
+  table { width:100%; border-collapse:collapse; font-size:.88rem; }
+  th, td { padding:9px 8px; border-bottom:1px solid #e5eeec; text-align:left; white-space:nowrap; }
+  th { color:#5b6b73; font-size:.76rem; text-transform:uppercase; letter-spacing:.5px; }
+  td.num { text-align:center; font-weight:700; }
+  .good { color:#16a34a; } .mid { color:#d97706; } .low { color:#dc2626; }
+  tr:hover td { background:#f7fbfa; }
+  .toolbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px; }
+  .toolbar button { padding:8px 18px; border:none; border-radius:10px; background:#0e7490; color:#fff; font-weight:700; cursor:pointer; }
+  .refresh-note { font-size:.8rem; color:#8aa; }
+  .detail { cursor:pointer; color:#0e7490; text-decoration:underline; font-size:.8rem; }
+  pre.ans { white-space:pre-wrap; font-size:.8rem; background:#f0f7f6; border-radius:10px; padding:10px; margin-top:6px; display:none; }
+  .empty { text-align:center; color:#8aa; padding:30px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="gate" class="card gate">
+    <h1>🔐 老师后台</h1>
+    <p class="sub">请输入访问密码</p>
+    <input id="pwd" type="password" placeholder="访问密码">
+    <button onclick="unlock()">进入</button>
+  </div>
+
+  <div id="dash" style="display:none">
+    <h1>📊 FTP14 · 学生选品与成绩</h1>
+    <p class="sub">实时收集学生的选品、朗读与 Q&amp;A 得分 · 每 30 秒自动刷新</p>
+
+    <div class="card">
+      <div class="toolbar">
+        <b>选品分布（谁选了哪个产品带货）</b>
+        <span class="refresh-note" id="updatedAt"></span>
+      </div>
+      <div class="bars" id="productBars"></div>
+    </div>
+
+    <div class="card">
+      <div class="toolbar">
+        <b>成绩明细</b>
+        <button onclick="loadData()">↻ 立即刷新</button>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr>
+            <th>时间</th><th>姓名</th><th>选品</th><th>朗读</th><th>Q1</th><th>Q2</th><th>Q3</th><th>Q&A均分</th><th>总评</th><th></th>
+          </tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <div id="empty" class="empty" style="display:none">还没有学生提交 —— 让学生玩到 Host Report 页即可自动上报</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== 与 m.html 中相同的配置（替换后生效）===== */
+const CFG = { base:'__LC_BASE__', appId:'__LC_APPID__', appKey:'__LC_APPKEY__' };
+const ACCESS_CODE = 'ftp14-teacher';   // 想改密码就改这里
+const ENABLED = !!CFG.appId && !!CFG.appKey && CFG.base.indexOf('__LC') !== 0;
+let cache = [];
+
+function unlock(){
+  if(document.getElementById('pwd').value === ACCESS_CODE){
+    sessionStorage.setItem('ftp14ok','1');
+    enter();
+  } else alert('密码不对');
+}
+function enter(){
+  document.getElementById('gate').style.display='none';
+  document.getElementById('dash').style.display='block';
+  loadData();
+  setInterval(loadData, 30000);
+}
+function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function cls(v){ return v==null?'':(v>=80?'good':v>=55?'mid':'low'); }
+function fmtTime(iso){ const d=new Date(iso); return (d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+
+async function loadData(){
+  if(!ENABLED){ document.getElementById('updatedAt').textContent='⚠️ 尚未配置 LeanCloud（和 m.html 里一起替换占位符）'; return; }
+  try{
+    const r = await fetch(CFG.base + '/1.1/classes/submission?order=-createdAt&limit=500', {
+      headers:{ 'X-LC-Id':CFG.appId, 'X-LC-Key':CFG.appKey }
+    });
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const data = await r.json();
+    cache = data.results || [];
+    render();
+    document.getElementById('updatedAt').textContent = '更新于 ' + new Date().toLocaleTimeString('zh-CN');
+  }catch(e){
+    document.getElementById('updatedAt').textContent = '加载失败：' + e.message;
+  }
+}
+
+function render(){
+  const tb = document.getElementById('tbody');
+  document.getElementById('empty').style.display = cache.length ? 'none' : 'block';
+
+  /* 选品分布 */
+  const dist = {};
+  cache.forEach(r => { dist[r.product || r.productId || '未知'] = (dist[r.product || r.productId || '未知']||0)+1; });
+  const items = Object.entries(dist).sort((a,b)=>b[1]-a[1]);
+  const max = Math.max(1, ...items.map(x=>x[1]));
+  document.getElementById('productBars').innerHTML = items.length
+    ? items.map(([name,n]) =>
+        `<div class="bar-row"><span class="bar-label">${esc(name)}</span>
+         <div class="bar-track"><div class="bar-fill" style="width:${Math.round(n/max*100)}%"></div></div>
+         <span class="bar-num">${n}</span></div>`).join('')
+    : '<span class="empty">暂无数据</span>';
+
+  /* 明细表 */
+  tb.innerHTML = cache.map((r,i) => {
+    const o = r.overall;
+    return `<tr>
+      <td>${fmtTime(r.createdAt)}</td>
+      <td><b>${esc(r.name)}</b></td>
+      <td>${esc(r.product||'')}</td>
+      <td class="num ${cls(r.readScore)}">${r.readScore ?? '—'}</td>
+      <td class="num ${cls(r.q1)}">${r.q1 ?? '—'}</td>
+      <td class="num ${cls(r.q2)}">${r.q2 ?? '—'}</td>
+      <td class="num ${cls(r.q3)}">${r.q3 ?? '—'}</td>
+      <td class="num ${cls(r.ansAvg)}">${r.ansAvg ?? '—'}</td>
+      <td class="num ${cls(o)}" style="font-size:1rem">${o ?? '—'}</td>
+      <td><span class="detail" onclick="toggleAns(${i})">答案</span>
+        <pre class="ans" id="ans${i}">${renderAnswers(r.answers)}</pre></td>
+    </tr>`;
+  }).join('');
+}
+function renderAnswers(answers){
+  if(!Array.isArray(answers)) return '';
+  return answers.filter(Boolean).map(a =>
+    `【Q】${esc(a.q||'')}\n得分 ${a.score??'—'}：${esc(a.text||'')}`).join('\n\n');
+}
+function toggleAns(i){ const el=document.getElementById('ans'+i); el.style.display = el.style.display==='block'?'none':'block'; }
+
+if(sessionStorage.getItem('ftp14ok')==='1') enter();
+</script>
+</body>
+</html>
