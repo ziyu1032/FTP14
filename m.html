@@ -924,7 +924,11 @@ const $ = id => document.getElementById(id);
    学生点「完成 / Submit」时提交；进入结算页也会静默提交一次（同一局去重，不会重复计） */
 const API_HOST = 'https://adec7b0b23c60c0ba.app.workbuddy.host';
 const API_SC   = 'P2LBXVKRSS';
-const apiUrl = p => API_HOST + p + '?sharecode=' + encodeURIComponent(API_SC);
+/* 班级码：老师分享的链接形如 m.html?c=ABC123，学生提交时带上，只进该老师的看板 */
+const CLS = (new URLSearchParams(location.search).get('c') || 'default').toUpperCase();
+try{ if(CLS !== 'default') localStorage.setItem('ftp14cls', CLS); }catch(_){}
+const apiUrl = p => API_HOST + p + '?sharecode=' + encodeURIComponent(API_SC)
+  + (CLS !== 'default' ? '&c=' + encodeURIComponent(CLS) : '');
 
 /* 每一局生成一个局号，后台按局号去重：同一局只保留一条记录 */
 let SID = '';
@@ -945,6 +949,7 @@ function buildPayload(){
   });
   return {
     sid: SID,
+    cls: CLS,
     name: S.name || '匿名',
     productId: S.p.id, product: S.p.name,
     readScore: S.readScore,
