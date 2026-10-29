@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hainan Live! (手机版 Mobile)</title>
+<title>Hainan Live! (Mobile)</title>
 <style>
   :root{
     --cream:#FFF8F3;
@@ -312,7 +312,7 @@
   /* ================= responsive ================= */
 
   /* ---- big screens: larger type, easier to read from the back of a classroom ---- */
-  @media not all{ /* 手机版：不使用桌面放大规则 */
+  @media not all{ /* mobile: keep native mobile layout */
     .wrap{max-width:1360px}
     .brand small{font-size:12px}
     .pill{font-size:14px;padding:8px 15px}
@@ -559,7 +559,7 @@
     .brand small{display:none}
   }
 
-  /* ===== 版本提示条：电脑版/手机版共用样式 ===== */
+  /* ===== version hint bar (shared by mobile & desktop) ===== */
   #vHint{display:none;align-items:center;justify-content:center;gap:8px;
     font-size:13px;font-weight:700;padding:10px 14px;position:sticky;top:0;z-index:999;
     text-align:center;flex-wrap:wrap;line-height:1.5}
@@ -569,13 +569,13 @@
   #vHint button{font-size:14px;color:inherit;opacity:.8;padding:0 4px;margin-left:2px}
   #vHint .hx{font-size:15px}
 
-  /* ===== 手机版专属：恒为单列手机版式；在电脑上打开时居中成一条手机宽度 ===== */
+  /* ===== mobile-only: single column, phone-width when opened on a computer ===== */
   html{background:#EFE4D8}
   body{max-width:430px;margin:0 auto;
     box-shadow:0 0 0 1px rgba(18,36,46,.05),0 18px 50px rgba(18,36,46,.14)}
   .wrap{max-width:100%}
 
-  /* ---------- 完成遮罩 ---------- */
+  /* ---------- finish overlay ---------- */
   #doneOverlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:9999;
     background:rgba(9,22,30,.88);backdrop-filter:blur(4px);padding:24px;animation:fade .3s ease}
   #doneOverlay.on{display:flex}
@@ -602,12 +602,12 @@
   var msg='',cls='';
   if(wx){
     cls='warn';
-    msg='⚠️ 请点右上角 <b class="hx">⋯</b> →「在浏览器打开」：微信 / QQ 里录音和 AI 评分用不了';
+    msg='⚠️ Tap <b class="hx">⋯</b> (top right) → "Open in Browser": recording and AI scoring do not work inside WeChat / QQ';
   }else if(!mob){
     cls='info';
-    msg='📱 这是手机版页面，请在<b>手机浏览器</b>中打开（电脑上课请用 <a href="pc.html">电脑版</a>）';
+    msg='📱 Mobile version — please open in your <b>phone browser</b> (use the <a href="pc.html">desktop version</a> on a computer)';
   }else{
-    return; // 已在手机浏览器里，正常可用，不打扰
+    return; // already in a mobile browser — all good
   }
   el.className=cls;
   el.innerHTML=msg;
@@ -653,7 +653,7 @@
           <span>2 · Describe it (6 sentences)</span>
           <span>3 · Handle 3 viewer questions</span>
         </div>
-        <input id="studentName" maxlength="24" autocomplete="off" placeholder="✍️ 输入姓名 / Name"
+        <input id="studentName" maxlength="24" autocomplete="off" placeholder="✍️ Your name"
           style="width:100%;display:block;margin:14px 0 2px;padding:13px 16px;border-radius:14px;border:2px solid #F97316;background:#FFFFFF;color:#12242E;font-size:16px;font-weight:600;text-align:center;outline:none;box-sizing:border-box">
         <button class="btn" id="btnStart">Start selling ▸</button>
         <button class="btn ghost" id="btnHowTo" style="margin-left:10px">How it works</button>
@@ -826,7 +826,7 @@
         </div>
         <div class="breakdown" id="rBreak"></div>
         <div id="sendWrap" style="margin-top:16px">
-          <button class="btn small" id="btnSubmitFinish" style="width:100%;font-size:1.05rem;padding:14px 16px">✅ 完成 / Submit</button>
+          <button class="btn small" id="btnSubmitFinish" style="width:100%;font-size:1.05rem;padding:14px 16px">✅ Submit</button>
         </div>
       </div>
       <div class="script">
@@ -841,16 +841,16 @@
     </div>
   </section>
 
-  <!-- ============ 完成遮罩：学生点“完成 / Submit”后才出现 ============ -->
+  <!-- ============ finish overlay: shows after the student taps Submit ============ -->
   <div id="doneOverlay">
     <div class="doneCard">
       <div class="doneIcon">🎉</div>
-      <h2>你已完成游戏！</h2>
+      <h2>You have finished the game!</h2>
       <p>All done — great job, host!</p>
       <div class="doneBtns">
-        <button class="btn" id="doneAnother">🛍 换一个产品</button>
-        <button class="btn ghost" id="doneRestart">🔁 再玩一次</button>
-        <button class="btn ghost" id="doneBack" style="border:0;background:none;color:#8a9aa2;font-size:13px;padding:6px">← 返回看我的报告</button>
+        <button class="btn" id="doneAnother">🛍 Another product</button>
+        <button class="btn ghost" id="doneRestart">🔁 Play again</button>
+        <button class="btn ghost" id="doneBack" style="border:0;background:none;color:#8a9aa2;font-size:13px;padding:6px">← Back to my report</button>
       </div>
       <p class="doneTip" id="doneTip"></p>
     </div>
@@ -920,17 +920,17 @@ const S = {
 
 const $ = id => document.getElementById(id);
 
-/* ================= 成绩提交（后台实时收集，学生端不显示“发送”字样） =================
-   学生点「完成 / Submit」时提交；进入结算页也会静默提交一次（同一局去重，不会重复计） */
+/* ================= score submission (sent to the teacher dashboard in real time) =================
+   Sent when the student taps Submit; also sent silently on the result screen (dedup by session id) */
 const API_HOST = 'https://adec7b0b23c60c0ba.app.workbuddy.host';
 const API_SC   = 'P2LBXVKRSS';
-/* 班级码：老师分享的链接形如 m.html?c=ABC123，学生提交时带上，只进该老师的看板 */
+/* class code: teacher shares m.html?c=ABC123; submissions go only to that teacher dashboard */
 const CLS = (new URLSearchParams(location.search).get('c') || 'default').toUpperCase();
 try{ if(CLS !== 'default') localStorage.setItem('ftp14cls', CLS); }catch(_){}
 const apiUrl = p => API_HOST + p + '?sharecode=' + encodeURIComponent(API_SC)
   + (CLS !== 'default' ? '&c=' + encodeURIComponent(CLS) : '');
 
-/* 每一局生成一个局号，后台按局号去重：同一局只保留一条记录 */
+/* one session id per game; the server keeps only one record per session */
 let SID = '';
 function newSession(){ SID = 's' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
 
@@ -950,7 +950,7 @@ function buildPayload(){
   return {
     sid: SID,
     cls: CLS,
-    name: S.name || '匿名',
+    name: S.name || 'Anonymous',
     productId: S.p.id, product: S.p.name,
     readScore: S.readScore,
     q1: ansScores[0], q2: ansScores[1], q3: ansScores[2],
@@ -960,14 +960,14 @@ function buildPayload(){
 }
 
 let sending = false;
-/* 发送成绩。normal: 正常跨域请求（能确认服务器收到）；
-   noCors: 兜底通道——部分手机内置浏览器（微信/支付宝内核）会拦截跨域响应的读取，
-   导致“其实发成功了却被当成失败”。no-cors 模式不读响应，只要请求发出即可。 */
+/* send score. normal: standard CORS request (server receipt confirmed);
+   noCors: fallback for in-app browsers (WeChat/Alipay) that block reading cross-origin responses,
+   so a successful send can look like a failure. no-cors ignores the response entirely. */
 async function postPayload(payload, noCors){
   const r = await fetch(apiUrl('/api/submit'), {
     method:'POST',
     mode: noCors ? 'no-cors' : 'cors',
-    headers:{ 'Content-Type':'text/plain;charset=UTF-8' },   // 简单请求，免去预检，兼容性最好
+    headers:{ 'Content-Type':'text/plain;charset=UTF-8' },   // simple request: no preflight, best compatibility
     body: JSON.stringify(payload),
     keepalive: true
   });
@@ -976,24 +976,24 @@ async function postPayload(payload, noCors){
     await r.json();
   }
 }
-/* 完整提交链：正常发 → 失败等1.2秒重试 → 再失败用 no-cors 兜底 */
+/* full chain: normal send -> retry after 1.2s -> no-cors fallback */
 async function submitRaw(payload){
   try{
     await postPayload(payload);
     return true;
-  }catch(e){ /* 重试 */ }
+  }catch(e){ /* retry */ }
   await new Promise(r => setTimeout(r, 1200));
   try{
     await postPayload(payload);
     return true;
-  }catch(e){ /* 兜底 */ }
+  }catch(e){ /* fallback */ }
   try{
     await postPayload(payload, true);
     return true;
   }catch(e){ return false; }
 }
 
-/* mode: 'silent' 静默提交（不打扰学生） / 'manual' 学生点了“完成” */
+/* mode: 'silent' submit quietly / 'manual' student tapped Submit */
 async function submitScore(mode){
   if(!S.p) return false;
   if(sending) return false;
@@ -1009,26 +1009,26 @@ async function submitScore(mode){
   return ok;
 }
 
-/* 学生点“完成 / Submit” → 提交成绩 → 显示完成画面 */
+/* student taps Submit -> send score -> show finish overlay */
 $('btnSubmitFinish').onclick = async () => {
   const btn = $('btnSubmitFinish');
   const tip = $('uploadTip');
   btn.disabled = true;
-  btn.textContent = '⏳ 提交中…';
+  btn.textContent = '⏳ Submitting…';
   tip.style.display = 'block';
-  tip.textContent = '⏳ 正在提交…';
+  tip.textContent = '⏳ Submitting…';
   const ok = await submitScore('manual');
   btn.disabled = false;
-  btn.textContent = '✅ 完成 / Submit';
+  btn.textContent = '✅ Submit';
   tip.style.display = 'none';
-  $('doneTip').textContent = ok ? '' : '⚠️ 网络不佳，成绩没提交成功，请检查网络后再玩一次（重开页面会自动补交）';
+  $('doneTip').textContent = ok ? '' : '⚠️ Score not sent — please check your connection and play again (it will re-send automatically next time)';
   $('doneOverlay').classList.add('on');
 };
 $('doneAnother').onclick = () => { $('doneOverlay').classList.remove('on'); newSession(); renderProducts(); show('screen-select'); };
 $('doneBack').onclick = () => { $('doneOverlay').classList.remove('on'); };
 $('doneRestart').onclick = () => { $('doneOverlay').classList.remove('on'); newSession(); show('screen-start'); };
 
-/* 页面一打开就检查：上次有没有没发出去的成绩，有就自动补发 */
+/* on load: re-send any score that failed to send last time */
 window.addEventListener('load', () => {
   const p = localStorage.getItem('ftp14pending');
   if(!p) return;
@@ -1036,7 +1036,7 @@ window.addEventListener('load', () => {
     try{
       const ok = await submitRaw(JSON.parse(p));
       if(ok) localStorage.removeItem('ftp14pending');
-    }catch(e){ /* 仍然失败就留着，下次再试 */ }
+    }catch(e){ /* keep it and try again next time */ }
   }, 1500);
 });
 const screens =['screen-start','screen-select','screen-desc','screen-talk','screen-result'];
@@ -1557,7 +1557,7 @@ class VoiceCheck {
 /* ================================================================== start */
 $('btnHowTo').onclick = () => { const h = $('howto'); h.style.display = h.style.display === 'none' ? 'block' : 'none'; };
 $('btnStart').onclick = () => {
-  S.name = ($('studentName').value || '').trim() || '匿名';
+  S.name = ($('studentName').value || '').trim() || 'Anonymous';
   newSession();
   renderProducts(); show('screen-select');
 };
@@ -2415,7 +2415,7 @@ function showResult(){
      <div class="secTitle">Step 3 · Q&amp;A</div>${qa}`;
 
   show('screen-result');
-  submitScore('silent');   // 静默提交一次：学生就算中途关掉页面，成绩也不会丢（与点“完成”同一局，后台自动去重）
+  submitScore('silent');   // send quietly so the score is kept even if the student closes the page (dedup by session)
 }
 
 $('btnToTalk').onclick = () => { startTalk(); };
