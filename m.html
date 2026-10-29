@@ -887,11 +887,11 @@ const S = {
 
 const $ = id => document.getElementById(id);
 
-/* ================= 成绩上报（LeanCloud 云数据库） =================
-   三个占位符由老师提供后替换：__LC_BASE__ / __LC_APPID__ / __LC_APPKEY__
+/* ================= 成绩上报（Supabase 云数据库） =================
+   两个占位符由老师提供后替换：__SB_URL__ / __SB_KEY__
    未替换时上报自动关闭，游戏完全不受影响 */
-const LC = { base:'__LC_BASE__', appId:'__LC_APPID__', appKey:'__LC_APPKEY__' };
-const REPORT_ENABLED = !!LC.appId && !!LC.appKey && LC.base.indexOf('__LC') !== 0;
+const SB = { url:'__SB_URL__', key:'__SB_KEY__' };
+const REPORT_ENABLED = !!SB.key && SB.url.indexOf('__SB') !== 0;
 async function reportToCloud(){
   if(!REPORT_ENABLED || !S.p) return;
   const ansScores = [0,1,2].map(i => {
@@ -908,15 +908,18 @@ async function reportToCloud(){
   });
   const tip = $('uploadTip');
   try{
-    const r = await fetch(LC.base + '/1.1/classes/submission', {
+    const r = await fetch(SB.url + '/rest/v1/submission', {
       method:'POST',
-      headers:{ 'X-LC-Id':LC.appId, 'X-LC-Key':LC.appKey, 'Content-Type':'application/json' },
+      headers:{
+        'apikey': SB.key, 'Authorization': 'Bearer ' + SB.key,
+        'Content-Type':'application/json', 'Prefer':'return=minimal'
+      },
       body: JSON.stringify({
         name: S.name || '匿名',
-        productId: S.p.id, product: S.p.name,
-        readScore: S.readScore,
+        product_id: S.p.id, product: S.p.name,
+        read_score: S.readScore,
         q1: ansScores[0], q2: ansScores[1], q3: ansScores[2],
-        ansAvg: ansAvg, overall: overall,
+        ans_avg: ansAvg, overall: overall,
         answers: answers
       })
     });
