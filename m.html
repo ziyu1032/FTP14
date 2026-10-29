@@ -810,7 +810,10 @@
           <div class="stat"><b id="rViewers">0</b><span>Viewers</span></div>
         </div>
         <div class="breakdown" id="rBreak"></div>
-        <button class="btn small" id="btnCopy" style="margin-top:14px;width:100%">📋 复制我的成绩（发给老师）</button>
+        <div id="sendWrap" style="margin-top:14px">
+          <button class="btn small" id="btnSend" style="width:100%">📤 发送给老师</button>
+          <button class="btn small" id="btnCopy" style="width:100%;margin-top:8px;background:transparent;border:1px solid rgba(255,255,255,.35);color:#cfe9e6">📋 复制成绩（备用）</button>
+        </div>
       </div>
       <div class="script">
         <h3>Your full sales script</h3>
@@ -888,11 +891,63 @@ const S = {
 
 const $ = id => document.getElementById(id);
 
-/* ================= 成绩上报（Supabase 云数据库） =================
-   两个占位符由老师提供后替换：__SB_URL__ / __SB_KEY__
-   未替换时上报自动关闭，游戏完全不受影响 */
-const SB = { url:'__SB_URL__', key:'__SB_KEY__' };
-const REPORT_ENABLED = !!SB.key && SB.url.indexOf('__SB') !== 0;
+/* ================= 成绩上报（老师自建后台，实时收取） =================
+   学生点“发送给老师”或进入结算页时自动上报；失败不影响游戏 */
+const API_HOST = 'https://adec7b0b23c60c0ba.app.workbuddy.host';
+const API_SC   = 'P2LBXVKRSS';
+const apiUrl = p => API_HOST + p + '?sharecode=' + encodeURIComponent(API_SC);
+
+function buildPayload(){
+  const ansScores = [0,1,2].map(i => {
+    const a = S.answers[i];
+    return (a && typeof a.score === 'number') ? a.score : null;
+  });
+  const done = ansScores.filter(v => v !== null);
+  const ansAvg = done.length ? Math.round(done.reduce((x,y)=>x+y,0)/done.length) : null;
+  const parts = done.concat(S.readScore == null ? [] : [S.readScore]);
+  const overall = parts.length ? Math.round(parts.reduce((x,y)=>x+y,0)/parts.length) : null;
+  const answers = [0,1,2].map(i => {
+    const a = S.answers[i];
+    return a ? { q:a.q, score:a.score, text:(a.text||'').slice(0,300) } : null;
+  });
+  return {
+    name: S.name || '匿名',
+    productId: S.p.id, product: S.p.name,
+    readScore: S.readScore,
+    q1: ansScores[0], q2: ansScores[1], q3: ansScores[2],
+    ansAvg: ansAvg, overall: overall,
+    answers: answers
+  };
+}
+
+let sending = false;
+async function sendToTeacher(manual){
+  if(!S.p) return;
+  if(sending) return;
+  sending = true;
+  const tip = $('uploadTip');
+  const btn = $('btnSend');
+  tip.style.display = 'block';
+  tip.textContent = '☁️ 正在发送给老师…';
+  if(manual) btn.textContent = '⏳ 正在发送…';
+  try{
+    const r = await fetch(apiUrl('/api/submit'), {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify(buildPayload())
+    });
+    if(!r.ok) throw new Error('HTTP ' + r.status);
+    await r.json();
+    tip.textContent = '✅ 已发送给老师 ✓（老师那边已经能看到）';
+    if(manual){ btn.textContent = '✅ 已送达'; setTimeout(()=>{ btn.textContent='📤 再发一次'; }, 2500); }
+    else { btn.textContent = '✅ 已自动发送给老师'; }
+  }catch(e){
+    tip.textContent = '⚠️ 发送失败（可能是网络问题），请点下方按钮重试';
+    btn.textContent = '🔁 重试发送给老师';
+  }
+  sending = false;
+}
+$('btnSend').onclick = () => sendToTeacher(true);
 /* ================= 一键复制成绩（零账号方案） ================= */
 function composeReport(){
   const ansScores = [0,1,2].map(i => {
@@ -926,46 +981,6 @@ $('btnCopy').onclick = async () => {
   setTimeout(()=>{ b.textContent = '📋 复制我的成绩（发给老师）'; }, 2500);
 };
 /* ================= 复制结束 ================= */
-async function reportToCloud(){
-  if(!REPORT_ENABLED || !S.p) return;
-  const ansScores = [0,1,2].map(i => {
-    const a = S.answers[i];
-    return (a && typeof a.score === 'number') ? a.score : null;
-  });
-  const done = ansScores.filter(v => v !== null);
-  const ansAvg = done.length ? Math.round(done.reduce((x,y)=>x+y,0)/done.length) : null;
-  const parts = done.concat(S.readScore == null ? [] : [S.readScore]);
-  const overall = parts.length ? Math.round(parts.reduce((x,y)=>x+y,0)/parts.length) : null;
-  const answers = [0,1,2].map(i => {
-    const a = S.answers[i];
-    return a ? { q:a.q, score:a.score, text:(a.text||'').slice(0,300) } : null;
-  });
-  const tip = $('uploadTip');
-  try{
-    const r = await fetch(SB.url + '/rest/v1/submission', {
-      method:'POST',
-      headers:{
-        'apikey': SB.key, 'Authorization': 'Bearer ' + SB.key,
-        'Content-Type':'application/json', 'Prefer':'return=minimal'
-      },
-      body: JSON.stringify({
-        name: S.name || '匿名',
-        product_id: S.p.id, product: S.p.name,
-        read_score: S.readScore,
-        q1: ansScores[0], q2: ansScores[1], q3: ansScores[2],
-        ans_avg: ansAvg, overall: overall,
-        answers: answers
-      })
-    });
-    if(!r.ok) throw new Error('HTTP ' + r.status);
-    tip.style.display = 'block';
-    tip.textContent = '☁️ Sent to your teacher ✓';
-  }catch(e){
-    tip.style.display = 'block';
-    tip.textContent = '⚠️ Upload failed — your report is still shown here.';
-  }
-}
-/* ================= 上报结束 ================= */
 const screens =['screen-start','screen-select','screen-desc','screen-talk','screen-result'];
 const NAV_LABEL = {
   'screen-select':'Step 1 · Choose',
@@ -2341,7 +2356,7 @@ function showResult(){
      <div class="secTitle">Step 3 · Q&amp;A</div>${qa}`;
 
   show('screen-result');
-  reportToCloud();
+  sendToTeacher(false);   // 进入结算页即自动上报，无需学生操作
 }
 
 $('btnToTalk').onclick = () => { startTalk(); };
