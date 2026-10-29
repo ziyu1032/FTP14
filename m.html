@@ -926,6 +926,7 @@ const API_HOST = 'https://adec7b0b23c60c0ba.app.workbuddy.host';
 const API_SC   = 'P2LBXVKRSS';
 /* class code: teacher shares m.html?c=ABC123; submissions go only to that teacher dashboard */
 const CLS = (new URLSearchParams(location.search).get('c') || '').trim().toUpperCase() || 'DEFAULT';
+const TCODE = (new URLSearchParams(location.search).get('t') || '').trim().toUpperCase();
 try{ if(CLS !== 'DEFAULT') localStorage.setItem('ftp14cls', CLS); }catch(_){}
 const apiUrl = p => API_HOST + p + '?sharecode=' + encodeURIComponent(API_SC)
   + (CLS !== 'DEFAULT' ? '&c=' + encodeURIComponent(CLS) : '');
@@ -950,6 +951,7 @@ function buildPayload(){
   return {
     sid: SID,
     cls: CLS,
+    tcode: TCODE,
     name: S.name || 'Anonymous',
     productId: S.p.id, product: S.p.name,
     readScore: S.readScore,
