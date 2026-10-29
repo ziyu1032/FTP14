@@ -638,6 +638,8 @@
           <span>2 · Describe it (6 sentences)</span>
           <span>3 · Handle 3 viewer questions</span>
         </div>
+        <input id="studentName" maxlength="24" autocomplete="off" placeholder="✍️ 输入姓名 / Name"
+          style="width:100%;display:block;margin:14px 0 2px;padding:13px 16px;border-radius:14px;border:2px solid #F97316;background:#FFFFFF;color:#12242E;font-size:16px;font-weight:600;text-align:center;outline:none;box-sizing:border-box">
         <button class="btn" id="btnStart">Start selling ▸</button>
         <button class="btn ghost" id="btnHowTo" style="margin-left:10px">How it works</button>
         <p class="hintbar" id="howto" style="display:none;max-width:62ch;line-height:1.65">
@@ -798,6 +800,7 @@
       <div class="scorecard">
         <h2>Host report</h2>
         <p class="sub" id="rSub">Product · Hainan coconut products</p>
+        <p class="sub" id="uploadTip" style="display:none;margin-top:4px;color:#7fd8c8"></p>
         <div class="stars" id="starRow">★★★★★</div>
         <p class="sub" id="starWord">Excellent host!</p>
         <div class="stats">
@@ -883,7 +886,50 @@ const S = {
 };
 
 const $ = id => document.getElementById(id);
-const screens = ['screen-start','screen-select','screen-desc','screen-talk','screen-result'];
+
+/* ================= 成绩上报（LeanCloud 云数据库） =================
+   三个占位符由老师提供后替换：__LC_BASE__ / __LC_APPID__ / __LC_APPKEY__
+   未替换时上报自动关闭，游戏完全不受影响 */
+const LC = { base:'__LC_BASE__', appId:'__LC_APPID__', appKey:'__LC_APPKEY__' };
+const REPORT_ENABLED = !!LC.appId && !!LC.appKey && LC.base.indexOf('__LC') !== 0;
+async function reportToCloud(){
+  if(!REPORT_ENABLED || !S.p) return;
+  const ansScores = [0,1,2].map(i => {
+    const a = S.answers[i];
+    return (a && typeof a.score === 'number') ? a.score : null;
+  });
+  const done = ansScores.filter(v => v !== null);
+  const ansAvg = done.length ? Math.round(done.reduce((x,y)=>x+y,0)/done.length) : null;
+  const parts = done.concat(S.readScore == null ? [] : [S.readScore]);
+  const overall = parts.length ? Math.round(parts.reduce((x,y)=>x+y,0)/parts.length) : null;
+  const answers = [0,1,2].map(i => {
+    const a = S.answers[i];
+    return a ? { q:a.q, score:a.score, text:(a.text||'').slice(0,300) } : null;
+  });
+  const tip = $('uploadTip');
+  try{
+    const r = await fetch(LC.base + '/1.1/classes/submission', {
+      method:'POST',
+      headers:{ 'X-LC-Id':LC.appId, 'X-LC-Key':LC.appKey, 'Content-Type':'application/json' },
+      body: JSON.stringify({
+        name: S.name || '匿名',
+        productId: S.p.id, product: S.p.name,
+        readScore: S.readScore,
+        q1: ansScores[0], q2: ansScores[1], q3: ansScores[2],
+        ansAvg: ansAvg, overall: overall,
+        answers: answers
+      })
+    });
+    if(!r.ok) throw new Error('HTTP ' + r.status);
+    tip.style.display = 'block';
+    tip.textContent = '☁️ Sent to your teacher ✓';
+  }catch(e){
+    tip.style.display = 'block';
+    tip.textContent = '⚠️ Upload failed — your report is still shown here.';
+  }
+}
+/* ================= 上报结束 ================= */
+const screens =['screen-start','screen-select','screen-desc','screen-talk','screen-result'];
 const NAV_LABEL = {
   'screen-select':'Step 1 · Choose',
   'screen-desc':'Step 2 · Describe',
@@ -1400,7 +1446,10 @@ class VoiceCheck {
 
 /* ================================================================== start */
 $('btnHowTo').onclick = () => { const h = $('howto'); h.style.display = h.style.display === 'none' ? 'block' : 'none'; };
-$('btnStart').onclick = () => { renderProducts(); show('screen-select'); };
+$('btnStart').onclick = () => {
+  S.name = ($('studentName').value || '').trim() || '匿名';
+  renderProducts(); show('screen-select');
+};
 
 /* ---------- global navigation: back / products / restart ---------- */
 function currentScreen(){
@@ -2255,6 +2304,7 @@ function showResult(){
      <div class="secTitle">Step 3 · Q&amp;A</div>${qa}`;
 
   show('screen-result');
+  reportToCloud();
 }
 
 $('btnToTalk').onclick = () => { startTalk(); };
