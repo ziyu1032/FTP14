@@ -222,44 +222,69 @@ const q = p => API_HOST + p + '?sharecode=' + encodeURIComponent(SC) + '&code=' 
   + (CLS && CLS !== 'default' ? '&c=' + encodeURIComponent(CLS) : '')
   + (RID && RID !== 'current' ? '&round=' + encodeURIComponent(RID) : '');
 
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+let LASTGOOD = null, FAILS = 0, LASTOKTS = 0, HEALED = false, recTimer = null;
+
 async function load(){
-  if(!OFFLINE){
-    try{ await loadLive(); return; }catch(e){ OFFLINE = true; }
+  const ok = await tryLive();
+  if(ok){ OFFLINE = false; FAILS = 0; if(recTimer){ clearTimeout(recTimer); recTimer = null; } return; }
+  FAILS++;
+  if(!LASTGOOD){                       // 一次实时都没成功过，才读 GitHub 备份
+    OFFLINE = true; await loadSnapshot();
+  }else{                               // 拿过实时数据：保留画面，只提示重连，不切备份模式
+    const t = LASTOKTS ? new Date(LASTOKTS).toLocaleTimeString('zh-CN',{hour12:false}) : '';
+    $('upd').textContent = '🔄 网络抖动，正在重连…（显示 ' + t + ' 的数据）';
+    $('offlineTip').style.display = 'none';
   }
-  await loadSnapshot();
+  if(recTimer) clearTimeout(recTimer);
+  recTimer = setTimeout(load, 4000);
+}
+
+// 单次失败不再判定离线：最多重试 3 次、每次 12 秒超时
+async function tryLive(){
+  for(let i = 0; i < 3; i++){
+    try{
+      const d = await fetchList();
+      if(d && d.ok){ LASTGOOD = d; LASTOKTS = Date.now(); applyData(d, true); return true; }
+      if(d && d.error === 'bad code' && CODE === 'ftp14-teacher') break;
+    }catch(e){}
+    await sleep(900);
+  }
+  return false;
 }
 
 async function loadLive(){
+  const d = await fetchList();
+  if(!d || !d.ok) throw new Error((d && d.error) || 'err');
+  applyData(d, true);
+}
+
+async function fetchList(){
+  const ctl = new AbortController();
+  const to = setTimeout(() => ctl.abort(), 12000);
   try{
-    const ctl = new AbortController();
-    const to = setTimeout(()=>ctl.abort(), 6000);
     const r = await fetch(q('/api/list') + '&t=' + Date.now(), {cache:'no-store', signal: ctl.signal});
-    clearTimeout(to);
     const d = await r.json();
-    if(!d.ok){
-      // 服务器不认识这个班（建班时实时服务离线、还没同步）：
-      // 用老师码自动补登记，然后重试一次 —— 老师打开看板即可自愈
-      if(d.error === 'bad code' && CODE && CODE !== 'ftp14-teacher'){
-        try{
-          await fetch(API_HOST + '/api/newclass?sharecode=' + encodeURIComponent(SC)
-            + '&cls=' + encodeURIComponent(CLS) + '&tcode=' + encodeURIComponent(CODE)
-            + '&name=' + encodeURIComponent(CLS_NAME && CLS_NAME !== CLS ? CLS_NAME : '老师'), {method:'POST'});
-          const r2 = await fetch(q('/api/list') + '&t=' + Date.now(), {cache:'no-store'});
-          const d2 = await r2.json();
-          if(d2.ok){ applyData(d2, true); return; }
-        }catch(_){}
-      }
-      if(d.error === 'bad code'){
-        const had = CODE;
-        localStorage.removeItem('ftp14code_' + CLS);
-        localStorage.removeItem('ftp14code');
-        if(had){ location.reload(); } else { $('upd').textContent = '⚠️ 访问码不对，请刷新页面重新输入'; }
-        return;
-      }
-      throw new Error(d.error||'err');
+    if(!d.ok && d.error === 'bad code' && CODE && CODE !== 'ftp14-teacher' && !HEALED){
+      // 服务器不认识这个班（建班时实时服务离线）：用老师码自动补登记后重试一次
+      HEALED = true;
+      try{
+        await fetch(API_HOST + '/api/newclass?sharecode=' + encodeURIComponent(SC)
+          + '&cls=' + encodeURIComponent(CLS) + '&tcode=' + encodeURIComponent(CODE)
+          + '&name=' + encodeURIComponent(CLS_NAME && CLS_NAME !== CLS ? CLS_NAME : '老师'), {method:'POST'});
+        const r2 = await fetch(q('/api/list') + '&t=' + Date.now(), {cache:'no-store'});
+        return await r2.json();
+      }catch(_){ return d; }
     }
-    applyData(d, true);
-  }catch(e){ throw e; }
+    if(!d.ok && d.error === 'bad code'){
+      const had = CODE;
+      localStorage.removeItem('ftp14code_' + CLS);
+      localStorage.removeItem('ftp14code');
+      if(had){ setTimeout(() => location.reload(), 800); return {ok:false, error:'bad code'}; }
+      $('upd').textContent = '⚠️ 访问码不对，请刷新页面重新输入';
+    }
+    return d;
+  }finally{ clearTimeout(to); }
 }
 
 async function loadSnapshot(){
