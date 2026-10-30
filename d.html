@@ -247,12 +247,51 @@ const q = p => API_HOST + p + '?sharecode=' + encodeURIComponent(SC) + '&code=' 
   + (CLS && CLS !== 'default' ? '&c=' + encodeURIComponent(CLS) : '')
   + (RID ? '&round=' + encodeURIComponent(RID) : '');
 
+/* ===== 直连 GitHub 收件箱（GH_TOKEN 留空 = 关闭）=====
+   学生绕过工作机直接送到 GitHub 的成绩，由这里并入看板（按 sid 去重）。 */
+var GHT = '';
+async function fetchInbox(){
+  if(!GHT) return [];
+  try{
+    const r = await fetch('https://api.github.com/repos/ziyu1032/FTP14/contents/data/inbox?t=' + Date.now(),
+      {cache:'no-store', headers:{Authorization:'Bearer ' + GHT}});
+    if(!r.ok) return [];
+    const fs = await r.json();
+    if(!Array.isArray(fs)) return [];
+    const out = [];
+    for(const f of fs.slice(0, 300)){
+      try{
+        const r2 = await fetch((f.download_url || '') + '?t=' + Date.now(), {cache:'no-store'});
+        if(r2.ok) out.push(await r2.json());
+      }catch(_){}
+    }
+    return out;
+  }catch(e){ return []; }
+}
+async function mergeInbox(){
+  if(!GHT) return;
+  const extra = await fetchInbox();
+  if(!extra.length) return;
+  const mine = extra.filter(x => String(x.cls || '').toUpperCase() === CLS);
+  if(!mine.length) return;
+  const seen = {};
+  rows.forEach(r => { if(r && r.sid) seen[r.sid] = 1; });
+  let add = 0;
+  mine.forEach(r => { if(!r.sid || !seen[r.sid]){ rows.push(r); if(r.sid) seen[r.sid] = 1; add++; } });
+  if(add){
+    rows.sort((a, b) => String(a.server_time || '').localeCompare(String(b.server_time || '')));
+    render();
+    $('upd').textContent = '🟢 实时收数据中 · 含 GitHub 直连 ' + add + ' 条 · '
+      + new Date().toLocaleTimeString('zh-CN', {hour12:false});
+  }
+}
+
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 let LASTGOOD = null, FAILS = 0, LASTOKTS = 0, HEALED = false, recTimer = null;
 
 async function load(){
   const ok = await tryLive();
-  if(ok){ OFFLINE = false; FAILS = 0; if(recTimer){ clearTimeout(recTimer); recTimer = null; } return; }
+  if(ok){ OFFLINE = false; FAILS = 0; if(recTimer){ clearTimeout(recTimer); recTimer = null; } mergeInbox(); return; }
   FAILS++;
   if(!LASTGOOD){                       // 一次实时都没成功过，才读 GitHub 备份
     OFFLINE = true; await loadSnapshot();
