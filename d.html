@@ -239,13 +239,13 @@ const esc = s => String(s==null?'':s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':
 const cls = v => v==null||v==='' ? '' : (v>=85?'g':v>=70?'y':'r');
 
 const SC = new URLSearchParams(location.search).get('sharecode') || 'P2LBXVKRSS';
-let RID = 'current';
+let RID = 'all';   /* 默认显示全部：本轮 + 历史存档，先提交后打开也一定看得到 */
 const API_HOST = 'https://adec7b0b23c60c0ba.app.workbuddy.host';
 const SNAP_URL = 'data/snapshot.json';
 let OFFLINE = false;
 const q = p => API_HOST + p + '?sharecode=' + encodeURIComponent(SC) + '&code=' + encodeURIComponent(CODE)
   + (CLS && CLS !== 'default' ? '&c=' + encodeURIComponent(CLS) : '')
-  + (RID && RID !== 'current' ? '&round=' + encodeURIComponent(RID) : '');
+  + (RID ? '&round=' + encodeURIComponent(RID) : '');
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 let LASTGOOD = null, FAILS = 0, LASTOKTS = 0, HEALED = false, recTimer = null;
@@ -341,7 +341,11 @@ async function loadSnapshot(){
       ended: true
     })).filter(a => a.count > 0);
     let cur = mine, start = (snap.starts || {})[CLS] || '';
-    if(RID && RID !== 'current'){
+    if(RID === 'all'){
+      const hist = (snap.archive || []).reduce((acc, a) =>
+        acc.concat((a.rows || []).filter(x => String(x.cls || '').toUpperCase() === CLS)), []);
+      cur = hist.concat(mine);
+    } else if(RID && RID !== 'current'){
       const a = (snap.archive || []).find(x => x.id === RID) || {};
       cur = (a.rows || []).filter(x => String(x.cls || '').toUpperCase() === CLS);
       start = a.start || '';
@@ -382,13 +386,18 @@ function applyData(d, live){
 function renderRounds(rs, start, catchall){
   const sel = $('roundSel');
   const keep = RID;
-  sel.innerHTML = rs.map(r => {
-    const label = r.ended ? `📁 历史 ${r.start}${r.end ? ' → ' + r.end.slice(11) : ''}（${r.count}人）`
-                          : `🟢 本轮（${r.count}人，开始于 ${r.start}）`;
+  const total = (rs || []).reduce((a, r) => a + (r.count || 0), 0);
+  const list = [{id:'all', start:'', end:'', count: total, ended:false}].concat(rs || []);
+  sel.innerHTML = list.map(r => {
+    const label = r.id === 'all' ? `📚 全部（本轮 + 历史存档 · ${r.count} 条）`
+      : r.ended ? `📁 历史 ${r.start}${r.end ? ' → ' + r.end.slice(11) : ''}（${r.count}人）`
+                : `🟢 本轮（${r.count}人，开始于 ${r.start}）`;
     return `<option value="${esc(r.id)}"${r.id===keep?' selected':''}>${label}</option>`;
   }).join('');
   sel.onchange = () => { RID = sel.value; load(); };
-  $('roundInfo').textContent = ((RID === 'current')
+  $('roundInfo').textContent = ((RID === 'all')
+    ? '当前显示：全部（本轮 + 历史存档）—— 学生什么时候提交的都能看到'
+    : (RID === 'current')
     ? '当前显示：本轮（开始于 ' + start + '）'
     : '当前显示：历史轮次存档')
     + (CLS === 'default' ? ' · 只显示你自己班的数据' : ' · 只显示「' + CLS_NAME + '」班的数据')
@@ -411,13 +420,13 @@ $('btnClaim').onclick = async () => {
 async function newRound(){
   if(!confirm('开始新一轮？\n\n当前这一轮会自动存档（可在左侧下拉框里随时回看、导出），然后清空开始收本堂课的成绩。')) return;
   await fetch(q('/api/newround'), {method:'POST'});
-  RID = 'current';
+  RID = 'all';
   load();
 }
 async function delRound(){
   if(!confirm('确定删除当前显示的这一轮记录？（删除后无法恢复）')) return;
   await fetch(q('/api/clear'), {method:'POST'});
-  RID = 'current';
+  RID = 'all';
   load();
 }
 $('btnNew').onclick = newRound;
