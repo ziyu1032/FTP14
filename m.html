@@ -2,6 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="ftp14-build" content="2026.10.30c">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Hainan Live! (Mobile)</title>
 <style>
@@ -925,9 +929,23 @@ const $ = id => document.getElementById(id);
 const API_HOST = 'https://adec7b0b23c60c0ba.app.workbuddy.host';
 const API_SC   = 'P2LBXVKRSS';
 /* class code: teacher shares m.html?c=ABC123; submissions go only to that teacher dashboard */
-const CLS = (new URLSearchParams(location.search).get('c') || '').trim().toUpperCase() || 'DEFAULT';
-const TCODE = (new URLSearchParams(location.search).get('t') || '').trim().toUpperCase();
-try{ if(CLS !== 'DEFAULT') localStorage.setItem('ftp14cls', CLS); }catch(_){}
+/* ===== 从 Word / 微信 / 邮件里复制出来的链接容错解析 ===== */
+var HOME_CLS = 'KTDJB4', BUILD = '2026.10.30c';
+function zclean(s){
+  return String(s == null ? '' : s)
+    .replace(/[\u200B\u200C\u200D\uFEFF\u00A0\s]/g, '')
+    .replace(/&amp;/gi, '&').replace(/[＆]/g, '&')
+    .replace(/[＝]/g, '=').replace(/[？]/g, '?')
+    .replace(/[^A-Za-z0-9._-]/g, '');
+}
+var _raw = (location.search || '') + '&' + String(location.hash || '').replace(/^#/, '');
+var QP = new URLSearchParams(_raw.replace(/&amp;/gi, '&').replace(/[＆]/g, '&').replace(/[＝]/g, '='));
+function qpick(){ for(var i=0;i<arguments.length;i++){ var v = QP.get(arguments[i]); if(v){ var c = zclean(v); if(c) return c; } } return ''; }
+try{ if(!QP.get('c') && !QP.get('cls')){ var _m = String(location.pathname||'').match(/([A-Z0-9]{4,10})\.html/i); if(_m) { QP.set('c', _m[1]); } } }catch(_){}
+const CLS = (qpick('c','cls','class','cid','k','room') || localStorage.getItem('ftp14cls') || HOME_CLS).toUpperCase();
+const TCODE = (qpick('t','tcode','code','key') || localStorage.getItem('ftp14t_' + CLS) || '').toUpperCase();
+try{ localStorage.setItem('ftp14cls', CLS); if(TCODE) localStorage.setItem('ftp14t_' + CLS, TCODE); }catch(_){}
+
 const apiUrl = p => API_HOST + p + '?sharecode=' + encodeURIComponent(API_SC)
   + (CLS !== 'DEFAULT' ? '&c=' + encodeURIComponent(CLS) : '');
 
