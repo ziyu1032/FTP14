@@ -133,45 +133,89 @@ const gen = n => Array.from({length:n}, () => CH[Math.floor(Math.random()*CH.len
   }catch(_){}
 })();
 
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+// 单次同步：15 秒超时，不再像以前 8 秒就放弃
+async function syncOnce(pd){
+  const ctl = new AbortController();
+  const to = setTimeout(() => ctl.abort(), 15000);
+  try{
+    const r = await fetch(API + '/api/newclass?sharecode=' + encodeURIComponent(SC)
+      + '&name=' + encodeURIComponent(pd.name) + '&cls=' + encodeURIComponent(pd.cls)
+      + '&tcode=' + encodeURIComponent(pd.tcode)
+      + (pd.catchall ? '&catchall=1' : '') + (pd.claim ? '&claim=1' : ''),
+      {method:'POST', signal: ctl.signal});
+    return await r.json();
+  }finally{ clearTimeout(to); }
+}
+
+// 最多重试若干次，期间页面上的状态实时更新
+async function syncWithRetry(pd, tries, onTry){
+  for(let i = 0; i < tries; i++){
+    try{
+      const d = await syncOnce(pd);
+      if(d && d.ok) return d;
+    }catch(_){}
+    if(onTry) onTry(i + 1, tries);
+    await sleep(2500);
+  }
+  return null;
+}
+
+function showTip(tip, good){
+  const old = document.getElementById('syncTip');
+  if(old) old.remove();
+  if(!tip) return;
+  const li = document.createElement('li');
+  li.id = 'syncTip';
+  li.innerHTML = '<b style="color:' + (good ? '#2dd4bf' : '#FFC247') + '">' + tip + '</b>';
+  $('usage').prepend(li);
+}
+
 $('btnCreate').onclick = async () => {
-  $('msg').textContent = '创建中…';
   // 班级码在本地生成 —— 链接立刻可用，不依赖服务器是否在线
   const cls = gen(6), tcode = gen(6);
-  let synced = false, tip = '';
-  try{
-    const ctl = new AbortController();
-    const to = setTimeout(() => ctl.abort(), 8000);
-    const r = await fetch(API + '/api/newclass?sharecode=' + encodeURIComponent(SC)
-      + '&name=' + encodeURIComponent($('tName').value.trim())
-      + '&cls=' + encodeURIComponent(cls) + '&tcode=' + encodeURIComponent(tcode)
-      + ($('optCatch').checked ? '&catchall=1' : '')
-      + ($('optClaim').checked ? '&claim=1' : ''), {method:'POST', signal: ctl.signal});
-    clearTimeout(to);
-    const d = await r.json();
-    if(!d.ok) throw new Error(d.error || 'fail');
-    synced = true;
+  const pd = {cls: cls, tcode: tcode, name: $('tName').value.trim(),
+              catchall: $('optCatch').checked, claim: $('optClaim').checked};
+  $('msg').textContent = '🔄 正在同步…（链接已可立即使用）';
+
+  const stu = GAME + '?c=' + cls + '&t=' + tcode;
+  const tea = DASH + '?c=' + cls + '&code=' + encodeURIComponent(tcode);
+  $('stuUrl').textContent = stu;
+  $('teaUrl').textContent = tea;
+  $('lnkStu').href = stu;
+  $('lnkTea').href = tea;
+  $('qrcode').innerHTML = '';
+  try{ new QRCode($('qrcode'), {text: stu, width: 180, height: 180, correctLevel: QRCode.CorrectLevel.M}); }catch(_){}
+  $('result').classList.remove('hidden');
+  $('result').scrollIntoView({behavior:'smooth'});
+  showTip('链接已经生成、可以马上用：发给学生的二维码和看板地址都有效，学生提交的成绩会按班级码归档。', true);
+
+  const d = await syncWithRetry(pd, 6, (n, total) => {
+    $('msg').textContent = '🔄 正在同步（第 ' + n + '/' + total + ' 次重试）…链接可正常使用';
+  });
+
+  if(d){
+    localStorage.removeItem('ftp14pend');
+    let tip = '';
     if(d.moved) tip += '📥 已把 ' + d.moved + ' 条之前用旧码提交的成绩并入本班；';
     if(d.catchall) tip += '🔗 已开启旧码兜底：学生扫旧二维码也会进这个班。';
-  }catch(e){
-    tip += '⚠️ 实时服务暂时连不上，但<b>链接已经生成、可以马上用</b>：学生提交的成绩会按班级码归档，服务恢复后老师码自动生效。';
-    try{ localStorage.setItem('ftp14pend', JSON.stringify({cls:cls, tcode:tcode,
-      name:$('tName').value.trim(), catchall:$('optCatch').checked})); }catch(_){}
-  }
-  {
-    const stu = GAME + '?c=' + cls + '&t=' + tcode;
-    const tea = DASH + '?c=' + cls + '&code=' + encodeURIComponent(tcode);
-    $('stuUrl').textContent = stu;
-    $('teaUrl').textContent = tea;
-    $('lnkStu').href = stu;
-    $('lnkTea').href = tea;
-    $('qrcode').innerHTML = '';
-    new QRCode($('qrcode'), {text: stu, width: 180, height: 180, correctLevel: QRCode.CorrectLevel.M});
-    $('result').classList.remove('hidden');
-    $('msg').textContent = (synced ? '✅ 已创建 · 班级码 ' : '📦 已生成（待同步）· 班级码 ') + cls;
-    $('result').scrollIntoView({behavior:'smooth'});
-    const li = document.createElement('li');
-    li.innerHTML = tip ? ('<b style="color:' + (synced ? '#2dd4bf' : '#FFC247') + '">' + tip + '</b>') : '';
-    if(tip) $('usage').prepend(li);
+    if(tip) showTip(tip, true);
+    $('msg').textContent = '✅ 已创建并同步 · 班级码 ' + cls;
+  }else{
+    // 前台失败：转入后台持续重试（约 5 分钟），连上会自动显示成功
+    try{ localStorage.setItem('ftp14pend', JSON.stringify(pd)); }catch(_){}
+    $('msg').textContent = '📦 已生成（后台继续同步）· 班级码 ' + cls;
+    showTip('实时服务暂时连不上，但<b>链接现在就能用</b>。页面在后台持续重试同步，成功后这里会变绿；学生提交成绩时也会自动完成登记。', false);
+    let n = 0;
+    const t = setInterval(async () => {
+      n++;
+      const r = await syncWithRetry(pd, 1);
+      if(r){ clearInterval(t); localStorage.removeItem('ftp14pend');
+             $('msg').textContent = '✅ 已创建并同步 · 班级码 ' + cls;
+             showTip('同步成功，老师的看板已经可以实时看数据了。', true); }
+      else if(n >= 10){ clearInterval(t); }
+    }, 20000);
   }
 };
 const copy = async (txt, btn, label) => {
