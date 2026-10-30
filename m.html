@@ -1024,9 +1024,33 @@ async function submitScore(mode){
     try{ localStorage.removeItem('ftp14pending'); }catch(_){}
   }else{
     try{ localStorage.setItem('ftp14pending', JSON.stringify(payload)); }catch(_){}
+    keepFlushing(12);          /* 服务器一恢复就自动补上 */
   }
   sending = false;
   return ok;
+}
+
+/* ---- 没发出去的成绩：在当前页面持续补发，不依赖学生重新打开 ---- */
+async function flushPending(){
+  let p = null;
+  try{ p = localStorage.getItem('ftp14pending'); }catch(_){ return false; }
+  if(!p) return false;
+  try{
+    const payload = JSON.parse(p);
+    const ok = await submitRaw(payload);
+    if(ok){ try{ localStorage.removeItem('ftp14pending'); }catch(_){} return true; }
+  }catch(_){}
+  return false;
+}
+let _flushing = false;
+async function keepFlushing(times){
+  if(_flushing) return;
+  _flushing = true;
+  for(let i = 0; i < (times || 12); i++){
+    await new Promise(r => setTimeout(r, 8000));
+    try{ if(await flushPending()){ _flushing = false; return; } }catch(_){}
+  }
+  _flushing = false;
 }
 
 /* student taps Submit -> send score -> show finish overlay */
