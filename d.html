@@ -74,7 +74,8 @@ a{text-decoration:none}
 .qrwrap{background:#fff;border-radius:16px;padding:12px;box-shadow:0 12px 26px rgba(0,0,0,.28);line-height:0}
 .qrside{flex:1 1 280px;min-width:260px}
 .offtip{margin:0 0 14px;padding:10px 14px;border-radius:12px;font-size:.82rem;line-height:1.7;
-  background:rgba(255,194,71,.12);border:1px solid rgba(255,194,71,.35);color:#FFE7B0}
+  background:rgba(45,212,191,.10);border:1px solid rgba(45,212,191,.30);color:#A9E9E0}
+.offtip b{color:#7FF0E3}
 .empty{color:var(--muted);font-size:.86rem;padding:10px 0}
 .bar{margin-bottom:10px}
 .bar .lab{display:flex;justify-content:space-between;gap:10px;font-size:.83rem;margin-bottom:5px}
@@ -298,7 +299,7 @@ async function loadSnapshot(){
       || (info.tcode && CODE.toUpperCase() === String(info.tcode).toUpperCase())
       || (!known && !!CODE);   // 新建的班还没进备份：暂时放行，等第一次备份后就按老师码校验
     if(!okCode){
-      $('upd').textContent = '⚠️ 访问码不对（离线备份模式）';
+      $('upd').textContent = '⚠️ 访问码不对，请确认链接里的 code 参数';
       rows = []; render(); return;
     }
     const all = snap.rows || [];
@@ -339,9 +340,9 @@ function applyData(d, live){
     ['btnNew','btnDel','btnClaim'].forEach(id => { const b=$(id); if(b) b.style.display = live ? '' : 'none'; });
     if(!live){
       $('offlineTip').style.display = '';
-      $('offlineTip').innerHTML = '📦 <b>离线备份模式</b>：实时服务暂不可用，当前显示的是<b>最后一次自动备份</b>的数据（备份每 5 分钟同步一次）。页面链接永不失效。';
+      $('offlineTip').innerHTML = '🗂 <b>正在走备份通道</b>（数据延迟约 1 分钟）：实时通道正在自动重连，连上后这里会自动消失，<b>成绩一条都不会少</b>。';
     } else { $('offlineTip').style.display = 'none'; }
-    $('upd').textContent = (live ? '🟢 实时 · ' : '📦 备份 · ') + '最后更新 ' + new Date().toLocaleTimeString('zh-CN',{hour12:false});
+    $('upd').textContent = (live ? '🟢 实时收数据中 · ' : '🗂 备份通道 · ') + '最后更新 ' + new Date().toLocaleTimeString('zh-CN',{hour12:false});
   }catch(e){
     $('upd').textContent = '⚠️ 渲染失败：' + e.message;
   }
