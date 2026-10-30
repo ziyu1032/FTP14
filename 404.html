@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>正在打开…</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  color:#EAF7F7;background:radial-gradient(900px 460px at 10% -10%,rgba(255,194,71,.16),transparent 58%),
+  radial-gradient(800px 420px at 96% 0%,rgba(45,212,191,.15),transparent 62%),linear-gradient(180deg,#052A3F,#031825);}
+.box{max-width:560px;width:92%;padding:28px 24px;text-align:center;
+  background:linear-gradient(160deg,rgba(255,255,255,.075),rgba(255,255,255,.028));
+  border:1px solid rgba(45,212,191,.18);border-radius:18px;box-shadow:0 18px 50px rgba(0,0,0,.35)}
+.sp{width:38px;height:38px;margin:0 auto 14px;border-radius:50%;
+  border:3px solid rgba(45,212,191,.22);border-top-color:#2DD4BF;animation:sp 0.9s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+h1{margin:0 0 8px;font-size:19px;letter-spacing:.3px}
+p{margin:6px 0;font-size:14px;color:#8FB3BD;line-height:1.6}
+.sub{font-size:12.5px;color:#6E93A0;word-break:break-all}
+a.btn{display:block;margin:10px 0;padding:13px 14px;border-radius:12px;text-decoration:none;
+  font-size:15px;font-weight:600;color:#04202F;background:linear-gradient(135deg,#2DD4BF,#00B8A9);
+  border:1px solid rgba(255,255,255,.25)}
+a.btn.gray{background:rgba(255,255,255,.08);color:#EAF7F7}
+code{background:rgba(0,0,0,.28);padding:2px 6px;border-radius:5px;color:#FFC247;font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="sp"></div>
+  <h1>正在为你打开…</h1>
+  <p id="msg">链接是从 Word / 聊天记录里复制的吧？我已自动修好，马上跳转。</p>
+  <p class="sub" id="sub"></p>
+  <div id="btns" style="margin-top:16px"></div>
+</div>
+<script>
+var BASE = 'https://ziyu1032.github.io/FTP14/';
+var HOME_CLS = 'KTDJB4', HOME_CODE = 'ftp14-teacher';
+
+function strip(s){
+  return String(s == null ? '' : s)
+    .replace(/[\u200B\u200C\u200D\uFEFF\u00A0]/g, '')   /* 零宽 / 不换行空格 */
+    .replace(/\s+/g, '')                                 /* 复制时插进来的空格、换行 */
+    .replace(/&amp;/gi, '&')
+    .replace(/[＆]/g, '&').replace(/[＝]/g, '=').replace(/[？]/g, '?')
+    .replace(/[“”‘’]/g, '').replace(/[，。、；]/g, '');
+}
+
+var raw = strip(location.href).toLowerCase();
+
+/* 1) 认出想去哪个页面（Word 可能把首字母改成大写、或页面名被截断） */
+var target = 'd.html';
+if (/m\.html|join|student|stu/.test(raw))            target = 'm.html';
+else if (/new\.html|newclass|create|建立|建班/.test(raw)) target = 'new.html';
+else if (/d\.html|board|dash|teacher|tea|看板/.test(raw)) target = 'd.html';
+
+/* 2) 从一串可能已经被弄乱的字符里，把班级码 / 老师码抠出来 */
+var params = {};
+var re = /(?:[?&]|&amp;)(c|cls|class|cid|k|room|code|tcode|t|pwd|key)[=]([a-z0-9._-]+)/g, mm;
+while ((mm = re.exec(raw))) {
+  var k = mm[1], v = (mm[2] || '').toUpperCase();
+  if (!v) continue;
+  if (k === 'c' || k === 'cls' || k === 'class' || k === 'cid' || k === 'k' || k === 'room') params.c = v;
+  else if (k === 't' || k === 'tcode')                                                       params.t = v;
+  else                                                                                       params.code = v;
+}
+/* 路径里直接带班级码，例如 /FTP14/KTDJB4.html */
+if (!params.c) {
+  mm = raw.match(/\/([a-z0-9]{4,10})\.html/);
+  if (mm && !/^(d|m|new|index|pc|s|t|404)$/.test(mm[1])) params.c = mm[1].toUpperCase();
+}
+/* 兜底：主班 + 主码，保证一定能打开 */
+if (!params.c)                       params.c = HOME_CLS;
+if (target === 'd.html' && !params.code && !params.t) params.code = HOME_CODE;
+
+var qs = [];
+if (params.c)    qs.push('c='    + encodeURIComponent(params.c));
+if (params.t)    qs.push('t='    + encodeURIComponent(params.t));
+if (params.code) qs.push('code=' + encodeURIComponent(params.code));
+var dest = BASE + target + (qs.length ? '?' + qs.join('&') : '');
+
+document.getElementById('sub').textContent = dest;
+document.getElementById('btns').innerHTML =
+  '<a class="btn" href="' + dest + '">立即打开</a>' +
+  '<a class="btn gray" href="' + BASE + 'd.html?c=' + HOME_CLS + '&code=' + HOME_CODE + '">老师成绩看板</a>' +
+  '<a class="btn gray" href="' + BASE + 'm.html?c=' + HOME_CLS + '">学生答题页</a>';
+
+setTimeout(function(){ location.replace(dest); }, 500);
+</script>
+</body>
+</html>
