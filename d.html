@@ -237,6 +237,18 @@ async function loadLive(){
     clearTimeout(to);
     const d = await r.json();
     if(!d.ok){
+      // 服务器不认识这个班（建班时实时服务离线、还没同步）：
+      // 用老师码自动补登记，然后重试一次 —— 老师打开看板即可自愈
+      if(d.error === 'bad code' && CODE && CODE !== 'ftp14-teacher'){
+        try{
+          await fetch(API_HOST + '/api/newclass?sharecode=' + encodeURIComponent(SC)
+            + '&cls=' + encodeURIComponent(CLS) + '&tcode=' + encodeURIComponent(CODE)
+            + '&name=' + encodeURIComponent(CLS_NAME && CLS_NAME !== CLS ? CLS_NAME : '老师'), {method:'POST'});
+          const r2 = await fetch(q('/api/list') + '&t=' + Date.now(), {cache:'no-store'});
+          const d2 = await r2.json();
+          if(d2.ok){ applyData(d2, true); return; }
+        }catch(_){}
+      }
       if(d.error === 'bad code'){
         const had = CODE;
         localStorage.removeItem('ftp14code_' + CLS);
