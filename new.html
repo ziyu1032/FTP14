@@ -75,6 +75,17 @@ ol{color:#BCD8DD;font-size:.85rem;line-height:1.85;padding-left:20px}
   </label>
 </div>
 
+<div class="panel">
+  <h2 style="margin:0 0 6px">🔍 已经建过班了？直接打开自己的看板</h2>
+  <div class="sub" style="text-align:left">链接弄丢了没关系，把创建时给你的<b>班级码</b>和<b>老师码</b>填进来即可，<b>成绩都还在</b>。</div>
+  <div class="row" style="margin-top:10px">
+    <input id="fCls" placeholder="班级码（6 位）" autocomplete="off" style="text-transform:uppercase">
+    <input id="fCode" placeholder="老师码（6 位）" autocomplete="off" style="text-transform:uppercase">
+    <button class="ghost" id="btnFind">打开我的看板 →</button>
+  </div>
+  <div class="warn" id="findMsg"></div>
+</div>
+
 <div class="panel hidden" id="result">
   <h2>✅ 班级已创建</h2>
 
@@ -171,6 +182,18 @@ function showTip(tip, good){
   li.innerHTML = '<b style="color:' + (good ? '#2dd4bf' : '#FFC247') + '">' + tip + '</b>';
   $('usage').prepend(li);
 }
+
+/* ===== 找回已有班级：填班级码 + 老师码，直接进自己的看板 ===== */
+function zc(s){ return String(s == null ? '' : s).replace(/[\u200B-\u200D\uFEFF\u00A0\s]/g, '').toUpperCase(); }
+$('btnFind').onclick = () => {
+  const c = zc($('fCls').value), t = zc($('fCode').value);
+  if(!c || !t){ $('findMsg').textContent = '⚠️ 班级码和老师码都要填（都是 6 位）'; return; }
+  $('findMsg').textContent = '🔄 正在打开…';
+  location.href = DASH + '?c=' + encodeURIComponent(c) + '&code=' + encodeURIComponent(t);
+};
+[$('fCls'), $('fCode')].forEach(el => {
+  el.addEventListener('keydown', e => { if(e.key === 'Enter') $('btnFind').click(); });
+});
 
 $('btnCreate').onclick = async () => {
   // 班级码在本地生成 —— 链接立刻可用，不依赖服务器是否在线
