@@ -1024,33 +1024,9 @@ async function submitScore(mode){
     try{ localStorage.removeItem('ftp14pending'); }catch(_){}
   }else{
     try{ localStorage.setItem('ftp14pending', JSON.stringify(payload)); }catch(_){}
-    keepFlushing(12);          /* 服务器一恢复就自动补上 */
   }
   sending = false;
   return ok;
-}
-
-/* ---- 没发出去的成绩：在当前页面持续补发，不依赖学生重新打开 ---- */
-async function flushPending(){
-  let p = null;
-  try{ p = localStorage.getItem('ftp14pending'); }catch(_){ return false; }
-  if(!p) return false;
-  try{
-    const payload = JSON.parse(p);
-    const ok = await submitRaw(payload);
-    if(ok){ try{ localStorage.removeItem('ftp14pending'); }catch(_){} return true; }
-  }catch(_){}
-  return false;
-}
-let _flushing = false;
-async function keepFlushing(times){
-  if(_flushing) return;
-  _flushing = true;
-  for(let i = 0; i < (times || 12); i++){
-    await new Promise(r => setTimeout(r, 8000));
-    try{ if(await flushPending()){ _flushing = false; return; } }catch(_){}
-  }
-  _flushing = false;
 }
 
 /* student taps Submit -> send score -> show finish overlay */
@@ -1350,6 +1326,8 @@ class VoiceCheck {
     this.cfg = cfg;
     this.recording = false; this.done = false;
     this.transcript = ''; this.interim = ''; this.err = null;
+    this.audioBlob = null; this.acousticTried = false; this.acousticDone = false;
+    this.restarted = false; this.pendingFinish = false;
     this.cap.textContent = '';
     this.res.innerHTML = '';
     this.btn.classList.remove('rec');
@@ -1411,9 +1389,18 @@ class VoiceCheck {
     this.lbl.textContent = 'Listening…';
     this.state.textContent = 'Listening… just speak — I stop by myself when you finish.';
 
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+      || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    this.useSR = !!SR;
+    this.startedAt = Date.now();
+
     try{
       this.stream = await navigator.mediaDevices.getUserMedia({ audio:true });
-      if (window.MediaRecorder){
+      /* Record the take only when there is no speech engine to rely on —
+         on iOS running recorder + recognition together makes them fight for
+         the microphone and both end up empty. */
+      if (this.stream && window.MediaRecorder && (!this.useSR || !isIOS)){
         this.chunks = [];
         this.mr = new MediaRecorder(this.stream);
         this.mr.ondataavailable = e => { if (e.data && e.data.size) this.chunks.push(e.data); };
@@ -1421,19 +1408,20 @@ class VoiceCheck {
           if (this.chunks && this.chunks.length){
             const blob = new Blob(this.chunks, { type: this.chunks[0].type || 'audio/webm' });
             if (this.audioURL) URL.revokeObjectURL(this.audioURL);
+            this.audioBlob = blob;
             this.audioURL = URL.createObjectURL(blob);
           }
           this.renderActions();
+          if (this.pendingFinish){ this.pendingFinish = false; this.finish(); }
         };
         this.mr.start();
       }
     } catch(e){ /* mic may be blocked; still try recognition */ }
 
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SR){
       try{
         const r = new SR();
-        r.lang = 'en-US'; r.interimResults = true; r.continuous = true; r.maxAlternatives = 1;
+        r.lang = 'en-US'; r.interimResults = true; r.continuous = false; r.maxAlternatives = 3;
         r.onresult = ev => {
           let fin = '', itr = '';
           for (let i = ev.resultIndex; i < ev.results.length; i++){
@@ -1446,8 +1434,30 @@ class VoiceCheck {
           this.cap.textContent = (this.transcript + itr).trim();
           this.heardAt = Date.now();
         };
-        r.onerror = ev => { this.err = ev.error; };
-        r.onend = () => { if (this.recording) this.stop(); };
+        r.onerror = ev => {
+          this.err = ev.error;
+          if (ev.error === 'no-speech'){
+            /* one silent restart, then let onend decide */
+            if (!this.restarted && this.recording && Date.now() - this.startedAt < (this.maxMs || 22000) - 1500){
+              this.restarted = true;
+              setTimeout(() => { try{ if (this.recording) r.start(); }catch(_){} }, 200);
+            }
+            return;
+          }
+          if (ev.error === 'aborted') return;
+          if (this.recording) this.stop();
+        };
+        r.onend = () => {
+          if (!this.recording) return;
+          /* mobile engines stop after every phrase — keep listening until
+             time runs out or enough words are in */
+          const said = (this.transcript + ' ' + this.interim).trim().split(/\s+/).filter(Boolean).length;
+          if (said < 3 && Date.now() - this.startedAt < (this.maxMs || 22000) - 1200){
+            setTimeout(() => { try{ if (this.recording) r.start(); }catch(_){} }, 250);
+            return;
+          }
+          this.stop();
+        };
         r.start();
         this.recog = r;
       } catch(e){ this.err = 'start-failed'; }
@@ -1485,11 +1495,23 @@ class VoiceCheck {
     let fired = false;
     const once = () => { if (fired) return; fired = true; this.finish(); };
     try{ if (this.recog){ this.recog.onend = once; this.recog.stop(); } }catch(e){}
-    try{ if (this.mr && this.mr.state !== 'inactive') this.mr.stop(); }catch(e){}
+    let recActive = false;
+    try{
+      recActive = this.mr && this.mr.state !== 'inactive';
+      if (recActive){
+        /* finish only after the recorder flushed the take (scoreBySound needs it) */
+        this.pendingFinish = true;
+        this.mr.stop();
+      }
+    }catch(e){}
     try{ if (this.stream) this.stream.getTracks().forEach(t => t.stop()); }catch(e){}
 
-    const said = (this.transcript + this.interim).trim().split(/\s+/).filter(Boolean).length >= 2;
-    setTimeout(once, fast ? 400 : (said ? 700 : 2600));
+    if (!recActive){
+      const said = (this.transcript + this.interim).trim().split(/\s+/).filter(Boolean).length >= 2;
+      setTimeout(once, fast ? 400 : (said ? 700 : 2600));
+    } else {
+      setTimeout(() => { if (this.pendingFinish){ this.pendingFinish = false; this.finish(); } }, 2500);
+    }
   }
 
   finish(){
@@ -1497,6 +1519,14 @@ class VoiceCheck {
     const text = (this.transcript + ' ' + this.interim).replace(/\s+/g, ' ').trim();
     const words = text.split(/\s+/).filter(Boolean).length;
     if (words < 2){
+      /* New: if the take was actually recorded, score the SOUND of it
+         (pace, length, steadiness) so every phone ends with a score. */
+      if (this.audioBlob && !this.acousticTried){
+        this.acousticTried = true;
+        this.state.textContent = 'Scoring your recording…';
+        this.scoreBySound(this.audioBlob, text);
+        return;
+      }
       this.state.textContent = 'I could not catch the words this time. Type what you said, then press “Check & score” — you will still get a score and suggestions.';
       this.showTyped('');
       return;
@@ -1546,7 +1576,132 @@ class VoiceCheck {
     if (cfg.onScore) cfg.onScore(r.score, text);
   }
 
-  /* typed rescue path: still scored, still gets suggestions */
+  /* Sound-based scoring for phones whose browser cannot turn speech into text.
+     We measure how long and how steadily the student spoke, then score that. */
+  scoreBySound(blob, heardText){
+    const expectedWords = this.cfg.model
+      ? this.cfg.model.replace(/[^A-Za-z' ]/g, ' ').split(/\s+/).filter(Boolean).length
+      : (this.cfg.minWords || 12);
+    const esc2 = esc;
+    const finishWith = (m) => {
+      this.done = true;
+      this.acousticDone = true;
+      const cls = m.score >= 80 ? 'good' : m.score >= 55 ? 'mid' : 'low';
+      const headTail = band(m.score);
+      const heardLine = heardText ? `<div class="heard">Heard: “${esc2(heardText)}”</div>` : '';
+      this.res.innerHTML = `
+        <div class="scoreline">
+          <span class="score ${cls}">${m.score}<small>/100</small></span>
+          <div class="verdict"><b>${headTail[0]}</b>${headTail[1]}</div>
+        </div>
+        <div class="kchips">
+          <span class="kchip ${m.pace.ok ? 'ok' : 'no'}">${m.pace.ok ? '✓' : '○'} Pace: ${esc2(m.pace.txt)}</span>
+          <span class="kchip ${m.len.ok ? 'ok' : 'no'}">${m.len.ok ? '✓' : '○'} Length: ${esc2(m.len.txt)}</span>
+          <span class="kchip ${m.steady.ok ? 'ok' : 'no'}">${m.steady.ok ? '✓' : '○'} Steadiness: ${esc2(m.steady.txt)}</span>
+        </div>
+        <div class="fbsub">How to improve</div>
+        <ul class="fbtips">${m.tips.map(t => `<li>${esc2(t)}</li>`).join('')}</ul>
+        <div class="heard">Your microphone worked — we scored the recording itself (pace, length, steadiness). This browser cannot turn speech into text; type the sentence below for a word-accurate score.</div>
+        ${heardLine}
+        <div class="typebox">
+          <input type="text" placeholder="Type the sentence you just said…">
+          <button class="minibtn" type="button">Type it &amp; upgrade my score</button>
+        </div>`;
+      const input = this.res.querySelector('input');
+      const btn = this.res.querySelector('button');
+      const go = () => {
+        const v = input.value.trim();
+        if (v.split(/\s+/).filter(Boolean).length < 2){ input.focus(); return; }
+        this.done = false;
+        this.transcript = v; this.interim = '';
+        this.cap.textContent = v;
+        this.res.innerHTML = '';
+        this.renderActions();
+        this.state.textContent = 'Got it — your score and suggestions are below.';
+        if (this.cfg.onText){ this.cfg.onText(v); return; }
+        this.evaluate(v);
+      };
+      btn.onclick = go;
+      input.onkeydown = e => { if (e.key === 'Enter') go(); };
+      this.renderActions();
+      this.state.textContent = 'Your voice score is below — type the sentence for a word-accurate one.';
+      reveal(this.res);
+      reveal($('fbArea'));
+      if (this.cfg.onScore) this.cfg.onScore(m.score, heardText || '');
+    };
+    const neutral = (tip) => finishWith({
+      score: 60, words: 0,
+      pace:{ok:false,txt:'—'}, len:{ok:false,txt:'—'}, steady:{ok:false,txt:'—'},
+      tips:[tip]
+    });
+
+    const analyse = async (buf) => {
+      const ch = buf.getChannelData(0);
+      const sr = buf.sampleRate;
+      const win = Math.max(1, Math.floor(sr * 0.03));
+      const frames = [];
+      let peak = 0.0001;
+      for (let i = 0; i + win <= ch.length; i += win){
+        let s = 0;
+        for (let j = i; j < i + win; j++) s += ch[j] * ch[j];
+        const rms = Math.sqrt(s / win);
+        frames.push(rms);
+        if (rms > peak) peak = rms;
+      }
+      if (!frames.length) return neutral('The recording was too short to analyse. Try once more, a little louder.');
+      const thr = Math.max(0.012, peak * 0.18);
+      const speechFrames = frames.filter(f => f > thr).length;
+      const speechSec = speechFrames * 0.03;
+      const totalSec = buf.duration;
+      let pauses = 0, run = 0;
+      frames.forEach(f => { if (f <= thr){ run++; } else { if (run >= 13) pauses++; run = 0; } });
+      const idealSec = expectedWords / 2.2;             /* ≈ 2.2 words per second */
+      const ratio = idealSec ? speechSec / idealSec : 0;
+      let paceScore, paceTxt;
+      if (ratio >= 0.65 && ratio <= 1.6){ paceScore = 100; paceTxt = 'natural'; }
+      else if (ratio < 0.65){ paceScore = Math.max(30, Math.round(ratio * 130)); paceTxt = 'too brief'; }
+      else { paceScore = 55; paceTxt = 'slow'; }
+      const lenScore = Math.max(20, Math.min(100, Math.round(ratio * 100)));
+      const steadyScore = Math.max(30, Math.round(100 - Math.min(60, pauses * 12)));
+      const score = Math.max(15, Math.min(95, Math.round(paceScore * 0.4 + lenScore * 0.35 + steadyScore * 0.25)));
+      const tips = [];
+      if (ratio < 0.65) tips.push('Your recording was short for this task — cover every part of the answer at a steady pace.');
+      if (ratio > 1.6) tips.push('Good stamina — just keep the sentences flowing instead of slowing down too much.');
+      if (pauses >= 3) tips.push('Avoid long silences in the middle — pause only between sentences.');
+      if (!tips.length) tips.push('Fluency sounded solid. Type the sentence to unlock the word-accurate score.');
+      finishWith({
+        score, words: speechSec,
+        pace:{ok: paceScore >= 70, txt: paceTxt},
+        len:{ok: lenScore >= 65, txt: Math.round(speechSec) + 's of speech'},
+        steady:{ok: steadyScore >= 70, txt: pauses ? pauses + ' pause' + (pauses > 1 ? 's' : '') : 'smooth'},
+        tips
+      });
+    };
+
+    try{
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC || !blob) return neutral('This phone could not analyse the recording. Type what you said for a full score.');
+      const ctx = new AC();
+      const doDecode = (ab) => {
+        const p = ctx.decodeAudioData(ab);
+        if (p && p.then) return p;
+        return new Promise((res, rej) => { try{ ctx.decodeAudioData(ab, res, rej); }catch(e){ rej(e); } });
+      };
+      const go = (ab) => analyse(ab).catch(() => neutral('The recording could not be analysed on this phone. Type what you said for a full score.'));
+      if (blob.arrayBuffer){
+        blob.arrayBuffer().then(go).catch(() => neutral('The recording could not be read on this phone. Type what you said for a full score.'));
+      } else {
+        const rd = new FileReader();
+        rd.onload = () => go(rd.result);
+        rd.onerror = () => neutral('The recording could not be read on this phone. Type what you said for a full score.');
+        rd.readAsArrayBuffer(blob);
+      }
+    }catch(e){
+      neutral('This phone could not analyse the recording. Type what you said for a full score.');
+    }
+  }
+
+  /* typed rescue path: still scored, still gets suggestions */  /* typed rescue path: still scored, still gets suggestions */
   showTyped(heard){
     this.state.textContent = 'I could not catch the words this time. Type what you said, then press Check — the score and suggestions will appear.';
     this.res.innerHTML = `
