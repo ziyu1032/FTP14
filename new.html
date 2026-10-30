@@ -120,6 +120,18 @@ const DASH = 'https://ziyu1032.github.io/FTP14/d.html';
 const $ = id => document.getElementById(id);
 const CH = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const gen = n => Array.from({length:n}, () => CH[Math.floor(Math.random()*CH.length)]).join('');
+// 上次离线建的班，服务恢复后自动补同步
+(async () => {
+  try{
+    const pd = JSON.parse(localStorage.getItem('ftp14pend') || 'null');
+    if(!pd) return;
+    const r = await fetch(API + '/api/newclass?sharecode=' + encodeURIComponent(SC)
+      + '&name=' + encodeURIComponent(pd.name || '') + '&cls=' + encodeURIComponent(pd.cls)
+      + '&tcode=' + encodeURIComponent(pd.tcode) + (pd.catchall ? '&catchall=1' : ''), {method:'POST'});
+    const d = await r.json();
+    if(d.ok) localStorage.removeItem('ftp14pend');
+  }catch(_){}
+})();
 
 $('btnCreate').onclick = async () => {
   $('msg').textContent = '创建中…';
@@ -142,6 +154,8 @@ $('btnCreate').onclick = async () => {
     if(d.catchall) tip += '🔗 已开启旧码兜底：学生扫旧二维码也会进这个班。';
   }catch(e){
     tip += '⚠️ 实时服务暂时连不上，但<b>链接已经生成、可以马上用</b>：学生提交的成绩会按班级码归档，服务恢复后老师码自动生效。';
+    try{ localStorage.setItem('ftp14pend', JSON.stringify({cls:cls, tcode:tcode,
+      name:$('tName').value.trim(), catchall:$('optCatch').checked})); }catch(_){}
   }
   {
     const stu = GAME + '?c=' + cls + '&t=' + tcode;
