@@ -1025,7 +1025,7 @@ async function submitScore(mode){
     try{ localStorage.removeItem('ftp14pending'); }catch(_){}
   }else{
     try{ localStorage.setItem('ftp14pending', JSON.stringify(payload)); }catch(_){}
-    keepFlushing(12);          /* 服务器一恢复就自动补上 */
+    keepFlushing(45);          /* 服务器一恢复就自动补上（最长约 6 分钟）*/
   }
   sending = false;
   return ok;
@@ -1085,7 +1085,7 @@ $('btnSubmitFinish').onclick = async () => {
   btn.disabled = false;
   btn.textContent = '✅ Submit';
   tip.style.display = 'none';
-  $('doneTip').textContent = ok ? '' : '⚠️ Score not sent — please check your connection and play again (it will re-send automatically next time)';
+  $('doneTip').textContent = ok ? '' : '⚠️ Not delivered yet — please KEEP THIS PAGE OPEN. Your score is saved on your phone and will be sent automatically (retrying for about 6 minutes).';
   $('doneOverlay').classList.add('on');
 };
 $('doneAnother').onclick = () => { $('doneOverlay').classList.remove('on'); newSession(); renderProducts(); show('screen-select'); };
