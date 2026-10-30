@@ -219,6 +219,7 @@ function qpick(){ for(var i=0;i<arguments.length;i++){ var v = QP.get(arguments[
 try{ if(!QP.get('c') && !QP.get('cls')){ var _m = String(location.pathname||'').match(/([A-Z0-9]{4,10})\.html/i); if(_m) { QP.set('c', _m[1]); } } }catch(_){}
 var CLS = (qpick('c','cls','class','cid','k','room') || localStorage.getItem('ftp14cls') || HOME_CLS).toUpperCase();
 var CODE = qpick('code','tcode','t','pwd','key','pass') || localStorage.getItem('ftp14code_' + CLS) || localStorage.getItem('ftp14code') || HOME_CODE;
+if(/^[A-Za-z0-9]{4,12}$/.test(CODE)) CODE = CODE.toUpperCase();   /* 6 位老师码统一大写（主码含连字符，不受影响） */
 try{ localStorage.setItem('ftp14cls', CLS); if(CODE){ localStorage.setItem('ftp14code_' + CLS, CODE); localStorage.setItem('ftp14code', CODE); } }catch(_){}
 /* 版本自检：拿到的是旧缓存就强制刷新一次（只刷一次，防死循环） */
 (function(){
