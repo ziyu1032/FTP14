@@ -414,7 +414,9 @@ function applyData(d, live){
     ['btnNew','btnDel','btnClaim'].forEach(id => { const b=$(id); if(b) b.style.display = live ? '' : 'none'; });
     if(!live){
       $('offlineTip').style.display = '';
-      $('offlineTip').innerHTML = '🗂 <b>正在走备份通道</b>（数据延迟约 1 分钟）：实时通道正在自动重连，连上后这里会自动消失，<b>成绩一条都不会少</b>。';
+      $('offlineTip').innerHTML = '🗂 <b>正在走备份通道</b>（显示的是上一次同步的数据，约 15 秒同步一次）：实时通道正在自动重连，连上后这行提示会自动消失。'
+        + '<br><b>现在照常上课就行</b>：让学生做完别关页面，成绩会存在他们手机上，连上后自动补交，<b>一条都不会少</b>。'
+        + (LASTOKTS ? '<br>本页最后连上时间：' + new Date(LASTOKTS).toLocaleTimeString('zh-CN',{hour12:false}) : '');
     } else { $('offlineTip').style.display = 'none'; }
     $('upd').textContent = (live ? '🟢 实时收数据中 · ' : '🗂 备份通道 · ') + '最后更新 ' + new Date().toLocaleTimeString('zh-CN',{hour12:false});
   }catch(e){
