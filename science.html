@@ -507,6 +507,17 @@ const KP_RULES = [
 ];
 
 function ensureId(q){ if(!q.id) q.id = q.u+'-'+q.t+'-'+q.q.slice(0,8); return q; }
+
+/* 选项顺序随机打乱：每次出现的位置都不一样，孩子没法靠"背位置"答题 */
+function shufOpts(q){
+  if(q.t==='judge') return q;                  // 判断题固定"对/错"，不打乱
+  const n=q.ch.length;
+  const pos=q.ch.map((_,i)=>i);                // pos[新位置] = 原位置
+  for(let i=n-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=pos[i]; pos[i]=pos[j]; pos[j]=t; }
+  const ans=[];
+  for(let i=0;i<n;i++){ if(q.ans.indexOf(pos[i])>=0) ans.push(i); }
+  return { u:q.u, t:q.t, q:q.q, ch:pos.map(i=>q.ch[i]), ans:ans, exp:q.exp, tip:q.tip, kp:q.kp, id:q.id };
+}
 BANK.forEach(q=>{ ensureId(q);
   const r = KP_RULES.find(rr => rr.u===q.u && rr.re.test(q.q));
   q.kp = r ? r.k : '综合应用';
@@ -625,7 +636,9 @@ function startGame(mode, lv){
     else { S.mode='one'; S.qs=drawQuestions(S.lv,S.used,10); S.timeTotal=TIME_ONE; ROUND_N=S.qs.length; }
   }
   else { S.qs=drawQuestions(S.lv,S.used,10); S.timeTotal=TIME_ONE; ROUND_N=S.qs.length; }
-  S.timeLeft=S.timeTotal; show('scr-quiz'); renderQ(); startTimer();
+  S.timeLeft=S.timeTotal;
+  S.qs = S.qs.map(shufOpts);            // 每道题进入本轮时打乱选项顺序
+  show('scr-quiz'); renderQ(); startTimer();
 }
 function startTimer(){ stopTimer(); S.timer=setInterval(tick,1000); tickView(); }
 function stopTimer(){ if(S.timer){ clearInterval(S.timer); S.timer=null; } }
