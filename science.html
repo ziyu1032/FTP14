@@ -120,6 +120,19 @@
   .soundbtn { background:#fff; border:none; border-radius:99px; padding:7px 16px; font-size:13.5px; font-weight:800; color:#546e7a; cursor:pointer; box-shadow:0 3px 0 rgba(0,0,0,.08); }
   .flash { position:fixed; inset:0; pointer-events:none; z-index:8; box-shadow:inset 0 0 0 14px rgba(224,49,49,.85); animation:flashout .55s forwards; }
   @keyframes flashout { to { opacity:0 } }
+
+/* ==== 考点覆盖卡片 ==== */
+.kpbox{margin:14px 0 8px;padding:14px 16px 16px;border-radius:22px;
+  background:linear-gradient(135deg,#e8f7ff,#f4f0ff);border:3px solid #bfe6ff;box-shadow:0 6px 0 #d8ecf9;}
+.kpbox h3{margin:0 0 9px;font-size:15px;color:#0d5c7a;display:flex;justify-content:space-between;align-items:center;font-weight:800;}
+.kpbox h3 span:last-child{color:#7c4dff;font-size:16px;}
+.kpbar{height:15px;border-radius:10px;background:#dbeaf5;overflow:hidden;box-shadow:inset 0 2px 3px rgba(0,0,0,.08);}
+.kpbar i{display:block;height:100%;border-radius:10px;background:linear-gradient(90deg,#4fc3f7,#7c4dff);transition:width .6s cubic-bezier(.3,1.3,.5,1);}
+.kpnote{font-size:12.5px;color:#4a7a90;margin-top:9px;line-height:1.65;}
+.wkbtn{display:block;width:100%;margin-top:10px;padding:11px 16px;border-radius:15px;border:none;
+  background:linear-gradient(180deg,#ffa04d,#ff7a1a);color:#fff;font-weight:800;font-size:14px;
+  box-shadow:0 4px 0 #d5610f;cursor:pointer;font-family:inherit;}
+.wkbtn:active{transform:translateY(3px);box-shadow:0 1px 0 #d5610f;}
 </style>
 </head>
 <body>
@@ -135,6 +148,13 @@
     </div>
 
     <button class="btn btn-main" id="btnAll">🚀 开始整套挑战<br><span style="font-size:14px;font-weight:700;">5 大关卡 · 30 道题 · ⏰ 8 分钟</span></button>
+
+    <div class="kpbox">
+      <h3><span>📊 考点覆盖进度</span><span id="kpNum">0 / 26</span></h3>
+      <div class="kpbar"><i id="kpFill" style="width:0%"></i></div>
+      <div class="kpnote" id="kpNote">做完一轮会自动记录。把 26 个考点全部点亮，考试就有底啦！</div>
+      <button class="wkbtn hide" id="btnWeak">🎯 专练我的薄弱考点（10 题）</button>
+    </div>
 
     <div class="sec-title">🗺️ 关卡地图 <span style="font-size:13px;font-weight:700;color:#90a4ae;">（点卡片单练一关 · 10 题 · 3 分钟）</span></div>
     <div class="lv" data-lv="1"><div class="ico">🎈</div><div class="info"><div class="nm">第 1 关 · 空气大冒险</div><div class="ds">占据空间、能压缩、有质量、风、热气球</div></div><div class="stars" data-st="1">☆☆☆</div></div>
@@ -365,9 +385,33 @@ const BANK = [
 {u:4,t:'multi',q:'下面属于乐器的有（　）。',ch:['二胡','小提琴','古筝','橡皮筋（单独一根）'],ans:[0,1,2],exp:'二胡、小提琴、古筝、吉他等靠弦的振动发声，是乐器；单独的橡皮筋不是乐器。',tip:'二胡、小提琴、古筝、吉他'},
 {u:4,t:'single',q:'排箫是靠（　）振动发出声音的。',ch:['管内的空气','竹子本身','吹的气流','手指'],ans:[0],exp:'排箫、笛子、小号等管乐器都是靠管内空气（空气柱）振动发声。',tip:'管乐器＝空气柱振动'},
 {u:4,t:'single',q:'排箫的管子越长，发出的声音（　）。',ch:['越低，因为空气柱越长振动越慢','越高，因为空气更多','越强，因为管子更大','不变'],ans:[0],exp:'管子越长，管内空气柱越长，振动越慢，声音越低。',tip:'管长→空气柱长→声音低'},
-{u:4,t:'single',q:'食物在身体里旅行的正确顺序是（　）。',ch:['口腔→食道→胃→小肠→大肠','口腔→胃→食道→小肠→大肠','口腔→食道→小肠→胃→大肠','口腔→气管→胃→小肠→大肠'],ans:[0],exp:'食物经过口腔、食道、胃、小肠、大肠，最后残渣排出体外。',tip:'口→食道→胃→小肠→大肠'},
+{u:3,t:'single',q:'食物在身体里旅行的正确顺序是（　）。',ch:['口腔→食道→胃→小肠→大肠','口腔→胃→食道→小肠→大肠','口腔→食道→小肠→胃→大肠','口腔→气管→胃→小肠→大肠'],ans:[0],exp:'食物经过口腔、食道、胃、小肠、大肠，最后残渣排出体外。',tip:'口→食道→胃→小肠→大肠'},
 {u:4,t:'judge',q:'用同样的力连续敲击杯子，往杯里不断加水，声音会越来越低。',ans:[0],exp:'对。敲击时水越多，振动越慢，声音越低。',tip:'敲杯子：水多声音低'},
-{u:4,t:'multi',q:'制作小乐器可以用到的材料有（　）。',ch:['吸管','橡皮筋','玻璃瓶','磁铁'],ans:[0,1,2],exp:'吸管（空气柱）、橡皮筋（弦）、瓶子（装水）都能做成小乐器；磁铁和发声无关。',tip:'吸管、皮筋、瓶子都能做乐器'}
+{u:4,t:'multi',q:'制作小乐器可以用到的材料有（　）。',ch:['吸管','橡皮筋','玻璃瓶','磁铁'],ans:[0,1,2],exp:'吸管（空气柱）、橡皮筋（弦）、瓶子（装水）都能做成小乐器；磁铁和发声无关。',tip:'吸管、皮筋、瓶子都能做乐器'},
+{u:1,t:'single',q:'空气中能支持燃烧的气体主要是（　）。',ch:['氧气','氮气','二氧化碳','水蒸气'],ans:[0],exp:'空气中氧气约占 21%，它能支持燃烧，是呼吸和燃烧都离不开的气体。',tip:'氧气占21%，能助燃'},
+{u:1,t:'single',q:'把一支点燃的蜡烛放进密闭的玻璃罩里，蜡烛会慢慢熄灭，这是因为罩内的（　）被消耗掉了。',ch:['氧气','氮气','水蒸气','灰尘'],ans:[0],exp:'蜡烛燃烧要消耗氧气，罩子密封后氧气用完，火就灭了。',tip:'燃烧要耗氧气'},
+{u:1,t:'single',q:'用注射器抽进空气，堵住管口能把活塞推进去一段；抽进水就几乎推不动。这个对比说明（　）。',ch:['空气比水容易被压缩','水比空气轻','空气没有质量','水能占据空间'],ans:[0],exp:'空气微粒之间间隔大，容易被压小；水微粒排列紧密，几乎压不动。',tip:'空气能压，水压不动'},
+{u:1,t:'judge',q:'空气是由多种气体混合而成的，并不是单一的一种气体。',ans:[0],exp:'对。空气主要由氮气、氧气等混合而成，此外还有二氧化碳、水蒸气等。',tip:'空气是混合物'},
+{u:2,t:'single',q:'把呼出的气体通入澄清的石灰水中，石灰水会（　）。',ch:['变浑浊','变蓝色','变红色','没有任何变化'],ans:[0],exp:'二氧化碳能使澄清石灰水变浑浊。呼出气体中二氧化碳多，所以石灰水变浑浊。',tip:'石灰水变浑＝有二氧化碳'},
+{u:2,t:'single',q:'把点燃的木条分别放进"新鲜的空气"和"呼出的气体"里，会发现木条在呼出的气体中（　）。',ch:['熄灭得更快','烧得更旺','燃烧时间更长','没有区别'],ans:[0],exp:'呼出气体中氧气变少、二氧化碳变多，所以木条熄灭得更快。',tip:'呼出气里氧气少'},
+{u:2,t:'single',q:'空气中氧气大约占（　）。',ch:['21%','78%','50%','1%'],ans:[0],exp:'空气中氮气约占 78%，氧气约占 21%，其余是二氧化碳、水蒸气等。',tip:'氧气21%、氮气78%'},
+{u:2,t:'single',q:'和吸入的空气相比，呼出的气体中（　）。',ch:['氧气减少、二氧化碳增多','氧气增多、二氧化碳减少','氧气和二氧化碳都增多','氧气和二氧化碳都减少'],ans:[0],exp:'人体消耗氧气、产生二氧化碳，所以呼出气体里氧气少、二氧化碳多。',tip:'呼出：氧少碳多'},
+{u:2,t:'multi',q:'下面哪些做法能保护我们的呼吸器官？',ch:['雾霾天戴口罩','不吸烟、远离二手烟','经常开窗通风','在满是灰尘的地方剧烈运动'],ans:[0,1,2],exp:'戴口罩、远离烟草、通风都能减少有害物质进入肺；灰尘大的地方剧烈运动会吸入更多粉尘。',tip:'口罩、戒烟、通风'},
+{u:3,t:'single',q:'食道的主要作用是（　）。',ch:['把食物输送到胃，本身不消化食物','把食物磨碎','吸收食物中的营养','吸收残渣中的水分'],ans:[0],exp:'食道是一根管子，靠蠕动把食物送到胃，它不消化也不吸收。',tip:'食道只输送不消化'},
+{u:3,t:'single',q:'胃的主要作用是（　）。',ch:['把食物磨碎、搅拌成糊状并初步消化','吸收大部分营养','吸收水分','把食物送到小肠以外的地方'],ans:[0],exp:'胃像搅拌机，把食物磨碎、搅拌成糊状，并进行初步消化；吸收营养主要在小肠。',tip:'胃＝搅拌机，小肠才吸收'},
+{u:3,t:'single',q:'小肠的内壁有许多皱褶和小绒毛，这样的结构主要是为了（　）。',ch:['增大吸收营养的面积','让食物走得更快','储存食物残渣','帮助磨碎食物'],ans:[0],exp:'小肠绒毛大大增加了表面积，营养吸收得更充分，所以小肠是吸收营养的主要场所。',tip:'绒毛＝增大吸收面积'},
+{u:3,t:'judge',q:'食道也能消化食物，所以食物在食道里停留的时间很长。',ans:[1],exp:'错。食道只负责输送，食物通过很快，不在这里消化。',tip:'食道不消化，只输送'},
+{u:3,t:'judge',q:'胃能把食物磨碎并初步消化，但大部分营养是在小肠被吸收的。',ans:[0],exp:'对。胃负责磨碎和初步消化，小肠才是吸收营养的主要场所。',tip:'胃磨碎、小肠吸收'},
+{u:4,t:'single',q:'敲响音叉后，立刻把音叉的顶端接触水面，会看到（　）。',ch:['水面溅起水花','水变热了','水变少了','什么也不会发生'],ans:[0],exp:'音叉在振动，接触水面会把振动传给水，水花溅起就证明音叉正在振动。',tip:'音叉碰水溅花＝在振动'},
+{u:4,t:'single',q:'在鼓面上放一些纸屑，敲鼓时纸屑会跳起来，这说明（　）。',ch:['鼓面在振动','纸屑自己会跳','鼓面在发热','空气在推动纸屑'],ans:[0],exp:'纸屑被振动的鼓面弹起，把看不见的振动"放大"了，这是常用的观察方法。',tip:'纸屑跳＝鼓面在振动'},
+{u:4,t:'single',q:'声音在下面几种物质中传播得最快的是（　）。',ch:['钢铁','水','空气','真空'],ans:[0],exp:'声音在固体中传播最快，液体次之，气体最慢；真空中不能传播。',tip:'固＞液＞气，真空不传声'},
+{u:4,t:'single',q:'表示声音强弱（噪声大小）的常用单位是（　）。',ch:['分贝','厘米','千克','摄氏度'],ans:[0],exp:'声音的强弱用分贝（dB）表示，长时间处于高分贝环境会损伤听力。',tip:'强弱用分贝'},
+{u:4,t:'single',q:'耳道的主要作用是（　）。',ch:['把声音传到鼓膜','把振动传给大脑','收集周围的声音','产生听觉'],ans:[0],exp:'耳廓收集声音，耳道把声音传到鼓膜，鼓膜振动再经听小骨传到内耳。',tip:'耳道＝声音通道'},
+{u:4,t:'single',q:'对着空瓶子口吹气，发出的声音是由（　）振动产生的。',ch:['瓶内的空气','瓶子本身','吹出的气流','嘴唇'],ans:[0],exp:'吹瓶口时瓶内空气柱振动发声，所以是空气在振动。',tip:'吹瓶口＝空气柱振动'},
+{u:4,t:'multi',q:'下面哪些现象能说明"声音是由物体振动产生的"？',ch:['敲鼓时鼓面上的纸屑跳动','音叉接触水面溅起水花','把手放在喉咙上说话时感到发麻','用力按压橡皮筋但松手后不动'],ans:[0,1,2],exp:'纸屑跳、水花溅、喉咙发麻都能感到或看到振动；只是按住不动不会发声。',tip:'看得见的振动三证据'},
+{u:4,t:'multi',q:'下面哪些做法会损伤听力？',ch:['长时间戴耳机开到很大声','经常待在KTV、工地等高分贝环境','用尖锐的东西掏耳朵','在安静的地方轻声说话'],ans:[0,1,2],exp:'强声音和尖锐物掏耳都会损伤鼓膜和听觉器官；轻声说话不会。',tip:'大音量、噪音、掏耳朵都伤听力'},
+{u:4,t:'judge',q:'声音在真空中不能传播，所以宇航员在月球上必须靠无线电通话。',ans:[0],exp:'对。声音传播需要介质，月球表面几乎没有空气，无法传声。',tip:'真空不传声'},
+{u:2,t:'judge',q:'二氧化碳能使澄清的石灰水变浑浊，可以用这个方法来比较呼出气体和空气的不同。',ans:[0],exp:'对。呼出气体通入石灰水会变浑浊，而新鲜空气通入后变化不明显，说明呼出气体中二氧化碳更多。',tip:'石灰水检验二氧化碳'}
 ];
 
 const JUDGE_CH = ['✔ 说法正确', '✘ 说法错误'];
@@ -422,20 +466,136 @@ let best = {}; try{ best = JSON.parse(localStorage.getItem('sci4best')||'{}'); }
     b.className='bal'; b.textContent=e; b.style.top=top+'%'; b.style.left=(i*26+3)+'%';
     b.style.animationDuration=(4+i)+'s'; d.appendChild(b); }); })();
 
-/* ================= 抽题 ================= */
-function drawQuestions(lv, used, cfg){
-  const units = LV[lv].units, out=[];
-  for(const [t,n] of cfg){
-    let pool = BANK.filter(q => q.t===t && units.includes(q.u) && !used.has(q.id) && !out.includes(q));
-    if(pool.length < n) pool = pool.concat(BANK.filter(q => q.t===t && units.includes(q.u) && !out.includes(q) && !pool.includes(q)));
-    shuffle(pool); out.push(...pool.slice(0,n));
-  }
-  return shuffle(out);
-}
+/* ================= 考点标签 ================= */
+const KP_RULES = [
+  /* 单元1 空气 */
+  {u:1,k:'空气的性质',re:/空气是什么样|看不见|摸不着|透明|无色|和水相比|空气和水|空气的性质|平直|水平面|阻力|降落伞|利用空气性质|支持燃烧|多种气体混合|氧气大约占/},
+  {u:1,k:'占据空间',re:/占据|空瓶|纸团|气泡|证明空气|塑料袋|倒扣|瓶口/},
+  {u:1,k:'空气可压缩',re:/压缩|注射器|推进去|压扁|瘪|弹性|微粒|凭空消失|挤到其他/},
+  {u:1,k:'空气有质量',re:/质量|天平|电子秤|绿豆|重量/},
+  {u:1,k:'空气流动与风',re:/风|流动|风向|扇子|风力|发电/},
+  {u:1,k:'热空气与热气球',re:/热空气|热气球|孔明灯|蜡烛|冷空气|上升|对流/},
+  {u:1,k:'打气筒与反冲',re:/打气|充气|喷出|推力|反冲|气压/},
+  /* 单元2 呼吸 */
+  {u:2,k:'呼吸器官',re:/呼吸器官|呼吸的器官|鼻腔|气管|支气管|肺|不属于呼吸|鼻塞|用嘴呼吸/},
+  {u:2,k:'膈肌与呼吸运动',re:/膈肌|橡皮膜|模拟呼吸|胸腔|扩张|收缩|上提|下压|吸气|呼气/},
+  {u:2,k:'呼吸的变化',re:/运动|加快|每分钟|次数|安静|剧烈|一呼一吸|每时每刻/},
+  {u:2,k:'气体交换',re:/气体交换|氧气|二氧化碳|氮气|呼出|吸入|石灰水/},
+  {u:2,k:'肺活量',re:/肺活量|测量袋|体质健康/},
+  {u:2,k:'保护呼吸器官',re:/保护.*呼吸|雾霾|抽烟|吸烟|污染|蒙头/},
+  /* 单元3 消化 */
+  {u:3,k:'口腔与牙齿',re:/牙齿|门齿|犬齿|臼齿|口腔|舌头|咀嚼|细嚼|消化开始/},
+  {u:3,k:'唾液与淀粉',re:/唾液|淀粉|碘酒/},
+  {u:3,k:'食道与胃',re:/食道|胃|磨碎|糊状|输送|揉挤/},
+  {u:3,k:'小肠与大肠',re:/小肠|大肠|吸收|绒毛/},
+  {u:3,k:'食物旅行顺序',re:/旅行|顺序|经过|消化器官包括|不是消化器官/},
+  {u:3,k:'营养检验',re:/白纸|油渍|烧焦|蛋白质|脂肪|检验/},
+  {u:3,k:'营养与膳食',re:/维生素|矿物质|糖类|营养均衡|主食|荤|素|膳食|植物类|动物类|只吃自己|食物中的营养/},
+  {u:3,k:'呵护消化器官',re:/呵护|保护.*消化|饭前|洗手|暴饮暴食|立即|过冷|过热/},
+  /* 单元4 声音 */
+  {u:4,k:'耳朵与听力',re:/耳朵|耳廓|耳郭|鼓膜|听小骨|耳道|听觉|传给大脑|听力|噪音|吵/},
+  {u:4,k:'声音的传播',re:/传播|真空|月球|土电话|介质|棉线|固体|液体/},
+  {u:4,k:'音量强弱',re:/强弱|音量|振幅|用力敲|轻轻|鼓/},
+  {u:4,k:'音高高低',re:/高低|音高|快慢|伸出|长短|粗细|琴弦|水瓶|水越|铁管|管子|加水|杯子/},
+  {u:4,k:'乐器',re:/乐器|排箫|竖笛|音叉|琴|制作/},
+  {u:4,k:'声音的产生',re:/产生|振动|发声|按住|停止|橡皮筋/},
+];
+
 function ensureId(q){ if(!q.id) q.id = q.u+'-'+q.t+'-'+q.q.slice(0,8); return q; }
+BANK.forEach(q=>{ ensureId(q);
+  const r = KP_RULES.find(rr => rr.u===q.u && rr.re.test(q.q));
+  q.kp = r ? r.k : '综合应用';
+});
+const ALL_KP = Array.from(new Set(BANK.map(q=>q.u+'|'+q.kp)));
+
+/* ================= 抽题：考点覆盖优先 ================= */
+function kpKey(q){ return q.u+'|'+q.kp; }
+function groupByKp(list){ const g={}; list.forEach(q=>{ const k=kpKey(q); (g[k]=g[k]||[]).push(q); }); return g; }
+function pickOne(pool, used){
+  let c = pool.filter(q=>!used.has(q.id));
+  if(!c.length) c = pool.slice();
+  shuffle(c);
+  return c[0];
+}
+function drawQuestions(lv, used, n){
+  const units = LV[lv].units;
+  const picked = [], hitKp = new Set();
+  /* 多单元（第5关）：先保证每个单元至少 1 题，考点不重复 */
+  if(units.length > 1){
+    for(const u of shuffle(units.slice())){
+      if(picked.length >= n) break;
+      const g = groupByKp(BANK.filter(q=>q.u===u));
+      const ks = shuffle(Object.keys(g)).sort((ka,kb)=>{
+        const A = (kpStat[ka] && kpStat[ka].r>0) ? 1 : 0;
+        const B = (kpStat[kb] && kpStat[kb].r>0) ? 1 : 0;
+        return A - B;
+      });
+      for(const k of ks){
+        if(hitKp.has(k)) continue;
+        const q = pickOne(g[k], used);
+        if(q){ picked.push(q); hitKp.add(k); break; }
+      }
+    }
+  }
+  /* 按知识点轮转补齐：每个考点最多出 1 题；没掌握过的考点优先 */
+  const g = groupByKp(BANK.filter(q=>units.includes(q.u)));
+  const kOrder = shuffle(Object.keys(g)).sort((ka,kb)=>{
+    const A = (kpStat[ka] && kpStat[ka].r>0) ? 1 : 0;   /* 1=已答对过 */
+    const B = (kpStat[kb] && kpStat[kb].r>0) ? 1 : 0;
+    return A - B;
+  });
+  for(const k of kOrder){
+    if(picked.length >= n) break;
+    if(hitKp.has(k)) continue;
+    const q = pickOne(g[k], used);
+    if(q){ picked.push(q); hitKp.add(k); }
+  }
+  /* 兜底 */
+  if(picked.length < n){
+    let rest = BANK.filter(q=>units.includes(q.u) && picked.indexOf(q)<0 && !used.has(q.id));
+    if(rest.length < n-picked.length) rest = BANK.filter(q=>units.includes(q.u) && picked.indexOf(q)<0);
+    shuffle(rest);
+    picked.push.apply(picked, rest.slice(0, n-picked.length));
+  }
+  return shuffle(picked.slice(0, n));
+}
 function drawAll(){ const qs=[]; S.used.clear();
-  for(let lv=1; lv<=5; lv++){ const part=drawQuestions(lv,S.used,CFG_ALL);
-    part.forEach(q=>{ ensureId(q); S.used.add(q.id); }); qs.push(...part); } return qs; }
+  for(let lv=1; lv<=5; lv++){
+    const part = drawQuestions(lv, S.used, 6);
+    part.forEach(q=>S.used.add(q.id));
+    qs.push.apply(qs, part);
+  }
+  return qs;
+}
+
+/* ================= 考点统计（记在手机里） ================= */
+let kpStat = {};
+try{ kpStat = JSON.parse(localStorage.getItem('sci4kp')||'{}'); }catch(e){ kpStat = {}; }
+function kpHit(k, ok){
+  if(!k) return;
+  const o = kpStat[k] || (kpStat[k] = {r:0,w:0});
+  ok ? o.r++ : o.w++;
+  try{ localStorage.setItem('sci4kp', JSON.stringify(kpStat)); }catch(e){}
+}
+function kpAcc(k){ const o=kpStat[k]; if(!o) return -1; const t=o.r+o.w; return t ? o.r/t : -1; }
+function weakKps(){
+  return ALL_KP.filter(k=>{ const a=kpAcc(k); return a>=0 && a<0.75 && (kpStat[k].w>0); })
+                .sort((a,b)=>kpAcc(a)-kpAcc(b));
+}
+function refreshKp(){
+  const total = ALL_KP.length;
+  const done = ALL_KP.filter(k=>kpStat[k] && kpStat[k].r>0).length;
+  const num=$('kpNum'), fill=$('kpFill'), note=$('kpNote'), btn=$('btnWeak');
+  if(!num) return;
+  num.textContent = done + ' / ' + total;
+  fill.style.width = (total ? done/total*100 : 0) + '%';
+  const wk = weakKps();
+  if(done===0){ note.innerHTML = '做完一轮会自动记录。把 ' + total + ' 个考点全部点亮，考试就有底啦！'; }
+  else if(wk.length){ note.innerHTML = '⚠️ 这些考点还要加强：<b>' +
+      wk.slice(0,3).map(k=>esc(k.split('|')[1])).join('、') + '</b>'; }
+  else { note.innerHTML = '✅ 练过的考点都掌握得不错，继续把剩下的点亮吧！'; }
+  btn.classList.toggle('hide', wk.length===0);
+}
 
 /* ================= 屏幕 ================= */
 function show(id){ ['scr-home','scr-quiz','scr-result'].forEach(s=>$(s).classList.toggle('hide', s!==id)); window.scrollTo(0,0); }
@@ -445,6 +605,7 @@ function refreshStars(){
   for(let lv=1;lv<=5;lv++){ const el=document.querySelector('[data-st="'+lv+'"]');
     if(el) el.textContent='★★★'.slice(0,best['s'+lv]||0).padEnd(3,'☆'); }
   $('bestTxt').textContent = best.total ? ('整套 ' + best.total + ' 分 🌟') : '还没挑战过';
+  refreshKp();
 }
 
 /* ================= 开始 ================= */
@@ -456,9 +617,9 @@ function startGame(mode, lv){
   if(S.all){ S.qs=drawAll(); S.timeTotal=TIME_ALL; ROUND_N=6; }
   else if(mode==='wrong'){
     if(prevWrong && prevWrong.length){ S.qs=shuffle(prevWrong.map(w=>w.q)).map(ensureId); S.timeTotal=Math.max(120, S.qs.length*12); ROUND_N=S.qs.length; }
-    else { S.mode='one'; S.qs=drawQuestions(S.lv,S.used,CFG_ONE).map(ensureId); S.timeTotal=TIME_ONE; ROUND_N=S.qs.length; }
+    else { S.mode='one'; S.qs=drawQuestions(S.lv,S.used,10); S.timeTotal=TIME_ONE; ROUND_N=S.qs.length; }
   }
-  else { S.qs=drawQuestions(S.lv,S.used,CFG_ONE).map(ensureId); S.timeTotal=TIME_ONE; ROUND_N=S.qs.length; }
+  else { S.qs=drawQuestions(S.lv,S.used,10); S.timeTotal=TIME_ONE; ROUND_N=S.qs.length; }
   S.timeLeft=S.timeTotal; show('scr-quiz'); renderQ(); startTimer();
 }
 function startTimer(){ stopTimer(); S.timer=setInterval(tick,1000); tickView(); }
@@ -527,6 +688,7 @@ function judge(picked){
     else b.classList.add('dim'); });
   if(q.t==='multi') $('multiact').classList.add('hide');
   const fb=$('fb'); fb.classList.remove('hide','fb-ok','fb-no');
+  kpHit(q.u+'|'+q.kp, right);
   if(right){
     S.score+=10; S.combo++; sndOK(); if(S.combo>=3) sndCombo(); flyStar();
     $('scoreTxt').textContent=S.score+' 分';
@@ -582,7 +744,7 @@ function finish(reason){
 }
 function showResult(reason){
   show('scr-result');
-  const n=S.qs.length, miss=S.wrong.length, totalDone=S.qi+ (S.locked?1:0), did=totalDone-miss;
+  const n=S.qs.length, miss=S.wrong.length, totalDone=Math.min(n, S.qi + (S.locked && S.qi<n ? 1 : 0)), did=totalDone-miss;
   const stars = S.mode==='wrong' ? (miss===0?3:1) : (S.all ? (miss===0?3:(miss<=4?2:1)) : starOf(miss));
   $('resEmoji').textContent = miss===0?'🏆🎉':(miss<=3?'🎉':'💪');
   $('resScore').innerHTML = (S.mode==='wrong' ? (miss===0?'全对！错题清零 ✨':('还错 '+miss+' 题')) : (S.score+' <small>分</small>'));
@@ -625,6 +787,20 @@ $('btnRestart').onclick=()=>{ sndClick(); if(S.all) startGame('all',1); else sta
 $('btnHome').onclick=()=>{ stopTimer(); refreshStars(); show('scr-home'); };
 $('btnNext').onclick=nextQ;
 $('btnSubmit').onclick=()=>{ if(!S.locked && S.multiPick.length){ sndClick(); judge(S.multiPick); } };
+$('btnWeak').onclick=()=>{
+  const wk = weakKps();
+  if(!wk.length){ toast('太棒了，暂时没有薄弱考点！'); return; }
+  let pool = BANK.filter(q=>wk.indexOf(q.u+'|'+q.kp)>=0);
+  shuffle(pool);
+  stopTimer();
+  S.mode='weak'; S.all=false; S.lv=1;
+  S.qi=0; S.score=0; S.wrong=[]; S.locked=false; S.combo=0; S.multiPick=[];
+  S.qs = pool.slice(0,10);
+  S.timeTotal = Math.max(120, S.qs.length*15); ROUND_N = S.qs.length;
+  S.timeLeft = S.timeTotal;
+  show('scr-quiz'); renderQ(); startTimer();
+  toast('🎯 专练 ' + wk.length + ' 个薄弱考点');
+};
 $('btnReAll').onclick=()=>{ if(S.mode==='all') startGame('all',1); else startGame('one',S.lv); };
 $('btnRetryWrong').onclick=()=>startGame('wrong');
 $('btnBackHome').onclick=()=>{ refreshStars(); show('scr-home'); };
