@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🔬 科学闯关大冒险 · 四年级上册复习</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { font-family:"PingFang SC","Microsoft YaHei","Heiti SC",sans-serif;
+    background:linear-gradient(180deg,#5fc3f7 0%,#a8e6ff 45%,#dff8ff 100%);
+    min-height:100vh; overflow-x:hidden; padding-bottom:40px; }
+  .wrap { max-width:720px; margin:0 auto; padding:14px 14px 30px; position:relative; z-index:2; }
+  .deco { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+  .cloud { position:absolute; font-size:52px; opacity:.8; animation:drift linear infinite; }
+  .bal { position:absolute; font-size:42px; animation:bob ease-in-out infinite; }
+  @keyframes drift { from{transform:translateX(-15vw)} to{transform:translateX(115vw)} }
+  @keyframes bob { 0%,100%{transform:translateY(0) rotate(-4deg)} 50%{transform:translateY(-26px) rotate(5deg)} }
+
+  .card { background:#fff; border-radius:26px; box-shadow:0 10px 0 rgba(0,0,0,.08),0 16px 30px rgba(30,80,140,.15); padding:22px 20px; }
+  h1.title { text-align:center; font-size:29px; color:#0b5fa5; letter-spacing:2px; margin:8px 0 4px;
+             text-shadow:0 3px 0 #fff,0 5px 8px rgba(0,0,0,.12); }
+  .subtitle { text-align:center; color:#3a6d99; font-size:14.5px; margin-bottom:14px; }
+  .btn { display:block; width:100%; border:none; cursor:pointer; font-weight:800; border-radius:20px;
+         padding:16px; font-size:19px; color:#fff; text-align:center; box-shadow:0 6px 0 rgba(0,0,0,.18); transition:transform .08s; }
+  .btn:active { transform:translateY(4px); box-shadow:0 2px 0 rgba(0,0,0,.18); }
+  .btn:disabled { filter:grayscale(.7) opacity(.6); cursor:not-allowed; }
+  .btn-main { background:linear-gradient(180deg,#ff9f43,#ff7a1a); font-size:22px; padding:19px; }
+  .btn-blue { background:linear-gradient(180deg,#54a0ff,#2e86de); }
+  .btn-green{ background:linear-gradient(180deg,#2ed573,#20bf6b); }
+  .btn-pink { background:linear-gradient(180deg,#ff6b9d,#ee5a8c); }
+  .btn-gray { background:linear-gradient(180deg,#b0bec5,#90a4ae); }
+
+  .lv { display:flex; align-items:center; gap:12px; background:#fff; border-radius:20px; padding:13px 15px; margin:9px 0;
+        box-shadow:0 6px 0 rgba(0,0,0,.08); cursor:pointer; transition:transform .1s; border:3px solid transparent; }
+  .lv:hover { transform:translateY(-3px); border-color:#ffd166; }
+  .lv .ico { font-size:36px; flex:none; }
+  .lv .info { flex:1; min-width:0; }
+  .lv .nm { font-size:18px; font-weight:800; color:#23527c; }
+  .lv .ds { font-size:12.5px; color:#78909c; margin-top:2px; }
+  .lv .stars { flex:none; font-size:18px; letter-spacing:1px; }
+  .tips { background:#fffbe6; border:2px dashed #f6c344; border-radius:16px; padding:11px 13px; color:#8a6d1a; font-size:13px; line-height:1.7; margin:12px 0; }
+
+  .topbar { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+  .clock { background:#fff; border-radius:16px; padding:7px 12px; font-weight:900; font-size:19px; color:#0b5fa5; box-shadow:0 4px 0 rgba(0,0,0,.08); flex:none; }
+  .clock.hot { color:#fff; background:linear-gradient(180deg,#ff7b7b,#e03131); animation:blink 1s infinite; }
+  @keyframes blink { 50%{opacity:.55} }
+  .timerbar { flex:1; height:14px; background:rgba(255,255,255,.65); border-radius:99px; overflow:hidden; box-shadow:inset 0 2px 4px rgba(0,0,0,.12); }
+  .timerbar>i { display:block; height:100%; background:linear-gradient(90deg,#2ed573,#7bed9f); border-radius:99px; transition:width 1s linear; }
+  .timerbar>i.hot { background:linear-gradient(90deg,#e03131,#ff7b7b); }
+  .iconbtn { width:42px; height:42px; border:none; border-radius:13px; background:#fff; font-size:19px; cursor:pointer; box-shadow:0 4px 0 rgba(0,0,0,.08); flex:none; }
+  .progrow { display:flex; align-items:center; gap:8px; margin:4px 2px 12px; }
+  .prog { font-weight:800; color:#0b5fa5; font-size:14px; flex:none; }
+  .pbar { flex:1; height:12px; background:rgba(255,255,255,.65); border-radius:99px; overflow:hidden; }
+  .pbar>i { display:block; height:100%; background:linear-gradient(90deg,#ffa502,#ffd166); transition:width .4s; }
+
+  .qcard { animation:popin .3s; position:relative; }
+  @keyframes popin { from{transform:scale(.92) translateY(14px); opacity:0} to{transform:none; opacity:1} }
+  .qtype { display:inline-block; font-size:13px; font-weight:900; color:#fff; padding:4px 14px; border-radius:99px; margin-bottom:10px; letter-spacing:1px; }
+  .t-single { background:linear-gradient(90deg,#ff9f43,#ff7a1a); }
+  .t-multi  { background:linear-gradient(90deg,#ff6b9d,#ee5a8c); }
+  .t-judge  { background:linear-gradient(90deg,#54a0ff,#2e86de); }
+  .qtext { font-size:20px; font-weight:800; color:#22364a; line-height:1.65; margin-bottom:16px; }
+  .opts { display:grid; gap:11px; }
+  .opt { text-align:left; border:3px solid #ffd166; background:#fffdf4; border-radius:18px; padding:13px 15px;
+         font-size:17px; font-weight:700; color:#37474f; cursor:pointer; transition:all .12s; line-height:1.5; position:relative; }
+  .opt:active { transform:scale(.98); }
+  .opt .key { display:inline-flex; align-items:center; justify-content:center; width:29px; height:29px; border-radius:50%;
+              background:#ffd166; color:#5d4037; font-weight:900; margin-right:9px; flex:none; }
+  .opt.sel { border-color:#ff6b9d; background:#fff0f5; box-shadow:0 0 0 3px rgba(255,107,157,.25); }
+  .opt.sel .key { background:#ff6b9d; color:#fff; }
+  .opt.ok { border-color:#2ed573; background:#eafff1; }
+  .opt.ok .key { background:#2ed573; color:#fff; }
+  .opt.bad { border-color:#e03131; background:#ffecec; animation:shake .45s; }
+  .opt.bad .key { background:#e03131; color:#fff; }
+  .opt.dim { opacity:.55; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-9px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-6px)} 80%{transform:translateX(4px)} }
+  .judgeopts { grid-template-columns:1fr 1fr; }
+  .judgeopts .opt { text-align:center; font-size:19px; padding:17px 10px; }
+  .multiact { margin-top:15px; }
+  .feedback { margin-top:15px; border-radius:18px; padding:14px 16px; font-size:16px; line-height:1.75; animation:popin .25s; }
+  .fb-ok { background:#eafff1; border:3px solid #2ed573; color:#127c43; }
+  .fb-ok .big { font-size:20px; font-weight:900; }
+  .fb-no { background:#fff1f1; border:4px solid #e03131; color:#8e1b1b; box-shadow:0 0 0 6px rgba(224,49,49,.15); }
+  .fb-no .big { font-size:21px; font-weight:900; color:#c92a2a; }
+  .fbrow { margin-top:8px; font-size:15.5px; }
+  .mine { color:#c92a2a; text-decoration:line-through; font-weight:800; background:#ffe3e3; border-radius:8px; padding:2px 8px; display:inline-block; }
+  .corr { color:#0f7b3f; font-weight:900; background:#d8ffe6; border-radius:8px; padding:2px 8px; display:inline-block; }
+  .why { margin-top:10px; background:#fff; border-radius:12px; padding:9px 12px; font-size:15px; color:#444; line-height:1.7; }
+  .tipbox { margin-top:8px; background:#fff8e1; border-left:6px solid #f6a609; border-radius:12px; padding:9px 12px; font-size:15.5px; color:#7a5200; font-weight:800; }
+  .combo { display:inline-block; background:linear-gradient(90deg,#ff9f43,#ff6b9d); color:#fff; font-size:14px; font-weight:900;
+           padding:4px 12px; border-radius:99px; margin-left:8px; animation:pop .5s; }
+  @keyframes pop { from{transform:scale(.4)} 70%{transform:scale(1.25)} to{transform:scale(1)} }
+  .flystar { position:absolute; font-size:30px; pointer-events:none; animation:fly 1s ease-out forwards; z-index:5; }
+  @keyframes fly { 0%{transform:translate(0,0) scale(.5); opacity:1} 100%{transform:translate(var(--dx),-120px) scale(1.4); opacity:0} }
+
+  .overlay { position:fixed; inset:0; background:rgba(13,42,74,.55); z-index:9; display:flex; align-items:center; justify-content:center; padding:22px; }
+  .overlay .card { max-width:420px; width:100%; text-align:center; animation:popin .3s; }
+  .ovl-emoji { font-size:56px; margin:4px 0; }
+  .ovl-title { font-size:23px; font-weight:900; color:#0b5fa5; margin-bottom:8px; }
+  .ovl-line { color:#546e7a; font-size:15px; line-height:1.8; margin-bottom:14px; }
+  .ovl-line b { color:#ff7a1a; }
+
+  .res-hero { text-align:center; padding:24px 16px 18px; }
+  .res-emoji { font-size:62px; animation:bob 2.4s ease-in-out infinite; display:inline-block; }
+  .res-score { font-size:44px; font-weight:900; color:#0b5fa5; margin:6px 0 2px; }
+  .res-score small { font-size:16px; color:#78909c; font-weight:700; }
+  .res-stars { font-size:32px; letter-spacing:8px; margin:6px 0 2px; }
+  .res-sub { color:#546e7a; font-size:14.5px; margin-top:6px; line-height:1.7; }
+  .sec-title { font-size:18px; font-weight:900; color:#23527c; margin:20px 0 10px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .wrongcard { background:#fff; border-radius:18px; padding:14px 16px; margin-bottom:12px; box-shadow:0 4px 0 rgba(0,0,0,.07); border-left:7px solid #e03131; }
+  .wq { font-weight:800; color:#22364a; font-size:15.5px; line-height:1.6; }
+  .wpick { font-size:14.5px; margin-top:8px; color:#c92a2a; }
+  .wans { font-size:14.5px; margin-top:4px; color:#0f7b3f; font-weight:800; }
+  .wexp { font-size:13.5px; color:#555; margin-top:6px; line-height:1.65; background:#f6f9fc; border-radius:10px; padding:8px 10px; }
+  .wtip { font-size:13.5px; color:#7a5200; margin-top:6px; background:#fff8e1; border-radius:10px; padding:8px 10px; font-weight:800; }
+  .btnrow { display:grid; gap:10px; margin-top:20px; }
+  .toast { position:fixed; left:50%; bottom:34px; transform:translateX(-50%); background:rgba(13,42,74,.9); color:#fff; padding:10px 22px; border-radius:99px; font-size:14px; z-index:99; animation:popin .25s; }
+  .hide { display:none !important; }
+  .soundrow { display:flex; justify-content:center; gap:8px; margin:4px 0 12px; }
+  .soundbtn { background:#fff; border:none; border-radius:99px; padding:7px 16px; font-size:13.5px; font-weight:800; color:#546e7a; cursor:pointer; box-shadow:0 3px 0 rgba(0,0,0,.08); }
+  .flash { position:fixed; inset:0; pointer-events:none; z-index:8; box-shadow:inset 0 0 0 14px rgba(224,49,49,.85); animation:flashout .55s forwards; }
+  @keyframes flashout { to { opacity:0 } }
+</style>
+</head>
+<body>
+<div class="deco" id="deco"></div>
+<div class="wrap">
+
+  <div id="scr-home">
+    <h1 class="title">🔬 科学闯关大冒险</h1>
+    <p class="subtitle">四年级上册 · 空气 / 呼吸与消化 / 声音 · 全套考点复习</p>
+    <div class="soundrow">
+      <button class="soundbtn" id="btnSound">🔊 音效：开</button>
+      <button class="soundbtn" id="btnVib">📳 震动：开</button>
+    </div>
+
+    <button class="btn btn-main" id="btnAll">🚀 开始整套挑战<br><span style="font-size:14px;font-weight:700;">5 大关卡 · 30 道题 · ⏰ 8 分钟</span></button>
+
+    <div class="sec-title">🗺️ 关卡地图 <span style="font-size:13px;font-weight:700;color:#90a4ae;">（点卡片单练一关 · 10 题 · 3 分钟）</span></div>
+    <div class="lv" data-lv="1"><div class="ico">🎈</div><div class="info"><div class="nm">第 1 关 · 空气大冒险</div><div class="ds">占据空间、能压缩、有质量、风、热气球</div></div><div class="stars" data-st="1">☆☆☆</div></div>
+    <div class="lv" data-lv="2"><div class="ico">🫁</div><div class="info"><div class="nm">第 2 关 · 呼吸小卫士</div><div class="ds">呼吸器官、膈肌、气体交换、肺活量</div></div><div class="stars" data-st="2">☆☆☆</div></div>
+    <div class="lv" data-lv="3"><div class="ico">🍎</div><div class="info"><div class="nm">第 3 关 · 消化旅行团</div><div class="ds">口腔、食道、胃、小肠、营养与检验</div></div><div class="stars" data-st="3">☆☆☆</div></div>
+    <div class="lv" data-lv="4"><div class="ico">🎵</div><div class="info"><div class="nm">第 4 关 · 声音魔法屋</div><div class="ds">振动发声、传播、耳朵、音量与音高</div></div><div class="stars" data-st="4">☆☆☆</div></div>
+    <div class="lv" data-lv="5"><div class="ico">🏆</div><div class="info"><div class="nm">第 5 关 · 科学大擂台</div><div class="ds">四个单元混合 + 生活情境题</div></div><div class="stars" data-st="5">☆☆☆</div></div>
+
+    <div class="tips">💡 <b>怎么玩：</b>答对 +10 分。单选和判断点一下就出结果，<b>多选题要选好再点「提交答案」</b>。答错会立刻告诉你<b>正确答案、为什么错、以及一句好记的口诀</b>。每一关都能「↻ 重新开始」，会换一批没做过的新题！最后还有<b>错题本</b>，可以重练到全对，也能复制给爸爸妈妈打印。</div>
+    <p style="text-align:center;color:#90a4ae;font-size:12.5px;margin-top:12px;">最佳成绩：<span id="bestTxt">还没挑战过</span></p>
+  </div>
+
+  <div id="scr-quiz" class="hide">
+    <div class="topbar">
+      <div class="clock" id="clock">8:00</div>
+      <div class="timerbar"><i id="tfill" style="width:100%"></i></div>
+      <button class="iconbtn" id="btnRestart" title="换一批新题，重新开始本关">↻</button>
+      <button class="iconbtn" id="btnHome" title="回到地图">🏠</button>
+    </div>
+    <div class="progrow">
+      <span class="prog" id="prog">第 1 / 10 题</span>
+      <div class="pbar"><i id="pfill" style="width:0%"></i></div>
+      <span class="prog" id="scoreTxt">0 分</span>
+    </div>
+    <div class="card qcard" id="qcard">
+      <span class="qtype" id="qtype">单选题</span>
+      <div class="qtext" id="qtext">加载中…</div>
+      <div class="opts" id="opts"></div>
+      <div class="multiact hide" id="multiact"><button class="btn btn-pink" id="btnSubmit">✅ 提交答案</button></div>
+      <div class="feedback hide" id="fb"></div>
+    </div>
+    <div style="text-align:center;margin-top:14px;">
+      <button class="btn btn-gray hide" id="btnNext" style="width:auto;display:inline-block;padding:12px 40px;">下一题 ➜</button>
+    </div>
+  </div>
+
+  <div id="scr-result" class="hide">
+    <div class="card res-hero">
+      <span class="res-emoji" id="resEmoji">🎉</span>
+      <div class="res-score" id="resScore">0 <small>分</small></div>
+      <div class="res-stars" id="resStars">☆☆☆</div>
+      <div class="res-sub" id="resSub"></div>
+    </div>
+    <div class="btnrow">
+      <button class="btn btn-green" id="btnReAll">🔁 再挑战一次（换一批新题）</button>
+      <button class="btn btn-blue hide" id="btnRetryWrong">🎯 错题重练</button>
+      <button class="btn btn-gray" id="btnBackHome">🏠 回到关卡地图</button>
+    </div>
+    <div class="sec-title">📖 我的错题本 <span id="wrongCnt" style="font-size:13px;color:#90a4ae;"></span><button class="soundbtn hide" id="btnCopy" style="margin-left:auto;font-size:13px;">📋 复制错题</button></div>
+    <div id="wrongList"></div>
+  </div>
+
+</div>
+
+<script>
+const BANK = [
+/* ===== 单元1：空气（新版教科版四上 第一单元） ===== */
+{u:1,t:'single',q:'空气是什么样子的？',ch:['无色无味','白色无味','无色但有香味','黑色的'],ans:[0],exp:'空气看不见、抓不着，是无色无味的透明气体。',tip:'空气：无色、无味、透明 👀'},
+{u:1,t:'single',q:'用手把装满空气的塑料袋压扁，一松手，袋子会（　）。',ch:['一直瘪着','慢慢鼓起来','立刻破裂','变成一袋水'],ans:[1],exp:'松手后袋子慢慢鼓起来，说明里面的空气还在，空气占据空间、有弹性。',tip:'压扁≠空气没了，松手会鼓回来'},
+{u:1,t:'single',q:'把空瓶子倾斜放入水中，会看到（　）。',ch:['瓶口有气泡冒出','瓶子消失了','水马上变色','瓶口冒出白烟'],ans:[0],exp:'气泡就是空气被水挤压出来形成的，能直接证明瓶里原本就有空气。',tip:'有气泡＝里面有空气'},
+{u:1,t:'single',q:'风就是（　）的空气。',ch:['快速流动','静止不动','有颜色的','带甜味的'],ans:[0],exp:'风就是快速流动的空气。',tip:'风＝流动的空气'},
+{u:1,t:'single',q:'空气和水相比，下面哪个说法是正确的？',ch:['都没有固定形状，占据空间，会流动','都有固定的形状','质量都一样重','都很容易被压缩'],ans:[0],exp:'相同点：没有固定形状、占据一定空间、有流动性。不同点：空气易被压缩、质量轻；水不易被压缩。',tip:'同：无形、占空间、会流动'},
+{u:1,t:'single',q:'装空气的塑料瓶一挤就瘪，装水的瓶子挤压后变化很小。这说明（　）。',ch:['空气容易被压缩，水不容易','水容易被压缩，空气不容易','空气和水都不能压缩','空气比水重得多'],ans:[0],exp:'空气微粒之间距离较大，容易改变间隔；水的微粒间隔小，不易改变。',tip:'空气易压缩，水不易压缩'},
+{u:1,t:'single',q:'瓶口竖直向下压入水中，水进不到瓶子里，是因为（　）。',ch:['瓶口太小了','瓶内的空气占据了空间','水太少了','瓶子是坏的'],ans:[1],exp:'瓶内空气占据了空间，水无法进入。',tip:'空气占位，水进不去'},
+{u:1,t:'single',q:'不管容器怎么倾斜，静止的水面总是平直的，这条平直的线叫（　）。',ch:['水位','水平线','海拔线','波浪线'],ans:[1],exp:'它叫"水平线"；"水位"是指水面距离容器底部的高度，别弄混。',tip:'平直线＝水平线，高度＝水位'},
+{u:1,t:'single',q:'用注射器分别抽入空气和水，堵住管口推活塞：抽空气的能推进去，抽水的几乎推不动。说明（　）。',ch:['空气容易被压缩，水不容易','水容易被压缩，空气不容易','空气和水都不能压缩','活塞坏了一个'],ans:[0],exp:'空气微粒间隔大，容易被压缩；水微粒间隔小，不容易被压缩。',tip:'能推动＝空气，推不动＝水'},
+{u:1,t:'single',q:'压缩空气枪能射出"子弹"，利用了被压缩空气的（　）。',ch:['弹力','磁性','浮力','颜色'],ans:[0],exp:'被压缩的空气具有弹性，利用弹力把"子弹"射出去。',tip:'压缩空气有弹力 💪'},
+{u:1,t:'single',q:'用简易天平测空气质量时，往没打气的一端慢慢加绿豆直到平衡，绿豆是用来（　）。',ch:['装饰天平','用绿豆的数量来量化空气质量','给皮球当食物','让天平变重'],ans:[1],exp:'放上去的绿豆的质量和皮球打入空气的质量相等，用绿豆粒数就能表示空气有多重。',tip:'绿豆数＝空气的质量'},
+{u:1,t:'single',q:'用电子秤测打入空气的质量：没打气的瘪皮球质量记为 M1，打满气后记为 M2，打入空气的质量是（　）。',ch:['M2＋M1','M2－M1','M1－M2','M1×M2'],ans:[1],exp:'两次称量的差值（M2−M1）就是打入空气的质量。',tip:'空气质量＝打气后 − 打气前'},
+{u:1,t:'single',q:'充满气的气球松手后飞出去，是喷出的空气给了气球一个向前的推力，这个力叫（　）。',ch:['反冲力','重力','磁力','摩擦力'],ans:[0],exp:'空气向后喷出，给气球一个向前的推力，这就是反冲力。火箭、喷气式飞机也是这个原理。',tip:'往后喷→往前冲=反冲力 🚀'},
+{u:1,t:'single',q:'风力发电是把风能转化成（　）。',ch:['电能','水能','光能','热能'],ans:[0],exp:'流动的空气吹动风车叶片旋转，把风能转化成电能。',tip:'风→电💡'},
+{u:1,t:'single',q:'风一吹，风向袋整袋顺着风张开，它是用来指示（　）的。',ch:['温度','风向和风速','降雨量','空气质量等级'],ans:[1],exp:'风向袋用来指示风向、风速。',tip:'风向袋看风向和风速'},
+{u:1,t:'single',q:'用塑料袋罩住蜡烛加热袋内空气，松开双手后塑料袋会（　）。',ch:['缓缓向上升空','原地一动不动','马上掉下来','燃烧起来'],ans:[0],exp:'空气受热后体积膨胀、重量变轻，热空气上升，袋子被带上天。',tip:'热空气往上跑 🎈'},
+{u:1,t:'single',q:'热气球能升空，是因为球内的热空气比周围冷空气（　）。',ch:['密度小、更轻','密度大、更重','温度更低','更有弹性'],ans:[0],exp:'热空气密度小于周围冷空气，产生浮力带动气球上升。',tip:'热=轻=上升'},
+{u:1,t:'single',q:'孔明灯能长时间留在空中，靠的是（　）。',ch:['灯里装了电池','底部燃料持续燃烧，不断加热灯内空气','风吹着它不掉','灯做得特别重'],ans:[1],exp:'燃料持续加热，灯内空气温度高、密度小，浮力与重力大致平衡，就能悬停；燃料燃尽变冷后就会落下。',tip:'燃料一直烧→灯一直飘'},
+{u:1,t:'single',q:'白天，海边的风一般从哪里吹向陆地？',ch:['海洋','高山','沙漠','天空'],ans:[0],exp:'白天陆地升温比海洋快，陆地空气受热上升形成低压，近地面空气从海洋（高压）流向陆地（低压），形成海风。',tip:'白天海风：海→陆地'},
+{u:1,t:'single',q:'自制打气筒挤压瓶子给气球充气时，正确的操作是（　）。',ch:['堵住进气口，打开出气口','打开进气口，堵住出气口','把口全部堵住','把口全部打开'],ans:[0],exp:'挤压时瓶内空间变小、气压增大，堵住进气口、打开出气口，高压空气流入气球；松手时相反。',tip:'挤：进出气口要"堵进开出"'},
+{u:1,t:'judge',q:'空气看不见、摸不着，所以空气没有质量。',ans:[1],exp:'错。用简易天平或电子秤做实验都能证明：空气有质量，只是很轻。',tip:'空气有质量，只是很轻'},
+{u:1,t:'judge',q:'用手按压装满空气的塑料袋，能感觉到弹性、有阻力。',ans:[0],exp:'对。这说明袋里的空气占据空间，还可以被压缩。',tip:'压得动、会回弹＝有空气'},
+{u:1,t:'judge',q:'无论怎么按压，空气都不会凭空消失，只是被挤到其他位置。',ans:[0],exp:'对。空气占据的空间被压缩变小了，但空气本身还在。',tip:'空间变小，空气没少'},
+{u:1,t:'judge',q:'空气能占据一定的空间。',ans:[0],exp:'对。这是空气的重要性质。',tip:'空气占空间 ✅'},
+{u:1,t:'judge',q:'把纸团塞进杯底，杯口朝下竖直倒扣压入水中，纸团会湿。',ans:[1],exp:'错。杯内空气占据空间，水进不去，取出后纸团不会湿。',tip:'倒扣入水纸不湿'},
+{u:1,t:'judge',q:'水占据的空间很容易被压缩。',ans:[1],exp:'错。空气容易被压缩，水不易被压缩。',tip:'水：压不动'},
+{u:1,t:'judge',q:'空气被压缩时，空气微粒的大小和数量保持不变，只是微粒之间的间隔变小了。',ans:[0],exp:'对。压缩改变的是微粒之间的间隔，不是微粒本身。',tip:'压缩＝间隔变小'},
+{u:1,t:'judge',q:'皮球鼓起来以后，就再也不能继续充气了。',ans:[1],exp:'错。球内空气微粒间还有空隙，继续打气时新空气把空隙压缩变小。',tip:'鼓了还能再打气'},
+{u:1,t:'judge',q:'热空气会上升，冷空气会下降。',ans:[0],exp:'对。热气球、孔明灯都是利用这个道理。',tip:'热升冷降'},
+{u:1,t:'judge',q:'在屋里摆冰块，冰块周围冷空气下沉、热空气上升，冷热温差也能促成对流，形成风。',ans:[0],exp:'对。这是不用电制造风的方法之一。',tip:'温差也能造风'},
+{u:1,t:'judge',q:'降落伞是利用空气的阻力，让下落的速度变慢。',ans:[0],exp:'对。空气可以阻碍物体降落，降落伞正是利用空气的这一性质。',tip:'空气有阻力，伞才安全'},
+{u:1,t:'judge',q:'把空塑料瓶倾斜压入水中，瓶口有气泡冒出，说明瓶子里原来有空气。',ans:[0],exp:'对。气泡就是空气被水挤压出来形成的。',tip:'气泡＝空气被挤出来'},
+{u:1,t:'judge',q:'空气被压缩以后，它的质量就变小了。',ans:[1],exp:'错。被压缩时改变的是体积（空间大小），空气质量并没有减少。',tip:'压缩变的是体积，不是质量'},
+{u:1,t:'judge',q:'用打气筒给气球充气，气球鼓起来，这利用了空气能占据空间的性质。',ans:[0],exp:'对。打进去的空气占据了气球内部的空间，气球就鼓起来了。',tip:'充气＝空气占空间'},
+{u:1,t:'multi',q:'下面哪些方法可以证明空气的存在？',ch:['空瓶子放入水中会产生气泡','塑料袋兜一下会鼓起来','风吹动红旗飘动','把空气装进瓶子里收集起来'],ans:[0,1,2,3],exp:'四个都是！有气泡、能鼓起、能让物体运动，都是空气存在的证据。',tip:'看到现象＝证明空气在'},
+{u:1,t:'multi',q:'下面哪些是空气的性质？',ch:['无色无味、透明','容易被压缩','有质量但很轻','占据空间、会流动'],ans:[0,1,2,3],exp:'空气无色无味、透明、易压缩、有质量但很轻、占据空间、有流动性。',tip:'空气四性质要记牢'},
+{u:1,t:'multi',q:'哪些例子利用了空气流动产生的力量？',ch:['风力发电','帆船航行','放风筝','给轮胎打气'],ans:[0,1,2],exp:'风力发电、帆船、风筝都利用流动的空气（风）的力量；给轮胎打气利用的是压缩空气。',tip:'靠风=流动，打气=压缩'},
+{u:1,t:'multi',q:'不用电，可以用哪些方法制造风？',ch:['用手来回扇动扇子','挥舞摆动床单、毛巾','打开屋里相对的门窗','安静地坐在原地不动'],ans:[0,1,2],exp:'推动空气、带动空气流动、利用气压差，都能让空气流动形成风。',tip:'让空气动起来就是风'},
+{u:1,t:'multi',q:'空气和水相同的地方有（　）。',ch:['没有固定的形状','占据一定的空间','具有流动性','都非常容易被压缩'],ans:[0,1,2],exp:'相同点是前三条；水并不容易被压缩，这是它和空气最大的不同。',tip:'水不易压缩，别选它'},
+{u:1,t:'multi',q:'下面哪些东西利用了"压缩空气"？',ch:['给自行车轮胎打气','压缩空气"子弹"枪','给瘪皮球充气','用水流冲走泥沙'],ans:[0,1,2],exp:'打气、充气、"子弹"枪都利用了被压缩的空气有弹性、气压大的特点。',tip:'打气/充气都靠压缩空气'},
+{u:1,t:'multi',q:'哪些实验能说明"空气占据空间"？',ch:['杯底纸团倒扣入水不会湿','瓶里吹气球，气球吹不大','空瓶倾斜入水冒气泡','用天平称皮球的质量'],ans:[0,1,2],exp:'前三个都说明空气占着地方；天平实验说明的是空气有质量。',tip:'占位≠有质量，别混淆'},
+{u:1,t:'multi',q:'关于热空气和冷空气，正确的说法是（　）。',ch:['热空气会上升','热空气密度更小','冷空气会下沉','热空气比冷空气重'],ans:[0,1,2],exp:'热空气受热膨胀、密度变小所以上升；冷空气密度大、下沉。',tip:'热轻上升，冷重下沉'},
+{u:1,t:'multi',q:'关于风的成因，正确的说法是（　）。',ch:['空气从气压大的地方流向气压小的地方','冷热温差会造成气压差','风就是快速流动的空气','只有电风扇才能造出风'],ans:[0,1,2],exp:'风是空气从高压区流向低压区形成的；扇扇子、开门窗、温差都能造风。',tip:'高压→低压，就形成风'},
+{u:1,t:'multi',q:'生活中利用空气性质的例子有（　）。',ch:['救生圈充气后可以浮起来','热气球升空','风筝靠风飞上天空','用磁铁吸住铁钉'],ans:[0,1,2],exp:'前三个都和空气有关，磁铁吸铁钉利用的是磁力，和空气无关。',tip:'磁铁靠磁力，不靠空气'},
+/* ===== 单元2：呼吸与消化 —— 呼吸部分 ===== */
+{u:2,t:'single',q:'人的一呼一吸算（　）次呼吸。',ch:['一','两','三','半'],ans:[0],exp:'人用鼻子呼吸，一呼一吸算一次呼吸。',tip:'一呼一吸＝1次'},
+{u:2,t:'single',q:'人体的主要呼吸器官是（　）。',ch:['肺','心脏','胃','大脑'],ans:[0],exp:'肺是进行气体交换的器官，是主要的呼吸器官。',tip:'肺＝气体交换站'},
+{u:2,t:'single',q:'下面哪一个不属于呼吸器官？',ch:['胃','鼻腔','气管','肺'],ans:[0],exp:'胃是消化器官。参与呼吸的器官有鼻腔、气管、支气管、肺、膈肌等。',tip:'胃是消化器官'},
+{u:2,t:'single',q:'吸气时，含有氧气的空气由鼻腔或口腔先进入（　），再进入肺。',ch:['气管','胃','血液','心脏'],ans:[0],exp:'吸气路线：鼻腔或口腔→气管→支气管→肺，这时胸腔扩张。',tip:'吸气：鼻/口→气管→肺'},
+{u:2,t:'single',q:'膈肌位于（　）。',ch:['胸腔和腹腔之间','头顶和脖子之间','左手和右手之间','膝盖以下'],ans:[0],exp:'膈肌是位于胸腔和腹腔之间的肌肉。',tip:'膈肌在胸腹之间'},
+{u:2,t:'single',q:'模拟呼吸装置里，小气球模拟的是（　）。',ch:['肺','胸廓','膈肌','气管'],ans:[0],exp:'塑料瓶模拟胸廓，气球模拟肺，底部的橡皮膜模拟膈肌。',tip:'瓶=胸廓，球=肺，膜=膈肌'},
+{u:2,t:'single',q:'向下拉橡皮膜（模拟膈肌收缩），瓶内的气球会（　）。',ch:['鼓起来，模拟吸气','变瘪，模拟呼气','爆炸','没有任何变化'],ans:[0],exp:'膈肌下压带动肺部扩张，瓶内空间变大、气压降低，外界空气进入气球，模拟吸气。',tip:'膈肌下压→吸气'},
+{u:2,t:'single',q:'膈肌上提（往上抬）时，模拟的是（　）。',ch:['呼气','吸气','吃饭','睡觉'],ans:[0],exp:'膈肌上提，肺部收缩，气体被挤出，这是呼气过程。',tip:'膈肌上提→呼气'},
+{u:2,t:'single',q:'剧烈运动以后，人的呼吸会（　）。',ch:['加快、加深','变慢','停下来','和平时完全一样'],ans:[0],exp:'运动需要消耗更多氧气，所以呼吸会加快加深。',tip:'运动→呼吸加快'},
+{u:2,t:'single',q:'安静状态下，小学生每分钟呼吸大约（　）次。',ch:['20～30','40～60','80～100','5'],ans:[0],exp:'安静时每分钟 20～30 次；运动时可达到 40～60 次。',tip:'安静20多，运动40多'},
+{u:2,t:'single',q:'运动状态下，小学生每分钟呼吸可以达到（　）次。',ch:['40～60','20～30','5～10','200'],ans:[0],exp:'运动状态下小学生每分钟呼吸 40～60 次。',tip:'运动时40～60次'},
+{u:2,t:'single',q:'人体的气体交换主要在（　）里进行。',ch:['肺','鼻孔','嘴巴','耳朵'],ans:[0],exp:'气体交换主要在肺部进行，氧气进入血液，二氧化碳被排出。',tip:'肺是气体交换的"中转站"'},
+{u:2,t:'single',q:'呼吸时，吸入的氧气进入（　），同时把二氧化碳排出去。',ch:['血液','头发','指甲','骨头'],ans:[0],exp:'呼吸实际是在进行气体交换：氧气进入血液，二氧化碳被排出。',tip:'氧气进血液，CO₂排出来'},
+{u:2,t:'single',q:'肺活量是指（　）。',ch:['一次尽力吸气后再尽力呼出的气体总量','一分钟呼吸的次数','肺的重量','呼吸的快慢'],ans:[0],exp:'肺活量＝一次尽力吸气后，再尽力呼出的气体总量，单位是毫升。',tip:'一次吸满再呼完的量'},
+{u:2,t:'single',q:'《国家学生体质健康标准》里，四年级女生肺活量的正常范围大约是（　）。',ch:['900～2000 毫升','1100～2600 毫升','10～50 毫升','9000 毫升以上'],ans:[0],exp:'四年级男生 1100～2600 毫升，女生 900～2000 毫升。',tip:'男1100起，女900起'},
+{u:2,t:'single',q:'四年级男生肺活量的正常范围大约是（　）。',ch:['1100～2600 毫升','900～2000 毫升','100～200 毫升','5000 毫升以上'],ans:[0],exp:'男生 1100～2600 毫升，女生 900～2000 毫升，男生一般比女生大一些。',tip:'男生1100～2600毫升'},
+{u:2,t:'single',q:'蒙头睡觉会觉得气闷，主要是因为（　）。',ch:['被窝里空气不流通，氧气不足','被子太好看','做梦太多','晚饭吃太饱'],ans:[0],exp:'被窝里空气不流通，呼吸消耗氧气、聚集二氧化碳，导致氧气不足。',tip:'不通风→氧气少→气闷'},
+{u:2,t:'single',q:'人呼出的气体中，含量最多的是（　）。',ch:['氮气','氧气','二氧化碳','水蒸气'],ans:[0],exp:'无论是吸入还是呼出的气体，占比最多的都是氮气（约 78%）。',tip:'氮气78%，一直最多'},
+{u:2,t:'single',q:'人体吸入的空气中，氧气大约占（　）。',ch:['21%','78%','4%','0.03%'],ans:[0],exp:'吸入的空气：氮气约78%、氧气约21%、二氧化碳约0.03%。',tip:'吸入：氧21%'},
+{u:2,t:'single',q:'和吸入的空气相比，呼出的气体中二氧化碳含量会（　）。',ch:['变多，约 4%','变少','完全没有了','一直不变'],ans:[0],exp:'二氧化碳从约 0.03% 增加到约 4%，氧气从 21% 降到 16% 左右。',tip:'呼出：氧变少，CO₂变多'},
+{u:2,t:'judge',q:'我们每时每刻都在呼吸。',ans:[0],exp:'对。人每时每刻都在呼吸，食物和空气帮助我们维持生命活动。',tip:'呼吸一刻不停'},
+{u:2,t:'judge',q:'感冒鼻塞的时候，很多人只能用嘴呼吸。',ans:[0],exp:'对。这是与呼吸有关的生活体验。',tip:'鼻子堵了就用嘴'},
+{u:2,t:'judge',q:'呼气的时候，胸腔会扩张。',ans:[1],exp:'错。吸气时胸腔扩张，呼气时胸腔收缩。',tip:'吸扩张，呼收缩'},
+{u:2,t:'judge',q:'膈肌下压带动肺部扩张，这是吸气的过程。',ans:[0],exp:'对。膈肌下压→肺部扩张→空气进入＝吸气。',tip:'下压吸气，上提呼气'},
+{u:2,t:'judge',q:'运动时人体需要消耗更多氧气，所以呼吸会加快加深。',ans:[0],exp:'对。这样肺部气体交换速度加快，才能吸进更多氧气。',tip:'运动→要氧多→呼吸快'},
+{u:2,t:'judge',q:'经常参加体育锻炼，可以增大肺活量。',ans:[0],exp:'对。锻炼能让肺得到锻炼，增大肺活量。',tip:'锻炼→肺活量变大'},
+{u:2,t:'judge',q:'呼出的气体里，氧气比吸入的空气还要多。',ans:[1],exp:'错。吸入空气约含 21% 氧气，呼出后降到约 16%，氧气变少了。',tip:'呼出氧气变少了'},
+{u:2,t:'judge',q:'动物也要呼吸，呼吸器官有鳃、肺等。',ans:[0],exp:'对。呼吸是动物与外界进行气体交换、维持生命的重要活动。',tip:'鱼用鳃，人用肺'},
+{u:2,t:'judge',q:'用简易肺活量测量袋测量前，应先排尽袋内的原有空气。',ans:[0],exp:'对。因为空气占据空间，不排干净会影响测量的准确性。',tip:'测量前先排空袋'},
+{u:2,t:'judge',q:'肺活量大的人，运动后恢复正常呼吸的时间更短。',ans:[0],exp:'对。肺活量大说明为血液供氧的能力强，恢复得更快。',tip:'肺活量大恢复快'},
+{u:2,t:'judge',q:'呼出的气体和吸入的气体相比，氮气的比例差不多。',ans:[0],exp:'对。氮气都约占 78%，人体基本不吸收氮气。',tip:'氮气不变，78%'},
+{u:2,t:'multi',q:'参与呼吸的器官有哪些？',ch:['鼻腔','气管','肺','膈肌'],ans:[0,1,2,3],exp:'鼻腔、气管、支气管、肺、膈肌等都参与呼吸，肺是气体交换的器官。',tip:'鼻→气管→肺，膈肌帮忙'},
+{u:2,t:'multi',q:'人体氧气摄入不足时，会出现哪些不舒服？',ch:['头晕','乏力','胸闷','力气突然变得特别大'],ans:[0,1,2],exp:'缺氧、代谢紊乱会出现头晕、乏力、胸闷等不适症状。',tip:'缺氧＝头晕乏力胸闷'},
+{u:2,t:'multi',q:'比较吸入的空气和呼出的气体，正确的说法是（　）。',ch:['氮气所占比例差不多','呼出的气体里氧气变少了','呼出的气体里二氧化碳变多了','呼出的气体里完全没有氧气'],ans:[0,1,2],exp:'氮气都约占 78%；氧气从 21% 降到约 16%；二氧化碳从 0.03% 升到约 4%。呼出的气体里仍有氧气。',tip:'氮不变、氧变少、CO₂变多'},
+{u:2,t:'multi',q:'用简易肺活量测量袋测量时，正确的做法有（　）。',ch:['先排尽袋内的原有空气','尽力吸一口气，再呼入测量袋','读取袋鼓起的最大数值','一边测一边和小伙伴聊天'],ans:[0,1,2],exp:'测量要专注，聊天会漏气、影响准确。',tip:'排空→深吸→全呼出'},
+{u:2,t:'multi',q:'哪些做法可以保护我们的呼吸器官？',ch:['不吸烟，也远离二手烟','雾霾天出门戴口罩','经常开窗通风','在灰尘很大的地方做剧烈运动'],ans:[0,1,2],exp:'前三个保护呼吸器官；在灰尘多的地方剧烈运动反而会吸入更多灰尘。',tip:'通风、戴口罩、远离烟'},
+{u:2,t:'multi',q:'关于肺活量，正确的说法是（　）。',ch:['肺活量越大，说明呼吸功能越强','经常锻炼能增大肺活量','肺活量用毫升作单位','肺活量大的人运动后恢复更快'],ans:[0,1,2,3],exp:'四条都对。肺活量是衡量呼吸功能的重要指标，单位毫升。',tip:'肺活量大＝身体更棒'},
+{u:2,t:'multi',q:'关于吸气和呼气，正确的是（　）。',ch:['吸气时胸腔扩张','呼气时胸腔收缩','吸气时膈肌下压','呼气时膈肌上提'],ans:[0,1,2,3],exp:'四条都对：膈肌下压→胸廓扩大→吸气；膈肌上提→胸廓缩小→呼气。',tip:'吸气扩张，呼气收缩'},
+{u:2,t:'multi',q:'下面哪些情况会让人的呼吸加快？',ch:['跑步','跳绳','爬楼梯','安静地睡觉'],ans:[0,1,2],exp:'运动时需要消耗更多氧气，呼吸会加快；安静睡觉时呼吸最慢最平稳。',tip:'一动就快，安静就慢'},
+/* ===== 单元3：消化（新版教科版四上 第二单元 5-8节） ===== */
+{u:3,t:'single',q:'食物消化开始的地方是（　）。',ch:['口腔','胃','小肠','大肠'],ans:[0],exp:'口腔是食物消化开始的地方，由牙齿、舌头、唾液共同完成。',tip:'消化第一站＝口腔'},
+{u:3,t:'single',q:'牙齿按形状可以分为（　）。',ch:['门齿、犬齿、臼齿','上牙、下牙、智齿','大牙、小牙、尖牙','前牙、后牙、侧牙'],ans:[0],exp:'牙齿按形状分为门齿、犬齿、臼齿三类，作用各不相同。',tip:'门齿、犬齿、臼齿'},
+{u:3,t:'single',q:'门齿的作用是（　）。',ch:['切割食物','撕碎食物','咀嚼磨碎食物','搅拌食物'],ans:[0],exp:'门齿像小刀，用来切割食物；犬齿撕碎，臼齿咀嚼。',tip:'门齿切，犬齿撕，臼齿嚼'},
+{u:3,t:'single',q:'犬齿的作用是（　）。',ch:['撕碎食物','切割食物','咀嚼磨碎食物','输送食物'],ans:[0],exp:'犬齿尖尖的，用来撕碎食物。',tip:'犬齿＝撕'},
+{u:3,t:'single',q:'臼齿的作用是（　）。',ch:['咀嚼、磨碎食物','切割食物','撕碎食物','品尝味道'],ans:[0],exp:'臼齿宽宽的，用来咀嚼、磨碎食物。',tip:'臼齿＝嚼'},
+{u:3,t:'single',q:'舌头在口腔里的作用是（　）。',ch:['搅拌和传送食物','咬碎食物','分泌唾液','吸收营养'],ans:[0],exp:'舌头负责搅拌食物、把食物传送到牙齿之间和咽部。',tip:'舌头搅拌传送'},
+{u:3,t:'single',q:'唾液的作用不包括（　）。',ch:['吸收营养','润滑食物','让食物变湿润','初步消化淀粉'],ans:[0],exp:'唾液能润滑食物、湿润食物，还能初步消化淀粉；吸收营养是小肠的工作。',tip:'唾液不吸收营养'},
+{u:3,t:'single',q:'食物从口腔进入胃，要经过的通道是（　）。',ch:['食道','气管','小肠','大肠'],ans:[0],exp:'食道把食物输送到胃里，靠的是食道的蠕动。',tip:'口腔→食道→胃'},
+{u:3,t:'single',q:'把食物磨碎、分解成糊状的器官是（　）。',ch:['胃','口腔','小肠','大肠'],ans:[0],exp:'胃里有很多胃液，能把食物进一步磨碎、分解，变成糊状。',tip:'胃＝磨碎成糊'},
+{u:3,t:'single',q:'人体吸收营养的主要场所是（　）。',ch:['小肠','胃','大肠','食道'],ans:[0],exp:'小肠很长，是消化食物和吸收营养最主要的器官。',tip:'小肠＝吸收主力'},
+{u:3,t:'single',q:'能吸收食物残渣中水分的器官是（　）。',ch:['大肠','胃','小肠','口腔'],ans:[0],exp:'大肠吸收残渣中的水分，剩下的形成粪便排出体外。',tip:'大肠＝吸水分'},
+{u:3,t:'single',q:'模拟食道工作的实验中，竖直摆放的透明塑料管模拟的是（　）。',ch:['食道','胃','小肠','气管'],ans:[0],exp:'塑料管模拟食道，用手挤压塑料管模拟食道的蠕动。',tip:'管子＝食道，手挤＝蠕动'},
+{u:3,t:'single',q:'把水、馒头和熟蔬菜装进塑料袋里用手揉挤，这个实验模拟的是（　）的工作。',ch:['胃','口腔','小肠','大肠'],ans:[0],exp:'塑料袋模拟胃，揉挤模拟胃的蠕动磨碎食物。',tip:'袋子＝胃，揉＝胃蠕动'},
+{u:3,t:'single',q:'想知道食物里有没有淀粉，应该（　）。',ch:['滴碘酒，看是否变蓝','放在白纸上挤压','用火烧一烧','放在水里泡一泡'],ans:[0],exp:'淀粉遇到碘酒会变成蓝色（或蓝黑色），这是检验淀粉的方法。',tip:'碘酒变蓝＝有淀粉'},
+{u:3,t:'single',q:'把食物放在白纸上挤压，纸上留下油渍，说明食物含有（　）。',ch:['脂肪','淀粉','蛋白质','维生素'],ans:[0],exp:'白纸上留下油渍是检验脂肪的方法。',tip:'纸上有油＝脂肪'},
+{u:3,t:'single',q:'食物燃烧时有像烧焦头发一样的气味，说明含有（　）。',ch:['蛋白质','淀粉','脂肪','维生素'],ans:[0],exp:'蛋白质燃烧后有一股焦臭味（烧焦羽毛的气味）。',tip:'焦臭味＝蛋白质'},
+{u:3,t:'single',q:'下面富含蛋白质的食物是（　）。',ch:['鸡蛋、牛肉、牛奶、大豆','米饭、面条、馒头','花生、核桃、食用油','西瓜、苹果、白菜'],ans:[0],exp:'蛋白质主要来自鸡蛋、牛奶、牛肉、鱼、大豆等，是构成身体、支持生长发育的营养。',tip:'蛋奶肉豆＝蛋白质'},
+{u:3,t:'single',q:'下面富含糖类（淀粉）的食物是（　）。',ch:['米饭、面条、马铃薯','肥肉、花生、食用油','胡萝卜、西红柿','鱼肉、鸡蛋'],ans:[0],exp:'米饭、面条、马铃薯等富含糖类（淀粉），是身体能量的主要来源。',tip:'米面薯＝糖类（能量）'},
+{u:3,t:'single',q:'下面富含脂肪的食物是（　）。',ch:['花生、核桃、肥肉','米饭、馒头','白菜、黄瓜','牛奶、鸡蛋'],ans:[0],exp:'食用油、花生、核桃、肥肉、巧克力等富含脂肪，也是能量的来源。',tip:'油、坚果、肥肉＝脂肪'},
+{u:3,t:'single',q:'维生素和矿物质主要来自（　）。',ch:['蔬菜和水果','肥肉和食用油','米饭和面条','糖果和饮料'],ans:[0],exp:'蔬菜和水果富含维生素和矿物质，能调节身体机能，帮助保持健康。',tip:'蔬果＝维生素矿物质'},
+{u:3,t:'single',q:'手指脱皮、口腔溃疡时，医生常建议多吃（　）。',ch:['富含维生素的蔬菜水果','富含脂肪的油炸食品','很多糖果','大量的肥肉'],ans:[0],exp:'这些症状常与缺少维生素有关，应多吃新鲜蔬菜水果。',tip:'缺维生素→多吃蔬果'},
+{u:3,t:'single',q:'下面属于动物类食物的是（　）。',ch:['牛奶、鸡蛋、牛肉','米饭、白菜、苹果','面条、馒头、土豆','黄瓜、西红柿、南瓜'],ans:[0],exp:'按来源分，来自动物的是动物类食物（荤食），来自植物的是植物类食物（素食）。',tip:'动物来的＝荤食'},
+{u:3,t:'single',q:'营养均衡的膳食原则是（　）。',ch:['荤素搭配、粗细粮搭配，每天吃新鲜蔬果','只吃自己爱吃的菜','只吃肉不吃菜','只吃水果不吃饭'],ans:[0],exp:'没有一种食物含有人体需要的全部营养，所以要品种多样、合理搭配。',tip:'不挑食、不偏食'},
+{u:3,t:'single',q:'"细嚼慢咽"的科学道理是（　）。',ch:['把食物磨碎，更容易消化，减轻胃的负担','让食物更好吃','可以少吃一点','能练牙齿'],ans:[0],exp:'牙齿把食物磨碎、唾液充分混合，有利于后面消化器官的工作。',tip:'嚼碎＝好消化'},
+{u:3,t:'single',q:'下面哪个不是消化器官？',ch:['肺','口腔','胃','小肠'],ans:[0],exp:'肺是呼吸器官。消化器官包括口腔、食道、胃、小肠、大肠等。',tip:'肺管呼吸，不管消化'},
+{u:3,t:'judge',q:'口腔是食物消化开始的地方。',ans:[0],exp:'对。牙齿、舌头、唾液在口腔里开始消化食物。',tip:'消化从口腔开始'},
+{u:3,t:'judge',q:'食物中的大部分营养是在胃里被吸收的。',ans:[1],exp:'错。吸收营养的主要场所是小肠，胃主要负责磨碎和分解食物。',tip:'吸收在小肠，不在胃'},
+{u:3,t:'judge',q:'食道能把食物输送到胃里。',ans:[0],exp:'对。食道通过蠕动把食物送到胃。',tip:'食道＝运输通道'},
+{u:3,t:'judge',q:'小肠是消化食物和吸收营养的主要场所。',ans:[0],exp:'对。小肠很长，内壁有很多绒毛，吸收面积大。',tip:'小肠吸收营养'},
+{u:3,t:'judge',q:'大肠能吸收食物残渣中的水分。',ans:[0],exp:'对。大肠吸收水分，剩下的残渣形成粪便。',tip:'大肠吸水'},
+{u:3,t:'judge',q:'在食物上滴碘酒，如果变成蓝色，说明含有淀粉。',ans:[0],exp:'对。淀粉遇碘变蓝，这是检验淀粉的经典方法。',tip:'碘酒+淀粉=蓝色'},
+{u:3,t:'judge',q:'食物在白纸上留下油渍，说明这种食物含有维生素。',ans:[1],exp:'错。留下油渍说明含有脂肪，不是维生素。',tip:'油渍＝脂肪'},
+{u:3,t:'judge',q:'蛋白质燃烧时会有一股烧焦羽毛（头发）的气味。',ans:[0],exp:'对。这是检验蛋白质的方法之一。',tip:'焦臭＝蛋白质'},
+{u:3,t:'judge',q:'只吃自己喜欢的食物也能获得均衡的营养。',ans:[1],exp:'错。没有一种食物含有人体需要的所有营养，必须合理搭配、不挑食。',tip:'挑食会缺营养'},
+{u:3,t:'judge',q:'过冷、过热、不洁净、没有充分咀嚼的食物都会伤害消化器官。',ans:[0],exp:'对。消化器官很容易受到伤害，要注意呵护。',tip:'冷、热、脏都伤肠胃'},
+{u:3,t:'judge',q:'吃饭后立即进行剧烈运动，对消化有好处。',ans:[1],exp:'错。饭后血液集中在消化器官帮助消化，立刻剧烈运动不利于消化。',tip:'饭后别马上剧烈运动'},
+{u:3,t:'judge',q:'米饭、面条属于植物类食物，也常作为主食。',ans:[0],exp:'对。米面来自植物，是我们常吃的主食。',tip:'米面＝主食＝植物类'},
+{u:3,t:'multi',q:'口腔里参与消化的"好帮手"有（　）。',ch:['牙齿','舌头','唾液','胃'],ans:[0,1,2],exp:'口腔消化由牙齿、舌头、唾液共同完成，胃不属于口腔。',tip:'牙+舌+唾液'},
+{u:3,t:'multi',q:'人体消化器官包括（　）。',ch:['口腔','食道','胃','小肠和大肠'],ans:[0,1,2,3],exp:'消化器官包括口腔、食道、胃、小肠、大肠等。',tip:'口→食道→胃→小肠→大肠'},
+{u:3,t:'multi',q:'下面属于动物类食物（荤食）的有（　）。',ch:['牛奶','鸡蛋','牛肉','苹果'],ans:[0,1,2],exp:'牛奶、鸡蛋、牛肉来自动物；苹果来自植物，是植物类食物。',tip:'来自动物的才是荤食'},
+{u:3,t:'multi',q:'下面富含蛋白质的食物有（　）。',ch:['大豆','牛肉','鸡蛋','米饭'],ans:[0,1,2],exp:'大豆、牛肉、鸡蛋富含蛋白质；米饭主要含糖类（淀粉）。',tip:'米饭是糖，不是蛋白质'},
+{u:3,t:'multi',q:'哪些做法能呵护我们的消化器官？',ch:['细嚼慢咽','不暴饮暴食','少吃生冷不干净的食物','饭后马上跑 800 米'],ans:[0,1,2],exp:'前三条保护消化器官；饭后马上剧烈运动不利于消化。',tip:'慢嚼、七分饱、吃干净'},
+{u:3,t:'multi',q:'下面属于营养均衡的做法是（　）。',ch:['荤素搭配','粗细粮搭配','每天吃适当的新鲜水果和蔬菜','只吃肉类不吃蔬菜'],ans:[0,1,2],exp:'荤素搭配、粗细搭配、多吃新鲜蔬果才能营养均衡。',tip:'样样都吃才健康'},
+{u:3,t:'multi',q:'关于食物中的营养，正确的是（　）。',ch:['糖类（淀粉）是能量的主要来源','脂肪也能提供能量','蛋白质支持生长发育','蔬菜水果里没有营养'],ans:[0,1,2],exp:'糖类和脂肪提供能量，蛋白质支持生长发育；蔬菜水果富含维生素和矿物质，很有营养。',tip:'蔬果也有营养'},
+/* ===== 单元4：声音（新版教科版四上 第三单元） ===== */
+{u:4,t:'single',q:'声音是由物体（　）产生的。',ch:['振动','发热','变色','变大'],ans:[0],exp:'声音是由物体振动产生的；振动停止，声音就马上停止。',tip:'振动＝发声'},
+{u:4,t:'single',q:'吹竖笛时，发出声音的是（　）在振动。',ch:['空气','竹管','手指','嘴唇'],ans:[0],exp:'吹竖笛是空气振动发声。',tip:'笛子靠空气振动'},
+{u:4,t:'single',q:'我们说话的声音是由（　）振动产生的。',ch:['声带','舌头','鼻子','牙齿'],ans:[0],exp:'喉咙里的声带振动发出声音，把手放在喉结处能感觉到。',tip:'说话靠声带振动'},
+{u:4,t:'single',q:'用力拉伸或按压橡皮筋，橡皮筋并不发声，是因为（　）。',ch:['它没有振动','它太小了','它太轻了','它没有颜色'],ans:[0],exp:'只有振动才能发声，仅仅拉伸、按压不产生振动。',tip:'不振动就不发声'},
+{u:4,t:'single',q:'敲鼓后用手按住鼓面，声音立刻停止，这是因为（　）。',ch:['振动停止了','鼓破了','手吸走了声音','空气没了'],ans:[0],exp:'振动停止，发声也就停止。',tip:'停振动＝停声音'},
+{u:4,t:'single',q:'声音在下面哪种环境中不能传播？',ch:['真空','空气里','水里','木头里'],ans:[0],exp:'声音的传播需要物质（介质），真空中没有物质，不能传声。',tip:'真空不能传声'},
+{u:4,t:'single',q:'声音在下面哪类物体中传播得最快？',ch:['固体','液体','气体','真空'],ans:[0],exp:'一般声音在固体中传播最快，液体次之，气体最慢。',tip:'固体>液体>气体'},
+{u:4,t:'single',q:'"土电话"能听到对方说话，声音主要是通过（　）传播的。',ch:['棉线（固体）','空气','水','地面'],ans:[0],exp:'土电话靠拉紧的棉线（固体）传播声音，所以要绷紧。',tip:'土电话靠线传声'},
+{u:4,t:'single',q:'我们的耳朵可以分为（　）三部分。',ch:['外耳、中耳、内耳','上耳、中耳、下耳','左耳、右耳、内耳','耳廓、耳垂、耳道'],ans:[0],exp:'耳朵分为外耳、中耳、内耳。外耳收集传递声音，中耳产生传递振动，内耳产生信号。',tip:'外耳、中耳、内耳'},
+{u:4,t:'single',q:'耳廓（耳郭）的作用是（　）。',ch:['收集声音','产生信号','传递振动','听声音大小'],ans:[0],exp:'耳廓负责收集声波，用纸喇叭模拟耳廓会让声音更清楚。',tip:'耳廓＝收集声音'},
+{u:4,t:'single',q:'鼓膜的作用是把（　）。',ch:['声波转化成振动','声音转化成信号','振动传给大脑','声音放大'],ans:[0],exp:'鼓膜很薄有弹性，声波让它振动，再由听小骨传到内耳。',tip:'鼓膜：声波→振动'},
+{u:4,t:'single',q:'能把振动转化成信号传给大脑的是（　）。',ch:['耳蜗和听觉神经','耳廓','鼓膜','外耳道'],ans:[0],exp:'内耳的耳蜗把振动转化成信号，由听觉神经传给大脑。',tip:'耳蜗：振动→信号'},
+{u:4,t:'single',q:'声音的强弱可以用（　）来描述。',ch:['音量','音高','音色','音调'],ans:[0],exp:'声音的强弱叫音量，由物体振动的幅度决定。',tip:'强弱＝音量'},
+{u:4,t:'single',q:'音量的大小由（　）决定。',ch:['物体振动的幅度','物体振动的快慢','物体的颜色','物体的轻重'],ans:[0],exp:'振动幅度越大，声音越强；幅度越小，声音越弱。',tip:'幅度决定音量'},
+{u:4,t:'single',q:'用力敲鼓比轻轻敲鼓发出的声音（　）。',ch:['更强，因为振动幅度更大','更高，因为振动更快','更弱，因为鼓累了','一样大'],ans:[0],exp:'用力敲→振动幅度大→声音强（音量大）。',tip:'敲得重＝振动大＝声音强'},
+{u:4,t:'single',q:'声音的高低可以用（　）来描述。',ch:['音高','音量','响度','音色'],ans:[0],exp:'声音的高低叫音高，由物体振动的快慢决定。',tip:'高低＝音高'},
+{u:4,t:'single',q:'音高由（　）决定。',ch:['物体振动的快慢','物体振动的幅度','物体的大小','声音的方向'],ans:[0],exp:'振动越快，声音越高；振动越慢，声音越低。',tip:'快慢决定音高'},
+{u:4,t:'single',q:'拨钢尺时，尺子伸出桌面越短，发出的声音（　）。',ch:['越高，因为振动越快','越低，因为振动越慢','越强，因为幅度大','没有变化'],ans:[0],exp:'伸出越短→振动越快→音高越高；伸出越长→振动越慢→音高越低。',tip:'短＝快＝高'},
+{u:4,t:'single',q:'要让琴弦发出更高的声音，可以（　）。',ch:['把弦调紧一些','把弦调松一些','换更粗的弦','让弦更长'],ans:[0],exp:'弦越紧、越短、越细，振动越快，声音越高。',tip:'紧、短、细→声音高'},
+{u:4,t:'single',q:'敲击粗细相同、长短不同的两根铁管，声音较高的是（　）。',ch:['短铁管','长铁管','两根一样','无法判断'],ans:[0],exp:'越短的物体振动越快，发出的声音越高。',tip:'短的振动快、声音高'},
+{u:4,t:'single',q:'敲击装水的水瓶琴时，装水最多的瓶子发出的声音（　）。',ch:['最低','最高','最强','没有声音'],ans:[0],exp:'敲击时发声的是瓶和水，水越多振动越慢，声音越低。',tip:'敲：水多→声音低'},
+{u:4,t:'single',q:'下面哪种做法会伤害听力？',ch:['长时间用耳机开很大声听音乐','在安静的图书馆看书','戴耳罩在噪音环境工作','远离鞭炮声'],ans:[0],exp:'长时间大音量听耳机会损伤听力，要远离噪声、音量适中。',tip:'耳机声音要小、时间要短'},
+{u:4,t:'single',q:'在月球上，两位宇航员面对面也听不到对方说话，是因为（　）。',ch:['月球上没有空气，声音不能传播','他们声音太小','月球太远','宇航服太厚'],ans:[0],exp:'月球上是真空，没有可以传播振动的物质，必须用无线电通话。',tip:'月球＝真空＝听不见'},
+{u:4,t:'judge',q:'只要用力按住橡皮筋，橡皮筋就会发出声音。',ans:[1],exp:'错。只有振动才能发声，仅仅按压不会产生振动。',tip:'不振动，不发声'},
+{u:4,t:'judge',q:'声音可以向四面八方传播。',ans:[0],exp:'对。声音以波的形式向各个方向传播。',tip:'声音四面八方传'},
+{u:4,t:'judge',q:'在真空中也能听到声音。',ans:[1],exp:'错。真空不能传播声音。',tip:'真空＝无声'},
+{u:4,t:'judge',q:'声音在固体中传播的速度比在空气中更快。',ans:[0],exp:'对。固体>液体>气体。',tip:'固体传声最快'},
+{u:4,t:'judge',q:'轻轻敲鼓时鼓面振动幅度小，发出的声音弱。',ans:[0],exp:'对。振动幅度小→音量小→声音弱。',tip:'幅度小＝声音弱'},
+{u:4,t:'judge',q:'越粗、越长的物体振动越慢，发出的声音越低。',ans:[0],exp:'对。粗、长、松→振动慢→声音低。',tip:'粗长松→声音低'},
+{u:4,t:'judge',q:'鼓膜很薄、很有弹性，能把声波转化成振动。',ans:[0],exp:'对。即使很轻的声音，鼓膜也会振动。',tip:'鼓膜薄，会振动'},
+{u:4,t:'judge',q:'长时间在很吵的环境中，对听力没有影响。',ans:[1],exp:'错。长期处于噪声环境会损伤听力，要远离噪声。',tip:'噪声伤耳朵'},
+{u:4,t:'judge',q:'敲水瓶琴时，瓶里的水越多，发出的声音越高。',ans:[1],exp:'错。敲击时水越多振动越慢，声音越低（水少才高）。',tip:'敲：水多反而低'},
+{u:4,t:'judge',q:'做"土电话"时，把棉线绷紧，听起来会更清楚。',ans:[0],exp:'对。线绷紧才能很好地传递振动。',tip:'线要绷紧'},
+{u:4,t:'judge',q:'声音是以波的形式传播的。',ans:[0],exp:'对。声波遇到物体会让物体产生振动，这样把声音传出去。',tip:'声音像水波一样传'},
+{u:4,t:'multi',q:'声音可以在哪些东西中传播？',ch:['气体','液体','固体','真空'],ans:[0,1,2],exp:'声音能在气体、液体、固体中传播，真空不能传声。',tip:'气、液、固都行，真空不行'},
+{u:4,t:'multi',q:'耳朵的结构包括（　）。',ch:['外耳','中耳','内耳','口腔'],ans:[0,1,2],exp:'耳朵分外耳、中耳、内耳，口腔是消化器官。',tip:'外耳、中耳、内耳'},
+{u:4,t:'multi',q:'想让琴弦发出更高的声音，可以（　）。',ch:['把弦调紧','把弦调短','换更细的弦','把弦调松'],ans:[0,1,2],exp:'紧、短、细→振动快→声音高；松则相反。',tip:'紧短细→高；松长粗→低'},
+{u:4,t:'multi',q:'哪些做法可以保护听力？',ch:['远离噪声','不用尖锐的东西掏耳朵','耳机音量调适中','长时间待在噪音很大的地方'],ans:[0,1,2],exp:'前三条保护听力；长时间待在噪音环境会损伤听力。',tip:'远离噪、别乱掏、音量小'},
+{u:4,t:'multi',q:'哪些现象能说明"声音是由振动产生的"？',ch:['敲鼓时鼓面上的豆子在跳动','拨动钢尺时看到尺子在抖','摸着喉咙说话感到麻麻的','看到闪电'],ans:[0,1,2],exp:'前三个都能看到或感到振动；闪电是光现象，不能说明振动发声。',tip:'看到抖动＝振动发声'},
+{u:4,t:'multi',q:'关于声音的强弱与高低，正确的是（　）。',ch:['强弱用音量描述','音量由振动幅度决定','高低用音高描述','音高由振动快慢决定'],ans:[0,1,2,3],exp:'四条都对：幅度管强弱（音量），快慢管高低（音高）。',tip:'幅度管强弱，快慢管高低'},
+{u:4,t:'multi',q:'下面属于乐器的有（　）。',ch:['二胡','小提琴','古筝','橡皮筋（单独一根）'],ans:[0,1,2],exp:'二胡、小提琴、古筝、吉他等靠弦的振动发声，是乐器；单独的橡皮筋不是乐器。',tip:'二胡、小提琴、古筝、吉他'},
+{u:4,t:'single',q:'排箫是靠（　）振动发出声音的。',ch:['管内的空气','竹子本身','吹的气流','手指'],ans:[0],exp:'排箫、笛子、小号等管乐器都是靠管内空气（空气柱）振动发声。',tip:'管乐器＝空气柱振动'},
+{u:4,t:'single',q:'排箫的管子越长，发出的声音（　）。',ch:['越低，因为空气柱越长振动越慢','越高，因为空气更多','越强，因为管子更大','不变'],ans:[0],exp:'管子越长，管内空气柱越长，振动越慢，声音越低。',tip:'管长→空气柱长→声音低'},
+{u:4,t:'single',q:'食物在身体里旅行的正确顺序是（　）。',ch:['口腔→食道→胃→小肠→大肠','口腔→胃→食道→小肠→大肠','口腔→食道→小肠→胃→大肠','口腔→气管→胃→小肠→大肠'],ans:[0],exp:'食物经过口腔、食道、胃、小肠、大肠，最后残渣排出体外。',tip:'口→食道→胃→小肠→大肠'},
+{u:4,t:'judge',q:'用同样的力连续敲击杯子，往杯里不断加水，声音会越来越低。',ans:[0],exp:'对。敲击时水越多，振动越慢，声音越低。',tip:'敲杯子：水多声音低'},
+{u:4,t:'multi',q:'制作小乐器可以用到的材料有（　）。',ch:['吸管','橡皮筋','玻璃瓶','磁铁'],ans:[0,1,2],exp:'吸管（空气柱）、橡皮筋（弦）、瓶子（装水）都能做成小乐器；磁铁和发声无关。',tip:'吸管、皮筋、瓶子都能做乐器'}
+];
+
+const JUDGE_CH = ['✔ 说法正确', '✘ 说法错误'];
+
+/* ================= 工具 ================= */
+const $ = id => document.getElementById(id);
+const shuffle = a => { for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+BANK.forEach(q => { if(!q.tip) q.tip='把这个知识点再读一遍，就记住啦！'; });
+
+const LV = {
+  1:{name:'第 1 关 · 空气大冒险', ico:'🎈', units:[1]},
+  2:{name:'第 2 关 · 呼吸小卫士', ico:'🫁', units:[2]},
+  3:{name:'第 3 关 · 消化旅行团', ico:'🍎', units:[3]},
+  4:{name:'第 4 关 · 声音魔法屋', ico:'🎵', units:[4]},
+  5:{name:'第 5 关 · 科学大擂台', ico:'🏆', units:[1,2,3,4]}
+};
+const CFG_ALL = [['single',3],['judge',2],['multi',1]];   /* 整套：每关 6 题 */
+const CFG_ONE = [['single',4],['judge',3],['multi',3]];   /* 单关：10 题 */
+const TIME_ALL=480, TIME_ONE=180;
+let ROUND_N = 6;
+
+/* ================= 音效 ================= */
+let actx=null, soundOn=true, vibOn=true;
+function tone(f,d,delay,type,vol){ if(!soundOn) return; try{
+  actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+  const o=actx.createOscillator(), g=actx.createGain();
+  o.type=type||'sine'; o.frequency.value=f;
+  o.connect(g); g.connect(actx.destination);
+  const t=actx.currentTime+(delay||0);
+  g.gain.setValueAtTime(vol||.18,t); g.gain.exponentialRampToValueAtTime(.001,t+d);
+  o.start(t); o.stop(t+d+.02);}catch(e){} }
+function buzz(ms){ if(vibOn && navigator.vibrate){ try{ navigator.vibrate(ms); }catch(e){} } }
+const sndClick = ()=>tone(760,.06,0,'triangle',.12);
+const sndOK  = ()=>{ tone(523,.13,0); tone(659,.13,.1); tone(784,.2,.2); };
+const sndNO  = ()=>{ tone(330,.18,0,'sawtooth',.16); tone(196,.34,.16,'sawtooth',.18); buzz([60,50,90]); };
+const sndCombo=()=>{ tone(880,.08,0,'triangle',.14); tone(1175,.1,.07,'triangle',.14); };
+const sndWarn= ()=>tone(1200,.09,0,'square',.12);
+const sndWin = ()=>{ tone(523,.14,0); tone(659,.14,.14); tone(784,.14,.28); tone(1046,.3,.42); };
+const sndLose= ()=>{ tone(392,.2,0); tone(311,.2,.18); tone(262,.35,.36,'triangle',.16); };
+
+/* ================= 状态 ================= */
+const S = { all:false, lv:1, qs:[], qi:0, score:0, wrong:[], used:new Set(), mode:'normal',
+            timeLeft:0, timeTotal:0, timer:null, locked:false, multiPick:[], combo:0 };
+let best = {}; try{ best = JSON.parse(localStorage.getItem('sci4best')||'{}'); }catch(e){ best={}; }
+
+(function(){ const d=$('deco');
+  [[8,'☁️',38],[45,'☁️',26],[72,'☁️',46]].forEach(([top,e,sec],i)=>{ const c=document.createElement('div');
+    c.className='cloud'; c.textContent=e; c.style.top=top+'%';
+    c.style.animationDuration=(sec+i*6)+'s'; c.style.animationDelay=(-i*7)+'s'; d.appendChild(c); });
+  [[12,'🎈'],[66,'🎵'],[84,'🍎'],[38,'🫁']].forEach(([top,e],i)=>{ const b=document.createElement('div');
+    b.className='bal'; b.textContent=e; b.style.top=top+'%'; b.style.left=(i*26+3)+'%';
+    b.style.animationDuration=(4+i)+'s'; d.appendChild(b); }); })();
+
+/* ================= 抽题 ================= */
+function drawQuestions(lv, used, cfg){
+  const units = LV[lv].units, out=[];
+  for(const [t,n] of cfg){
+    let pool = BANK.filter(q => q.t===t && units.includes(q.u) && !used.has(q.id) && !out.includes(q));
+    if(pool.length < n) pool = pool.concat(BANK.filter(q => q.t===t && units.includes(q.u) && !out.includes(q) && !pool.includes(q)));
+    shuffle(pool); out.push(...pool.slice(0,n));
+  }
+  return shuffle(out);
+}
+function ensureId(q){ if(!q.id) q.id = q.u+'-'+q.t+'-'+q.q.slice(0,8); return q; }
+function drawAll(){ const qs=[]; S.used.clear();
+  for(let lv=1; lv<=5; lv++){ const part=drawQuestions(lv,S.used,CFG_ALL);
+    part.forEach(q=>{ ensureId(q); S.used.add(q.id); }); qs.push(...part); } return qs; }
+
+/* ================= 屏幕 ================= */
+function show(id){ ['scr-home','scr-quiz','scr-result'].forEach(s=>$(s).classList.toggle('hide', s!==id)); window.scrollTo(0,0); }
+function toast(msg){ const t=document.createElement('div'); t.className='toast'; t.textContent=msg;
+  document.body.appendChild(t); setTimeout(()=>t.remove(),2200); }
+function refreshStars(){
+  for(let lv=1;lv<=5;lv++){ const el=document.querySelector('[data-st="'+lv+'"]');
+    if(el) el.textContent='★★★'.slice(0,best['s'+lv]||0).padEnd(3,'☆'); }
+  $('bestTxt').textContent = best.total ? ('整套 ' + best.total + ' 分 🌟') : '还没挑战过';
+}
+
+/* ================= 开始 ================= */
+function startGame(mode, lv){
+  stopTimer();
+  const prevWrong = S.wrong;
+  S.mode=mode; S.all=(mode==='all'); S.lv=lv||1;
+  S.qi=0; S.score=0; S.wrong=[]; S.locked=false; S.combo=0;
+  if(S.all){ S.qs=drawAll(); S.timeTotal=TIME_ALL; ROUND_N=6; }
+  else if(mode==='wrong'){
+    if(prevWrong && prevWrong.length){ S.qs=shuffle(prevWrong.map(w=>w.q)).map(ensureId); S.timeTotal=Math.max(120, S.qs.length*12); ROUND_N=S.qs.length; }
+    else { S.mode='one'; S.qs=drawQuestions(S.lv,S.used,CFG_ONE).map(ensureId); S.timeTotal=TIME_ONE; ROUND_N=S.qs.length; }
+  }
+  else { S.qs=drawQuestions(S.lv,S.used,CFG_ONE).map(ensureId); S.timeTotal=TIME_ONE; ROUND_N=S.qs.length; }
+  S.timeLeft=S.timeTotal; show('scr-quiz'); renderQ(); startTimer();
+}
+function startTimer(){ stopTimer(); S.timer=setInterval(tick,1000); tickView(); }
+function stopTimer(){ if(S.timer){ clearInterval(S.timer); S.timer=null; } }
+function tick(){ S.timeLeft--; if(S.timeLeft<=10 && S.timeLeft>0) sndWarn(); tickView(); if(S.timeLeft<=0) finish('time'); }
+function tickView(){
+  const m=Math.floor(Math.max(0,S.timeLeft)/60), s=Math.max(0,S.timeLeft)%60;
+  $('clock').textContent = m+':'+String(s).padStart(2,'0');
+  const hot=S.timeLeft<=60; $('clock').classList.toggle('hot',hot); $('tfill').classList.toggle('hot',hot);
+  $('tfill').style.width = Math.max(0,S.timeLeft/S.timeTotal*100)+'%';
+}
+
+/* ================= 渲染 ================= */
+function renderQ(){
+  S.locked=false; S.multiPick=[];
+  const q=S.qs[S.qi]; if(!q){ finish('done'); return; }
+  $('prog').textContent='第 '+(S.qi+1)+' / '+S.qs.length+' 题';
+  $('pfill').style.width=(S.qi/S.qs.length*100)+'%';
+  $('scoreTxt').textContent=S.score+' 分';
+  $('qtext').textContent=q.q;
+  const tagEl=$('qtype');
+  tagEl.textContent={single:'🅰 单选题',multi:'🅱 多选题',judge:'⚖ 判断题'}[q.t];
+  tagEl.className='qtype t-'+q.t;
+  const box=$('opts'); box.innerHTML=''; box.className='opts'+(q.t==='judge'?' judgeopts':'');
+  const ch = q.t==='judge' ? JUDGE_CH : q.ch;
+  ch.forEach((c,i)=>{
+    const b=document.createElement('button'); b.className='opt'; b.type='button';
+    b.innerHTML='<span class="key">'+(q.t==='judge'?(i===0?'对':'错'):'ABCD'[i])+'</span>'+esc(c);
+    b.onclick=()=>pickOpt(i,b); box.appendChild(b);
+  });
+  $('multiact').classList.toggle('hide', q.t!=='multi');
+  $('btnSubmit').disabled=false; $('btnSubmit').textContent='✅ 提交答案';
+  $('fb').classList.add('hide'); $('btnNext').classList.add('hide');
+  $('qcard').style.animation='none'; void $('qcard').offsetWidth; $('qcard').style.animation='';
+}
+function pickOpt(i, btn){
+  if(S.locked) return; sndClick();
+  const q=S.qs[S.qi];
+  if(q.t==='multi'){ btn.classList.toggle('sel');
+    S.multiPick=Array.from($('opts').children).map((b,k)=>b.classList.contains('sel')?k:-1).filter(k=>k>=0).sort();
+    $('btnSubmit').disabled = S.multiPick.length===0; return; }
+  judge([i]);
+}
+function describe(q, idxs){
+  if(!idxs || !idxs.length) return '（没有作答）';
+  if(q.t==='judge') return idxs.map(i=> i===0?'✔ 说法正确':'✘ 说法错误').join('　');
+  return idxs.map(i=>'ABCD'[i]+' '+q.ch[i]).join('　');
+}
+function flyStar(){
+  const c=$('qcard'); for(let i=0;i<5;i++){
+    const s=document.createElement('div'); s.className='flystar'; s.textContent='⭐';
+    s.style.left=(20+i*16)+'%'; s.style.top='38%'; s.style.setProperty('--dx',(i-2)*30+'px');
+    c.appendChild(s); setTimeout(()=>s.remove(),1000);
+  }
+}
+function redFlash(){ const f=document.createElement('div'); f.className='flash';
+  document.body.appendChild(f); setTimeout(()=>f.remove(),600); }
+
+/* ================= 判定 ================= */
+function judge(picked){
+  const q=S.qs[S.qi]; S.locked=true;
+  const right = JSON.stringify(picked)===JSON.stringify(q.ans);
+  Array.from($('opts').children).forEach((b,k)=>{ b.classList.remove('sel');
+    if(q.ans.includes(k)) b.classList.add('ok');
+    else if(picked.includes(k)) b.classList.add('bad');
+    else b.classList.add('dim'); });
+  if(q.t==='multi') $('multiact').classList.add('hide');
+  const fb=$('fb'); fb.classList.remove('hide','fb-ok','fb-no');
+  if(right){
+    S.score+=10; S.combo++; sndOK(); if(S.combo>=3) sndCombo(); flyStar();
+    $('scoreTxt').textContent=S.score+' 分';
+    fb.classList.add('fb-ok');
+    fb.innerHTML='<div class="big">🎉 答对啦！+10 分'+(S.combo>=3?'<span class="combo">🔥 连对 '+S.combo+' 题</span>':'')+'</div>';
+    setTimeout(()=>nextQ(),950);
+  }else{
+    sndNO(); redFlash(); S.combo=0;
+    S.wrong.push({q:q, picked:picked.slice(), idx:S.qi});
+    fb.classList.add('fb-no');
+    fb.innerHTML='<div class="big">❌ 哎呀，答错啦！看清楚正确答案～</div>'
+      +'<div class="fbrow">你选的是：<span class="mine">'+esc(describe(q,picked))+'</span></div>'
+      +'<div class="fbrow">正确答案：<span class="corr">'+esc(describe(q,q.ans))+'</span></div>'
+      +'<div class="why">💡 <b>为什么：</b>'+esc(q.exp)+'</div>'
+      +'<div class="tipbox">🧠 <b>记住这一句：</b>'+esc(q.tip)+'</div>';
+    $('btnNext').classList.remove('hide');
+    setTimeout(()=>{ try{ fb.scrollIntoView({behavior:'smooth',block:'center'}); }catch(e){} }, 80);
+  }
+  $('btnSubmit').disabled=true;
+}
+function nextQ(){
+  S.qi++;
+  if(S.all && S.qi<S.qs.length && S.qi%ROUND_N===0){ showLevelBreak(); return; }
+  if(S.qi>=S.qs.length) finish('done'); else renderQ();
+}
+function showLevelBreak(){
+  const lv=Math.floor(S.qi/ROUND_N)+1;
+  const ov=document.createElement('div'); ov.className='overlay'; ov.id='ovlBreak';
+  ov.innerHTML='<div class="card"><div class="ovl-emoji">'+LV[lv-1].ico+'➜'+LV[lv].ico+'</div>'
+    +'<div class="ovl-title">'+esc(LV[lv-1].name)+' 完成！</div>'
+    +'<div class="ovl-line">准备进入 <b>'+esc(LV[lv].name)+'</b><br>时间还在继续走，加油小科学家！</div>'
+    +'<button class="btn btn-main" id="btnGoOn">冲！继续闯关 ➜</button></div>';
+  document.body.appendChild(ov);
+  $('btnGoOn').onclick=()=>{ ov.remove(); renderQ(); };
+  sndWin();
+}
+
+/* ================= 结束 ================= */
+function starOf(miss){ return miss===0?3:(miss<=3?2:1); }
+function finish(reason){
+  stopTimer();
+  const ob=document.getElementById('ovlBreak'); if(ob) ob.remove();
+  if(S.mode!=='wrong'){
+    const miss=S.wrong.length, st = S.all ? (miss===0?3:(miss<=4?2:1)) : starOf(miss);
+    if(S.all){ if(!best.total||S.score>best.total) best.total=S.score;
+      for(let lv=1;lv<=5;lv++){ const part=S.wrong.filter(w=>Math.floor((w.idx||0)/ROUND_N)===lv-1).length;
+        const pst=part===0?3:(part<=1?2:1); if((best['s'+lv]||0)<pst) best['s'+lv]=pst; } }
+    else if((best['s'+S.lv]||0)<st) best['s'+S.lv]=st;
+    try{ localStorage.setItem('sci4best', JSON.stringify(best)); }catch(e){}
+    refreshStars();
+  }
+  showResult(reason);
+}
+function showResult(reason){
+  show('scr-result');
+  const n=S.qs.length, miss=S.wrong.length, totalDone=S.qi+ (S.locked?1:0), did=totalDone-miss;
+  const stars = S.mode==='wrong' ? (miss===0?3:1) : (S.all ? (miss===0?3:(miss<=4?2:1)) : starOf(miss));
+  $('resEmoji').textContent = miss===0?'🏆🎉':(miss<=3?'🎉':'💪');
+  $('resScore').innerHTML = (S.mode==='wrong' ? (miss===0?'全对！错题清零 ✨':('还错 '+miss+' 题')) : (S.score+' <small>分</small>'));
+  $('resStars').textContent = stars===3?'⭐⭐⭐':(stars===2?'⭐⭐☆':'⭐☆☆');
+  let sub;
+  if(S.mode==='wrong') sub='错题重练完成！'+(miss===0?'你已经是科学小达人啦！':'把下面这几题再看一眼，再来一次！');
+  else{
+    const lvName=S.all?'整套挑战（5 关 · 覆盖空气/呼吸/消化/声音）':LV[S.lv].name;
+    sub=lvName+' · 答了 '+totalDone+' 题，答对 '+did+' 题，错了 '+miss+' 题。'
+      +(reason==='time'?' ⏰ 时间到啦'+(n-totalDone>0?('，还有 '+(n-totalDone)+' 题没来得及做'):'')+'，下次再快一点点！':'')+(miss===0 && did===n ?' 太厉害了，一题都没错！':'');
+  }
+  $('resSub').textContent=sub;
+  if(miss===0) sndWin(); else sndLose();
+  $('btnRetryWrong').classList.toggle('hide', miss===0 || S.mode==='wrong');
+  $('btnRetryWrong').textContent='🎯 错题重练（把这 '+miss+' 题再做一遍）';
+  $('btnCopy').classList.toggle('hide', !miss);
+  $('btnCopy').onclick=()=>{
+    let t='四年级上册科学 · 我的错题本\n';
+    S.wrong.forEach((w,i)=>{ const q=w.q;
+      t+='\n'+(i+1)+'. '+q.q+'\n   我的答案：'+describe(q,w.picked)+'\n   正确答案：'+describe(q,q.ans)+'\n   为什么：'+q.exp+'\n   记住：'+q.tip+'\n'; });
+    navigator.clipboard.writeText(t).then(()=>toast('错题已复制，可以粘到微信/备忘录打印 ✅'),()=>toast('复制失败，请手动抄写～'));
+  };
+  const wl=$('wrongList'); wl.innerHTML='';
+  $('wrongCnt').textContent = miss?('共 '+miss+' 题，认真看"记住这一句"！'):'（全对，没有错题，了不起！）';
+  S.wrong.forEach(w=>{
+    const q=w.q, d=document.createElement('div'); d.className='wrongcard';
+    d.innerHTML='<div class="wq">'+esc(q.q)+'</div>'
+      +'<div class="wpick">✘ 你的答案：'+esc(describe(q,w.picked))+'</div>'
+      +'<div class="wans">✔ 正确答案：'+esc(describe(q,q.ans))+'</div>'
+      +'<div class="wexp">💡 '+esc(q.exp)+'</div>'
+      +'<div class="wtip">🧠 记住：'+esc(q.tip)+'</div>';
+    wl.appendChild(d);
+  });
+}
+
+/* ================= 事件 ================= */
+$('btnAll').onclick=()=>startGame('all',1);
+document.querySelectorAll('.lv').forEach(el=>{ el.onclick=()=>{ sndClick(); startGame('one',+el.dataset.lv); }; });
+$('btnRestart').onclick=()=>{ sndClick(); if(S.all) startGame('all',1); else startGame('one',S.lv); };
+$('btnHome').onclick=()=>{ stopTimer(); refreshStars(); show('scr-home'); };
+$('btnNext').onclick=nextQ;
+$('btnSubmit').onclick=()=>{ if(!S.locked && S.multiPick.length){ sndClick(); judge(S.multiPick); } };
+$('btnReAll').onclick=()=>{ if(S.mode==='all') startGame('all',1); else startGame('one',S.lv); };
+$('btnRetryWrong').onclick=()=>startGame('wrong');
+$('btnBackHome').onclick=()=>{ refreshStars(); show('scr-home'); };
+$('btnSound').onclick=()=>{ soundOn=!soundOn; $('btnSound').textContent=soundOn?'🔊 音效：开':'🔇 音效：关'; };
+$('btnVib').onclick=()=>{ vibOn=!vibOn; $('btnVib').textContent=vibOn?'📳 震动：开':'📳 震动：关'; };
+
+refreshStars();
+</script>
+</body>
+</html>
