@@ -639,15 +639,24 @@ const KP_RULES = [
 
 function ensureId(q){ if(!q.id) q.id = q.u+'-'+q.t+'-'+q.q.slice(0,8); return q; }
 
-/* 选项顺序随机打乱：每次出现的位置都不一样，孩子没法靠"背位置"答题 */
+/* 选项顺序随机打乱：每次出现的位置都不一样，孩子没法靠"背位置"答题
+   同时做均衡：正确答案在 A/B/C/D 四个位置出现的次数尽量一样多 */
+const POS_HIT = [0,0,0,0,0,0];                 // 每个位置当过几次正确答案
 function shufOpts(q){
   if(q.t==='judge') return q;                  // 判断题固定"对/错"，不打乱
   const n=q.ch.length;
-  const pos=q.ch.map((_,i)=>i);                // pos[新位置] = 原位置
-  for(let i=n-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=pos[i]; pos[i]=pos[j]; pos[j]=t; }
-  const ans=[];
-  for(let i=0;i<n;i++){ if(q.ans.indexOf(pos[i])>=0) ans.push(i); }
-  return { u:q.u, t:q.t, q:q.q, ch:pos.map(i=>q.ch[i]), ans:ans, exp:q.exp, tip:q.tip, kp:q.kp, id:q.id };
+  let pick=null;
+  for(let t=0;t<12;t++){
+    const pos=q.ch.map((_,i)=>i);              // pos[新位置] = 原位置
+    for(let i=n-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const tmp=pos[i]; pos[i]=pos[j]; pos[j]=tmp; }
+    const ans=[];
+    for(let i=0;i<n;i++){ if(q.ans.indexOf(pos[i])>=0) ans.push(i); }
+    const load=ans.reduce((s,i)=>s+(POS_HIT[i]||0),0);   // 该题答案落在哪些位置上，用得越少越好
+    if(!pick || load<pick.load) pick={pos:pos, ans:ans, load:load};
+    if(load===0) break;                        // 已经最均衡，直接采用
+  }
+  pick.ans.forEach(i=>{ POS_HIT[i]=(POS_HIT[i]||0)+1; });
+  return Object.assign({}, q, { ch:pick.pos.map(i=>q.ch[i]), ans:pick.ans });   // 保留 fig 等所有字段
 }
 BANK.forEach(q=>{ ensureId(q);
   const r = KP_RULES.find(rr => rr.u===q.u && rr.re.test(q.q));
@@ -768,6 +777,7 @@ function startGame(mode, lv){
   }
   else { S.qs=drawQuestions(S.lv,S.used,10); S.timeTotal=TIME_ONE; ROUND_N=S.qs.length; }
   S.timeLeft=S.timeTotal;
+  POS_HIT.fill(0);                      // 新一轮重新均衡 A/B/C/D 的出现次数
   S.qs = S.qs.map(shufOpts);            // 每道题进入本轮时打乱选项顺序
   show('scr-quiz'); renderQ(); startTimer();
 }
@@ -950,6 +960,8 @@ $('btnWeak').onclick=()=>{
   S.mode='weak'; S.all=false; S.lv=1;
   S.qi=0; S.score=0; S.wrong=[]; S.locked=false; S.combo=0; S.multiPick=[];
   S.qs = pool.slice(0,10);
+  POS_HIT.fill(0);
+  S.qs = S.qs.map(shufOpts);            // 薄弱考点专练同样打乱选项
   S.timeTotal = Math.max(120, S.qs.length*15); ROUND_N = S.qs.length;
   S.timeLeft = S.timeTotal;
   show('scr-quiz'); renderQ(); startTimer();
