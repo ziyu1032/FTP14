@@ -133,6 +133,14 @@
   background:linear-gradient(180deg,#ffa04d,#ff7a1a);color:#fff;font-weight:800;font-size:14px;
   box-shadow:0 4px 0 #d5610f;cursor:pointer;font-family:inherit;}
 .wkbtn:active{transform:translateY(3px);box-shadow:0 1px 0 #d5610f;}
+/* ==== 带图题插图 ==== */
+.qfig{margin-top:12px;display:flex;justify-content:center;}
+.qfig svg{width:min(78%,300px);height:auto;background:#f2fbff;border-radius:14px;padding:8px;box-shadow:0 3px 0 rgba(0,0,0,.06);}
+/* ==== 重新开始按钮 ==== */
+.resetbtn{display:block;width:100%;margin-top:12px;padding:11px 16px;border-radius:15px;border:none;
+  background:#fff;border:2.5px dashed #ef9a9a;color:#c62828;font-weight:800;font-size:14px;
+  cursor:pointer;font-family:inherit;}
+.resetbtn:active{transform:translateY(2px);}
 </style>
 </head>
 <body>
@@ -152,7 +160,7 @@
     <div class="kpbox">
       <h3><span>📊 考点覆盖进度</span><span id="kpNum">0 / 26</span></h3>
       <div class="kpbar"><i id="kpFill" style="width:0%"></i></div>
-      <div class="kpnote" id="kpNote">做完一轮会自动记录。把 26 个考点全部点亮，考试就有底啦！</div>
+      <div class="kpnote" id="kpNote">做完一轮会自动记录。把全部考点点亮，考试就有底啦！</div>
       <button class="wkbtn hide" id="btnWeak">🎯 专练我的薄弱考点（10 题）</button>
     </div>
 
@@ -166,10 +174,11 @@
     <div class="tips">💡 <b>怎么玩：</b>答对 +10 分。单选和判断点一下就出结果，<b>多选题要选好再点「提交答案」</b>。答错会立刻告诉你<b>正确答案、为什么错、以及一句好记的口诀</b>。每一关都能「↻ 重新开始」，会换一批没做过的新题！最后还有<b>错题本</b>，可以重练到全对，也能复制给爸爸妈妈打印。</div>
 
     <div class="tips" style="background:#fff8e6;border-color:#ffd66e;">📌 <b>考高分的用法（给爸爸妈妈）：</b>
-    让孩子把「🚀 开始整套挑战」做 <b>2 轮</b>（约 16 分钟），上面的考点进度就会点亮 <b>26 / 26</b>；
+    让孩子把「🚀 开始整套挑战」做 <b>2 轮</b>（约 16 分钟），上面的考点进度就会全部点亮；
     每轮结束后<b>先做「🎯 错题重练」清零错题</b>，再进下一轮。做过的题会优先换成没做过的新题，
     不会重复刷同一题。全部点亮后再让孩子做 1 轮检验：3 轮平均正确率 90% 以上，考试就稳了。</div>
     <p style="text-align:center;color:#90a4ae;font-size:12.5px;margin-top:12px;">最佳成绩：<span id="bestTxt">还没挑战过</span></p>
+    <button class="resetbtn" id="btnReset">🔄 重新开始闯关（清空全部星级、成绩和考点进度）</button>
   </div>
 
   <div id="scr-quiz" class="hide">
@@ -419,6 +428,128 @@ const BANK = [
 {u:2,t:'judge',q:'二氧化碳能使澄清的石灰水变浑浊，可以用这个方法来比较呼出气体和空气的不同。',ans:[0],exp:'对。呼出气体通入石灰水会变浑浊，而新鲜空气通入后变化不明显，说明呼出气体中二氧化碳更多。',tip:'石灰水检验二氧化碳'}
 ];
 
+/* ===== 2026-11 增补：附件重点补全 + 海口市近3年真题（带图题） ===== */
+
+/* ---- 插图（内嵌 SVG） ---- */
+const FIG = {};
+/* 漏斗倒水：瓶+漏斗+水面 */
+FIG.funnel = '<svg viewBox="0 0 220 150" xmlns="http://www.w3.org/2000/svg">'
++'<rect x="60" y="60" width="100" height="80" rx="10" fill="#e3f2fd" stroke="#5b8def" stroke-width="3"/>'
++'<path d="M62 105 Q110 130 158 105 L158 128 Q158 138 148 138 L72 138 Q62 138 62 128 Z" fill="#7ec8ff"/>'
++'<path d="M78 30 L142 30 L112 62 L108 62 Z" fill="#fff" stroke="#5b8def" stroke-width="3" transform="rotate(180 110 46)"/>'
++'<rect x="105" y="48" width="10" height="18" fill="#fff" stroke="#5b8def" stroke-width="2"/>'
++'<ellipse cx="110" cy="30" rx="32" ry="6" fill="#ffd54f" stroke="#e0a800" stroke-width="2"/>'
++'<text x="110" y="22" font-size="11" fill="#7a5200" text-anchor="middle">倒水⬇</text></svg>';
+/* 简易天平：左大气球 右瘪气球 */
+FIG.balance = '<svg viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">'
++'<line x1="30" y1="60" x2="210" y2="45" stroke="#8d6e63" stroke-width="4"/>'
++'<line x1="120" y1="52" x2="120" y2="130" stroke="#8d6e63" stroke-width="5"/>'
++'<rect x="95" y="130" width="50" height="8" rx="3" fill="#8d6e63"/>'
++'<line x1="55" y1="58" x2="55" y2="85" stroke="#90a4ae" stroke-width="2"/>'
++'<line x1="185" y1="43" x2="185" y2="85" stroke="#90a4ae" stroke-width="2"/>'
++'<ellipse cx="55" cy="100" rx="30" ry="24" fill="#ff8a80" stroke="#e53935" stroke-width="2"/>'
++'<ellipse cx="185" cy="100" rx="16" ry="13" fill="#ff8a80" stroke="#e53935" stroke-width="2"/>'
++'<text x="55" y="138" font-size="11" fill="#c62828" text-anchor="middle">吹大·下沉</text>'
++'<text x="185" y="130" font-size="11" fill="#1565c0" text-anchor="middle">瘪·轻</text></svg>';
+/* 密闭玻璃箱：冰块+热水+烟雾箭头 */
+FIG.box = '<svg viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">'
++'<rect x="20" y="25" width="200" height="105" rx="8" fill="#eef7ff" stroke="#607d8b" stroke-width="3"/>'
++'<rect x="32" y="95" width="40" height="30" fill="#b3e5fc" stroke="#4fc3f7" stroke-width="2"/>'
++'<text x="52" y="88" font-size="11" fill="#0277bd" text-anchor="middle">❄冰块</text>'
++'<rect x="168" y="85" width="40" height="40" rx="4" fill="#ffe0b2" stroke="#fb8c00" stroke-width="2"/>'
++'<text x="188" y="78" font-size="11" fill="#e65100" text-anchor="middle">🔥热水</text>'
++'<path d="M160 55 Q120 35 90 60" stroke="#b0bec5" stroke-width="4" fill="none" stroke-dasharray="7 5" marker-end="url(#aw1)"/>'
++'<defs><marker id="aw1" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#b0bec5"/></marker></defs>'
++'<text x="120" y="30" font-size="11" fill="#607d8b" text-anchor="middle">烟雾从热水侧飘向冰块侧</text></svg>';
+/* 纸团不湿+扎孔 */
+FIG.hole = '<svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">'
++'<rect x="10" y="70" width="180" height="70" fill="#7ec8ff"/>'
++'<path d="M70 30 L130 30 L130 95 L110 115 L90 115 L70 95 Z" fill="#fff" stroke="#5b8def" stroke-width="3"/>'
++'<circle cx="100" cy="88" r="8" fill="#ffd54f" stroke="#e0a800"/>'
++'<circle cx="100" cy="120" r="3" fill="#fff" stroke="#5b8def"/>'
++'<circle cx="100" cy="131" r="5" fill="none" stroke="#fff" stroke-width="2"/>'
++'<text x="100" y="22" font-size="11" fill="#37474f" text-anchor="middle">杯底扎小孔 ⬆冒泡泡</text></svg>';
+/* 模拟风形成：圆筒+蜡烛+蚊香烟雾 */
+FIG.wind = '<svg viewBox="0 0 220 150" xmlns="http://www.w3.org/2000/svg">'
++'<rect x="120" y="20" width="50" height="95" rx="6" fill="none" stroke="#5b8def" stroke-width="3"/>'
++'<rect x="128" y="105" width="34" height="12" fill="#90a4ae"/>'
++'<rect x="140" y="88" width="10" height="20" fill="#ffca28"/>'
++'<path d="M145 84 q-5 -8 0 -14 q5 -6 0 -13" stroke="#fb8c00" stroke-width="3" fill="none"/>'
++'<circle cx="40" cy="120" r="6" fill="#8d6e63"/><text x="40" y="140" font-size="10" fill="#6d4c41" text-anchor="middle">蚊香</text>'
++'<path d="M40 112 q0 -20 40 -28 q30 -6 42 -10" stroke="#b0bec5" stroke-width="3.5" fill="none" stroke-dasharray="6 5" marker-end="url(#aw2)"/>'
++'<path d="M155 70 q5 -25 0 -45" stroke="#b0bec5" stroke-width="3.5" fill="none" stroke-dasharray="6 5" marker-end="url(#aw2)"/>'
++'<defs><marker id="aw2" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#b0bec5"/></marker></defs>'
++'<text x="110" y="14" font-size="11" fill="#455a64" text-anchor="middle">烟从圆洞进 → 从筒口出</text></svg>';
+/* 呼吸模型：塑料瓶+两气球+Y管+橡皮膜 */
+FIG.lung = '<svg viewBox="0 0 250 150" xmlns="http://www.w3.org/2000/svg">'
++'<rect x="75" y="28" width="80" height="92" rx="8" fill="#e3f2fd" stroke="#5b8def" stroke-width="3"/>'
++'<rect x="108" y="6" width="14" height="26" fill="#a1887f"/>'
++'<path d="M115 32 L97 55 M115 32 L133 55" stroke="#a1887f" stroke-width="5"/>'
++'<ellipse cx="95" cy="78" rx="16" ry="24" fill="#ff8a80" stroke="#e53935" stroke-width="2"/>'
++'<ellipse cx="135" cy="78" rx="16" ry="24" fill="#ff8a80" stroke="#e53935" stroke-width="2"/>'
++'<path d="M77 120 Q115 140 153 120 L153 128 Q115 148 77 128 Z" fill="#ffb3ba" stroke="#e57373" stroke-width="2"/>'
++'<text x="6" y="40" font-size="11" fill="#37474f">Y形管＝气管</text>'
++'<text x="162" y="40" font-size="11" fill="#37474f">气球＝肺</text>'
++'<text x="6" y="76" font-size="11" fill="#37474f">瓶身＝胸腔</text>'
++'<text x="162" y="76" font-size="11" fill="#37474f">橡皮膜＝膈肌</text>'
++'<line x1="62" y1="36" x2="95" y2="45" stroke="#90a4ae" stroke-width="1.5"/>'
++'<line x1="160" y1="36" x2="138" y2="60" stroke="#90a4ae" stroke-width="1.5"/>'
++'<line x1="52" y1="72" x2="76" y2="72" stroke="#90a4ae" stroke-width="1.5"/>'
++'<line x1="160" y1="72" x2="152" y2="126" stroke="#90a4ae" stroke-width="1.5"/>'+'</svg>';
+/* 音叉+小球 */
+FIG.fork = '<svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">'
++'<rect x="88" y="20" width="10" height="80" rx="4" fill="#90a4ae"/>'
++'<path d="M78 18 L78 70 M108 18 L108 70 M78 70 Q78 22 93 22 Q108 22 108 70" stroke="#607d8b" stroke-width="7" fill="none"/>'
++'<line x1="93" y1="100" x2="93" y2="125" stroke="#6d4c41" stroke-width="4"/>'
++'<circle cx="135" cy="52" r="9" fill="#ffd54f" stroke="#e0a800" stroke-width="2"/>'
++'<line x1="126" y1="55" x2="150" y2="60" stroke="#90a4ae" stroke-width="2"/>'
++'<path d="M120 30 q8 12 6 24 M132 26 q10 14 8 30" stroke="#b0bec5" stroke-width="2.5" fill="none" stroke-dasharray="4 4"/>'
++'<text x="100" y="145" font-size="11" fill="#455a64" text-anchor="middle">敲响的音叉把小球弹开</text></svg>';
+
+/* ---- 新增题目 ---- */
+/* 单元1 空气（附件重点补全 + 真题） */
+BANK.push(
+{u:1,t:'single',q:'把漏斗口用橡皮泥紧紧贴住瓶口，再往漏斗里倒水，水很难流进瓶子里。主要原因是（　）。',fig:FIG.funnel,ch:['瓶里的空气占据了空间','漏斗口太小了','瓶子的吸力把水吸住了','水太脏流不动'],ans:[0],exp:'瓶内空气占据着空间，水就进不去；让空气跑出去（松一条缝），水才能流进去。',tip:'空气占位，水难进；放走空气水才进'},
+{u:1,t:'single',q:'简易天平左盘放一个吹得大大的气球，右盘放一个同样大小、没吹气的瘪气球，结果吹大的一端下沉了。这说明（　）。',fig:FIG.balance,ch:['气球皮被吹大后变重了','吹进去的空气有质量','风把气球吹沉了','天平不准'],ans:[1],exp:'两个气球皮完全一样，唯一差别是里面空气的多少，吹大的一端下沉，说明空气有质量。',tip:'空气有质量，只是很轻'},
+{u:1,t:'single',q:'下面这些物品中，不是利用"压缩空气有弹性"来工作的是（　）。',ch:['汽车轮胎','气垫船','温度计','篮球'],ans:[2],exp:'轮胎、气垫船、篮球都靠压缩空气的弹性来缓冲减震、承重；温度计靠液体的热胀冷缩工作。',tip:'温度计＝液体热胀冷缩'},
+{u:1,t:'single',q:'密闭玻璃箱的左边放冰块、右边放一杯热水，箱里的烟雾会从热水一侧慢慢飘向冰块一侧。这说明风形成的直接原因是（　）。',fig:FIG.box,ch:['空气有质量','空气冷热不均，会发生流动','空气能被压缩','有人摇动了箱子'],ans:[1],exp:'热水侧空气受热上升，冰块侧冷空气流过来补充，空气一流动就形成了风。冷热不均→空气流动→风。',tip:'冷热不均→流动→风'},
+{u:1,t:'single',q:'纸团不湿实验中，把杯底扎一个小孔后再竖直压入水中，会看到（　）。',fig:FIG.hole,ch:['水慢慢进入杯中，扎孔处往外冒泡泡','什么变化也没有','纸团立刻湿透了','杯子浮起来了'],ans:[0],exp:'扎孔后空气从孔里跑出去（冒泡泡），水进来填补空气原来的位置——再次证明空气占据空间。',tip:'孔冒泡＝空气让位'},
+{u:1,t:'single',q:'用打气筒给瘪篮球打气，篮球鼓起来能拍了。这个实验能证明"空气可以占据空间"和"被压缩的空气有弹性"，但不能证明（　）。',ch:['空气可以占据空间','被压缩的空气有弹性','空气有质量','空气会流动'],ans:[2],exp:'打气让篮球变鼓变硬，证明空气占据空间、压缩后有弹性；空气的质量要用天平或电子秤才能测出来。',tip:'打气≠称重'},
+{u:1,t:'single',q:'把一块干燥结块的土壤轻轻放入水中，会看到（　）。',ch:['土壤马上化掉了','土壤表面冒出一个个气泡','水立刻变浑浊','土壤浮在水面上不动'],ans:[1],exp:'气泡是从土壤颗粒缝隙里跑出来的空气，说明土壤中含有空气。',tip:'土壤里也藏着空气'},
+{u:1,t:'single',q:'"水位"指的是（　）。',ch:['水面距离容器底部的高度','容器里水的多少','水的温度','水面到瓶口的距离'],ans:[0],exp:'"水位"是水面离容器底部的高度；不管怎么倾斜，静止的水面总是平直的，这条线叫水平线。',tip:'水位＝高度；水平线＝平直线'},
+{u:1,t:'single',q:'拧紧瓶盖的塑料瓶里放一个能漂浮的小球，压入水中小球停在瓶底；拧开瓶盖再压入水中，水进入瓶内，小球会（　）。',ch:['停在瓶底不动','浮到靠近瓶盖的位置','沉到水底','飞出瓶口'],ans:[1],exp:'拧开瓶盖后瓶里的空气跑掉，水进入瓶内、水位上升，小球就浮到靠近瓶盖的位置。',tip:'水进来→水位升→球上浮'},
+{u:1,t:'single',q:'把气球口套在塑料瓶的瓶口上，用力往里吹气，气球很难被吹大，是因为（　）。',ch:['人的力气太小','瓶内的空气占据了空间','气球破了个小口','瓶子太硬'],ans:[1],exp:'瓶里原来装满空气，空气占据着空间，气球没法膨胀，所以很难吹大。',tip:'瓶里空气不让位'},
+{u:1,t:'single',q:'起风时红旗飘动、头发飞舞，这说明（　）。',ch:['空气流动对物体产生力的作用','红旗变轻了','头发带静电','空气有颜色'],ans:[0],exp:'风是快速流动的空气，空气流动对物体产生力，能使物体运动或形变。',tip:'流动的空气能推动东西'},
+{u:1,t:'single',q:'模拟风形成的实验里，在塑料筒旁点燃一支蚊香，蚊香的烟的作用是（　）。',fig:FIG.wind,ch:['给空气加热','显示空气的流动，判断有没有风形成','让实验更好看','消灭蚊子'],ans:[1],exp:'烟跟着空气走，烟动＝空气在流动。点蜡烛前烟竖直向上；点蜡烛后烟从圆洞横向流入筒内、从筒口向上流出。',tip:'烟是空气流动的"显示器"'},
+{u:1,t:'single',q:'同一时间、同一地区，地面附近大气的温度会随高度的增加而（　），所以高山上的气温比地面（　）。',ch:['升高　高','降低　低','降低　高','不变　一样'],ans:[1],exp:'大气温度随高度增加而降低，海拔越高气温越低；地面附近的冷热温差是风形成的重要原因。',tip:'越高越冷'},
+{u:1,t:'single',q:'白天海边的风从海洋吹向陆地；到了晚上，海边的风一般（　）。',ch:['还是从海洋吹向陆地','从陆地吹向海洋','完全停止了','从天上往下吹'],ans:[1],exp:'晚上陆地降温比海洋快，陆地空气冷缩下沉形成高压，近地面空气从陆地流向海洋，形成陆风。',tip:'白天海→陆，晚上陆→海'},
+{u:1,t:'judge',q:'简易天平实验里，两端小桶的规格和质量必须完全相同，不然实验结果就不准了。',ans:[0],exp:'对。桶自身的重量和空气浮力会干扰结果，对比实验只能有一个变量。',tip:'对比实验：只留一个变量'},
+{u:1,t:'judge',q:'做"热气球"实验时，纸筒罩住蜡烛只是为了好看。',ans:[1],exp:'错。纸筒能收拢热空气、防止热气向四周扩散，让袋子更快充满热空气，还有挡风、安全的作用。',tip:'纸筒＝聚热＋安全'},
+{u:1,t:'judge',q:'每次测量所用的时间都不完全一样，说明测量存在不可避免的误差，这是正常现象。',ans:[0],exp:'对。误差不是错误，多做几次测量取平均值，可以减小误差。',tip:'误差难免，多测几次'}
+);
+/* 单元2 呼吸（真题带图） */
+BANK.push(
+{u:2,t:'single',q:'呼吸模拟装置：向外拉瓶底的橡皮膜（模拟膈肌收缩），瓶里的小气球会（　）。',fig:FIG.lung,ch:['鼓起来，模拟吸气','变瘪，模拟呼气','没有变化','破裂'],ans:[0],exp:'橡皮膜下拉，瓶内空间变大、气压降低，外界空气进入气球，气球鼓起——模拟吸气。',tip:'下拉＝吸气＝球鼓'},
+{u:2,t:'single',q:'呼吸模拟装置：向上推瓶底的橡皮膜（模拟膈肌舒张），模拟的是（　）过程。',fig:FIG.lung,ch:['吸气','呼气','消化','心跳'],ans:[1],exp:'橡皮膜上推，瓶内空间变小、气压升高，气球里的空气被排出、气球变瘪——模拟呼气。',tip:'上推＝呼气＝球瘪'},
+{u:2,t:'single',q:'呼吸模型里，塑料瓶的瓶身模拟的是人体的（　）。',fig:FIG.lung,ch:['肺','膈肌','胸腔','气管'],ans:[2],exp:'瓶身＝胸腔，小气球＝肺，Y形管＝气管，瓶底橡皮膜＝膈肌。',tip:'瓶身胸廓、气球肺、皮膜膈'},
+{u:2,t:'single',q:'体育课跑完400米后，我们的呼吸会（　），心跳会（　）。',ch:['变慢　变慢','加快　加快','没有变化','加快　变慢'],ans:[1],exp:'运动需要消耗更多氧气，呼吸会加快加深，心跳也加快，好运送更多的氧气。',tip:'跑步→呼吸心跳都加快'},
+{u:2,t:'single',q:'呼吸时，空气进入人体的起始部位是（　）。',ch:['气管','鼻腔或口腔','肺','膈'],ans:[1],exp:'含有氧气的空气由鼻腔或口腔进入气管，再进入肺。',tip:'从鼻子（或嘴）开始'},
+{u:2,t:'single',q:'呼吸时，吸入的空气不经过的部位是（　）。',ch:['鼻腔','气管','肺','膈'],ans:[3],exp:'空气的路线是：鼻腔或口腔→气管→肺。膈肌是带动呼吸的"动力肌肉"，空气不经过它。',tip:'膈是肌肉，不是通道'},
+{u:2,t:'judge',q:'呼气的时候，胸腔会收缩，腹部会放松。',ans:[0],exp:'对。呼气时胸腔收缩、腹部放松；吸气时胸腔扩张、腹部收缩。',tip:'吸＝扩张，呼＝收缩'}
+);
+/* 单元3 消化（海口琼山区期末真题） */
+BANK.push(
+{u:3,t:'single',q:'饭后，食物在身体里的"旅行"顺序是（　）。',ch:['口腔—食道—大肠—胃—小肠','口腔—食道—胃—小肠—大肠','口腔—胃—食道—大肠—小肠','口腔—小肠—胃—食道—大肠'],ans:[1],exp:'食物经过的消化器官依次是：口腔→食道→胃→小肠→大肠。',tip:'口→食→胃→小→大'},
+{u:3,t:'single',q:'早餐的"肉包"在身体里走到了又长又窄的"迷宫"，在这里走了很久，身边许多营养物质都神秘地消失了。这一站是（　）。',ch:['胃','小肠','大肠','食道'],ans:[1],exp:'小肠又长又窄、内壁有皱褶和绒毛，是消化食物和吸收营养的主要场所，营养物质大多在这里被吸收。',tip:'营养在小肠被"拿走"'},
+{u:3,t:'single',q:'把碘酒分别滴在油条、瘦肉、西红柿上，会变蓝色的是（　）。',ch:['瘦肉','西红柿','油条','都不会变色'],ans:[2],exp:'碘酒遇淀粉变蓝色。油条含大量淀粉会变蓝；瘦肉主要含蛋白质，西红柿主要含维生素。',tip:'变蓝＝有淀粉'},
+{u:3,t:'single',q:'元旦晚会前，演员们体力消耗很大，应该多摄入高蛋白食物。你会建议他们多吃（　）。',ch:['青瓜、紫甘蓝','玉米、烧卖','牛奶、鱼肉','雪糕、可乐'],ans:[2],exp:'牛奶、鱼肉富含蛋白质；青瓜紫甘蓝主要含维生素，玉米烧卖主要含糖类（淀粉）。',tip:'蛋白质：奶、蛋、鱼、肉'},
+{u:3,t:'single',q:'在塑料袋里装上水、一小块馒头和煮熟的蔬菜，反复揉挤这个袋子，里面的食物会（　），这个实验模拟的是（　）的工作。',ch:['不变　胃','碎掉并变成糊状　胃','变大　小肠','碎掉　大肠'],ans:[1],exp:'手揉挤袋子模拟胃的蠕动：胃把食物磨碎、和消化液搅拌成食糜。',tip:'揉挤袋子＝胃在干活'}
+);
+/* 单元4 声音（海口市期末真题） */
+BANK.push(
+{u:4,t:'single',q:'敲响音叉后，立刻用悬挂的小球轻触音叉，小球会被弹开。这说明（　）。',fig:FIG.fork,ch:['音叉在振动','音叉有磁性','小球太轻了','音叉坏了'],ans:[0],exp:'发声的音叉在振动，所以能把小球弹开；声音都是由物体振动产生的。',tip:'球被弹开＝音叉在振动'}
+);
+
 const JUDGE_CH = ['✔ 说法正确', '✘ 说法错误'];
 
 /* ================= 工具 ================= */
@@ -474,11 +605,11 @@ let best = {}; try{ best = JSON.parse(localStorage.getItem('sci4best')||'{}'); }
 /* ================= 考点标签 ================= */
 const KP_RULES = [
   /* 单元1 空气 */
-  {u:1,k:'空气的性质',re:/空气是什么样|看不见|摸不着|透明|无色|和水相比|空气和水|空气的性质|平直|水平面|阻力|降落伞|利用空气性质|支持燃烧|多种气体混合|氧气大约占/},
+  {u:1,k:'空气的性质',re:/空气是什么样|看不见|摸不着|透明|无色|和水相比|空气和水|空气的性质|平直|水平面|水位|阻力|降落伞|利用空气性质|支持燃烧|多种气体混合|氧气大约占/},
   {u:1,k:'占据空间',re:/占据|空瓶|纸团|气泡|证明空气|塑料袋|倒扣|瓶口/},
   {u:1,k:'空气可压缩',re:/压缩|注射器|推进去|压扁|瘪|弹性|微粒|凭空消失|挤到其他/},
   {u:1,k:'空气有质量',re:/质量|天平|电子秤|绿豆|重量/},
-  {u:1,k:'空气流动与风',re:/风|流动|风向|扇子|风力|发电/},
+  {u:1,k:'空气流动与风',re:/风|流动|风向|扇子|风力|发电|冷热不均|海拔|陆风|海风/},
   {u:1,k:'热空气与热气球',re:/热空气|热气球|孔明灯|蜡烛|冷空气|上升|对流/},
   {u:1,k:'打气筒与反冲',re:/打气|充气|喷出|推力|反冲|气压/},
   /* 单元2 呼吸 */
@@ -657,6 +788,11 @@ function renderQ(){
   $('prog').textContent='第 '+(S.qi+1)+' / '+S.qs.length+' 题';
   $('pfill').style.width=(S.qi/S.qs.length*100)+'%';
   $('scoreTxt').textContent=S.score+' 分';
+  $('qtext').textContent='';
+  const figEl=$('qfigWrap');
+  if(q.fig){ if(!figEl){ const d=document.createElement('div'); d.className='qfig'; d.id='qfigWrap'; d.innerHTML=q.fig; $('qtext').after(d); }
+             else { figEl.innerHTML=q.fig; figEl.classList.remove('hide'); } }
+  else if(figEl){ figEl.innerHTML=''; figEl.classList.add('hide'); }
   $('qtext').textContent=q.q;
   const tagEl=$('qtype');
   tagEl.textContent={single:'🅰 单选题',multi:'🅱 多选题',judge:'⚖ 判断题'}[q.t];
@@ -821,6 +957,18 @@ $('btnWeak').onclick=()=>{
 };
 $('btnReAll').onclick=()=>{ if(S.mode==='all') startGame('all',1); else startGame('one',S.lv); };
 $('btnRetryWrong').onclick=()=>startGame('wrong');
+/* 重新开始闯关：清空星级、成绩、考点进度 */
+$('btnReset').onclick=()=>{
+  if(!confirm('确定要重新开始闯关吗？\n\n将会清空：\n· 各关的 ⭐ 星级\n· 整套挑战最佳成绩\n· 考点覆盖进度\n\n清空后重新从零开始，确定吗？')) return;
+  best = {};
+  kpStat = {};
+  try{ localStorage.removeItem('sci4best'); }catch(e){}
+  try{ localStorage.removeItem('sci4kp'); }catch(e){}
+  S.used.clear();
+  refreshStars();
+  sndClick();
+  toast('🔄 已重新开始！星级和进度都清零啦，冲呀！');
+};
 $('btnBackHome').onclick=()=>{ refreshStars(); show('scr-home'); };
 $('btnSound').onclick=()=>{ soundOn=!soundOn; $('btnSound').textContent=soundOn?'🔊 音效：开':'🔇 音效：关'; };
 $('btnVib').onclick=()=>{ vibOn=!vibOn; $('btnVib').textContent=vibOn?'📳 震动：开':'📳 震动：关'; };
